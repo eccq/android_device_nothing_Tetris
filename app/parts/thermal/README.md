@@ -15,11 +15,12 @@ The app reads these properties (all under `vendor.tetrisparts.`):
 | `thermal_errno` | Associated OS error number, or 0 for a protocol/profile failure |
 | `thermal_result_id` | Completion counter; read before requesting and wait for a different value |
 
-The completion counter is published after the profile, error and state and resets
-to zero at boot. It advances for successful operations and failures, including
-repeated requests for the same mode. A failed disable with successful rollback
-reports `enabled` plus the failure code; the UI must permit another disable
-attempt. An unknown state must not trap the user in a restore-only dialog.
+The completion counter is published after the profile, error and state are
+written. The counter resets to zero at boot. It advances for successful
+operations and failures, including repeated requests for the same mode. A failed
+disable with successful rollback reports `enabled` plus the failure code; the UI
+must permit another disable attempt. An unknown state must not trap the user in
+a restore-only dialog.
 
 Failure codes: `current_missing`, `current_denied`, `current_busy`,
 `current_invalid`, `profile_missing`, `profile_denied`, `profile_unsafe`,

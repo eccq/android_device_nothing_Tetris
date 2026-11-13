@@ -3,7 +3,8 @@
 `./run-tests.sh` compiles the production `PartsActivity.kt` with small Android,
 Compose and screen test doubles. It exercises its real lifecycle methods, route
 validation, toolbar callbacks, notification forwarding, saved-state restoration,
-owner checks and rapid-tap handling.
+owner checks and rapid-tap handling. The tests run that file directly, not a
+copy of the navigation code.
 
 The doubles record Activity launches and screen inputs; they do not simulate
 WindowManager, task selection, the back gesture, composition or Compose's

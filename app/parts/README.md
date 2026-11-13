@@ -41,14 +41,15 @@ between the Home and detail windows, including predictive gesture progress,
 cancellation, completion and edge direction. Toolbar Back finishes the detail
 Activity. The theme uses the framework `Animation.Activity` window style, and the
 manifest enables predictive back and RTL. Parts has no NavHost page animation and
-no app-wide back callback, so the gesture matches the native Settings animation.
+no app-wide back callback. The NavHost default scaled the page to 70% in the
+centre, which did not match the native Settings gesture animation.
 
 Notification links open Adaptive with the exact proposal ID and never approve a
 change. The Home-to-Adaptive stack stays within the selected task, and restored
 Activities do not replay notification requests that were already consumed. A
 notification can open a Parts task separate from the one hosted by Settings.
-Host tests cover routing, repeated taps, ownership and request restoration. Gesture
-completion and cancellation from both edges, toolbar Back and the return to
+Host tests cover routing, repeated taps, ownership and request restoration.
+Gesture completion and cancellation from both edges, toolbar Back and the return to
 Settings still need to be checked visually on the phone.
 
 The English temperature label for the external surface is "Phone casing". Metric
@@ -71,7 +72,7 @@ phone can run hotter, draw more power and be damaged.
 
 The patched `6.1.177-android14-11-lufrz` kernel has been built and imported into
 the ROM's kernel source package, with all 481 selected `.ko` files rebuilt (467
-distinct modules, no old modules kept). Symbol CRCs, vermagic and module
+distinct modules, no old modules kept). Exact symbol CRCs, vermagic and module
 dependency metadata passed host checks. The DTB is byte-identical and the DTBO is
 unchanged. On an older kernel without the interface, the app shows "Updated
 kernel required" and labels ordinary writes as temporary. [KERNEL.md](KERNEL.md)
@@ -145,11 +146,12 @@ access but cannot restrict individual rows. CPU and memory hints are unchanged.
 
 ## Thermal profile control
 
-The vendor init action reads the private `init.svc.thermal_core` property.
-Lineage rejects vendor actions that reference private properties, which would
-leave the helper unable to acknowledge any request, so the tree exports that one
-daemon status property, read-only, to the vendor components that need it. Other
-private init properties stay private.
+The vendor init action reads `init.svc.thermal_core`. The generic `init.svc.*`
+properties are private, and when `ro.actionable_compatible_property.enabled=true`
+vendor init rejects actions that reference them, so the helper would never
+acknowledge a request. The tree gives `init.svc.thermal_core` its own exported
+label, read-only for the vendor components that need it. Other private init
+properties stay private.
 
 The backend confirms the daemon is ready, applies MediaTek's
 `disable_throttling.conf`, waits for the profile to take effect and publishes a
@@ -215,7 +217,7 @@ values, separates thermal status from a guessed threshold, and shows recent
 readings. Tetris's HAL reports one shared SoC maximum under several hardware
 labels, so those values are not independent measurements.
 
-Adaptive control is an original local feedback feature, unrelated to
+Adaptive control is an original local feedback feature and does not use
 MaxManager's proprietary engine. The public
 [MaxManager feature description](https://github.com/nader295/Max-Manger) was the
 feature reference; no MaxManager code, graphics, data or private components are
@@ -262,12 +264,13 @@ verified ownership. If a new write cannot be verified at all, no change is
 reported as successful, and the GPU page's automatic-mode action stays available
 for manual recovery.
 
-The controller does not change the thermal profile or terminate apps. A trial can
-restore its earlier limit automatically when its evaluation fails, but it never
-applies another optimization without approval. No network or model API is used,
-and nothing activates at boot. A normal Stop tries to restore the values it still
-owns; a killed or crashed process cannot guarantee that CPU and GPU limits are
-cleaned up. A new process does not take over an existing GPU range.
+The controller does not change the thermal profile or terminate apps. A trial
+can restore its earlier limit automatically when its evaluation fails, but it
+never applies another optimization without approval. No network or model API is
+used, and the controller never activates itself at boot. A normal Stop tries to
+restore the values it still owns; a killed or crashed process cannot guarantee
+that CPU and GPU limits are cleaned up. A new process does not take over an
+existing GPU range.
 
 ### GPU load and frame smoothness
 
@@ -285,17 +288,18 @@ or SurfaceFlinger policy rule is added. The read has a one-second budget and a
 2 MiB cap. PIDs, layer names and package identities are used only while selecting
 and comparing samples, and are not stored in the journal.
 
-The compositor keeps a finite history, normally 64 display frames, so five-second
-polls only sample recent rendering, and the UI labels the coverage as partial. It
-shows observed frame counts, the late or dropped percentage, the dropped count,
-the target rendering FPS, the display refresh rate and, when available, the 95th
-percentile of measured present-to-present intervals. Target FPS is what the app
-aims for, which can differ from what it achieves. A 30 FPS game on a 120 Hz
-display does not count as laggy just because the two rates differ. One
-identifiable rendering surface is selected; frames from a SurfaceView and the
-app UI around it are never added together. Duplicate, expired, unclassified, stale or ambiguous data
-never counts as smooth frames. Network latency, input latency and every possible
-game or rendering path are outside what this feature measures.
+The compositor keeps a finite history, normally 64 display frames, so
+five-second polls only sample recent rendering, and the UI labels the coverage
+as partial. It shows observed frame counts, the late or dropped percentage, the
+dropped count, the target rendering FPS, the display refresh rate and, when
+available, the 95th percentile of measured present-to-present intervals. Target
+FPS is what the app aims for, which can differ from what it achieves. A 30 FPS
+game on a 120 Hz display does not count as laggy just because the two rates
+differ. One identifiable rendering surface is selected; frames from a
+SurfaceView and the app UI around it are never added together. Duplicate,
+expired, unclassified, stale or ambiguous data never counts as smooth frames.
+Network latency, input latency and every possible game or rendering path are
+outside what this feature measures.
 
 An increase needs sustained high load on the proposed CPU or GPU and real missed
 frame deadlines attributed to the app. Jank in the compositor alone does not
@@ -313,7 +317,9 @@ The platform-signed system_ext app has its own SELinux domain. CPU sysfs
 permissions cover only the exact nodes it uses, and only the vendor helper talks
 to the thermal daemon. Product dependencies install the permission XML, the init
 files and the helper. The Settings entry is limited to system callers and the
-primary user.
+primary user. The six original README patches are unchanged. The Dolby
+integration ships DolbyAtmos from `packages/apps/DolbyUI` in place of
+LunarisDolby.
 
 Volume-key dispatch needs the `media_session_service` lookup used by
 `PhoneWindow` and `MediaSessionManager`, and the app has that permission, scoped
