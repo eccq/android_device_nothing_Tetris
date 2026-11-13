@@ -13,7 +13,8 @@ partition dependency metadata passed host checks; boot and on-device behavior
 have not been tested. Parts detects the interface at runtime and still reports
 ordinary frequency controls as temporary on an older kernel without it.
 
-**ROM packaging status: final ROM build PASS; OTA kernel name, timestamp and CPU lock verified.**
+The final ROM build passed, and the OTA was checked for the kernel name, the
+timestamp and the CPU lock.
 
 ## Interface and scope
 
@@ -21,7 +22,7 @@ Each policy exposes `scaling_locked_limits`:
 
 - Read: `0 min max` for unlocked current limits, `1 min max` for a locked range.
 - Write `1 min max` to atomically validate, apply and own both bounds, in kHz.
-- Write `0` to release ownership and apply the **current** ordinary QoS requests.
+- Write `0` to release ownership and apply the current ordinary QoS requests.
 
 The kernel serializes the entire transaction with the policy write semaphore,
 requires frequencies from the available OPP table, and attempts to roll back a
@@ -33,8 +34,8 @@ is removed, or the phone reboots. Parts' Restore button also releases the locks.
 This overrides CPU cooling caps implemented through frequency QoS, regardless of the
 separate global thermal profile setting. It does not overclock, modify the
 OPP table, disable emergency shutdown, or remove hardware/firmware constraints.
-A fixed software range is not a promise of an exact measured physical clock in
-all conditions. The CPU idle mechanism continues to operate.
+A fixed software range does not guarantee an exact physical clock in every
+condition. The CPU idle mechanism continues to operate.
 
 The lock node has its own SELinux label, `vendor_tetris_cpu_lock`. Only Parts can
 write it; the Power HAL rules for ordinary frequency controls do not grant
@@ -71,8 +72,8 @@ directory is not replaced.
 The complete kernel/module build exited successfully on 2026-09-28 at
 20:11:23 UTC. Its build, selection and compatibility evidence is recorded in
 `out/kernel-tetris-build/BUILD-REPORT.md`. The validated 495-file distribution
-has since been imported into the ROM's prebuilt source tree. These are host build
-and compatibility results, not certification of device-runtime behavior.
+has been imported into the ROM's prebuilt source tree. These are host build and
+compatibility results; they do not show how the kernel behaves on the device.
 
 `gki_defconfig` contains `CONFIG_CPU_FREQ=y`, so the CPU lock patch needs no
 additional Kconfig option. The Parts thermal profile bridge uses the stock vendor
@@ -192,8 +193,8 @@ metadata consistent with the rebuilt kernel. Replacing only `.ko` files while
 leaving stale dependency metadata is not a complete import. The CPU lock patch
 itself does not modify the DTB/DTBO interface.
 
-The existing prebuilt named `Image` is **legacy LZ4 compressed**, not a raw
-ARM64 image (`file` identifies LZ4 v0.1-v0.9). The kernel's compression rule uses
+The existing prebuilt named `Image` is compressed with legacy LZ4 and is not a
+raw ARM64 image (`file` identifies LZ4 v0.1-v0.9). The kernel's compression rule uses
 `lz4 -l`; import the matching `Image.lz4` under the ROM's expected filename
 `Image`, preserving that format. Do not copy the uncompressed `Image` merely
 because its name matches the destination.
@@ -206,7 +207,7 @@ matched_kernel_image=/absolute/path/to/matched/distribution/Image.lz4
 install -m 0644 "$matched_kernel_image" device/nothing/Tetris-kernel/Image
 ```
 
-Then run your normal Tetris ROM build to package the imported Image and matched
+Then run the normal Tetris ROM build to package the imported Image and matched
 modules into its boot/vendor_boot/DLKM images. There is no need to disable
 `TARGET_FORCE_PREBUILT_KERNEL` when using this import path. Merely pointing
 `TARGET_KERNEL_SOURCE` at another folder while leaving the force-prebuilt flag
@@ -230,7 +231,8 @@ python3 device/nothing/Tetris/app/parts/tests/check-kernel-cpu-lock.py
 
 The latter compiles the actual added kernel parser/store/policy functions in a
 host harness. It checks competing QoS, unlock behavior, malformed input, driver
-failure and rollback. It is not a kernel build, KMI certification or a phone test.
+failure and rollback. It does not build the kernel, certify the KMI or replace a
+phone test.
 
 On a phone running the rebuilt kernel and updated ROM, both
 `/sys/devices/system/cpu/cpufreq/policy0/scaling_locked_limits` and

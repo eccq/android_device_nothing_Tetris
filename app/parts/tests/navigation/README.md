@@ -1,9 +1,9 @@
 # Native Activity navigation host tests
 
-`./run-tests.sh` compiles the **production `PartsActivity.kt`** with small Android,
+`./run-tests.sh` compiles the production `PartsActivity.kt` with small Android,
 Compose and screen test doubles. It exercises its real lifecycle methods, route
 validation, toolbar callbacks, notification forwarding, saved-state restoration,
-owner checks and rapid-tap handling. It does not copy the navigation implementation.
+owner checks and rapid-tap handling.
 
 The doubles record Activity launches and screen inputs; they do not simulate
 WindowManager, task selection, the back gesture, composition or Compose's
