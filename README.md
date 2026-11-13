@@ -48,7 +48,7 @@ m bacon
 | [Abhay Singh Gill](https://github.com/HELLBOY017), [sidharthify](https://github.com/sidharthify) | Fingerprint and UDFPS |
 | [swiitch-OFF-Lab](https://github.com/swiitch-OFF-Lab) | `hardware/dolby` and `DolbyUI` |
 | [Nothing archive](https://github.com/spike0en/nothing_archive) | Stock firmware archive (`Tetris_B4.1-260928-1140`) |
-| chakra | DescartesOS port and maintenance |
+| [chakra](https://github.com/eccq) | DescartesOS port and maintenance |
 
 ### Contributors
 
