@@ -1,6 +1,6 @@
 # Device configuration for CMF Phone 1
 
-The CMF Phone 1 (codenamed _"Tetris"_) is a budget/mid-range smartphone from CMF by Nothing.
+The CMF Phone 1 ("Tetris") is a budget/mid-range smartphone from CMF by Nothing.
 
 It was released in July 2024.
 
