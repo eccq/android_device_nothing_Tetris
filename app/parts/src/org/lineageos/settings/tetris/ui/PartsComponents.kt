@@ -94,12 +94,7 @@ fun PartsScaffold(
                 },
                 navigationIcon = {
                     if (onBack != null) {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.navigate_up),
-                            )
-                        }
+                        PartsBackButton(onBack)
                     }
                 },
                 actions = actions,
@@ -480,4 +475,14 @@ fun PartsConfirmDialog(
             TextButton(onClick = onDismiss) { Text(stringResource(android.R.string.cancel)) }
         },
     )
+}
+
+@Composable
+fun PartsBackButton(onBack: () -> Unit) {
+    IconButton(onClick = onBack) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = stringResource(R.string.navigate_up),
+        )
+    }
 }

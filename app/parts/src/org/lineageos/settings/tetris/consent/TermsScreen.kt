@@ -14,12 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -35,6 +31,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import org.lineageos.settings.tetris.ui.PartsBackButton
 import org.lineageos.settings.tetris.R
 
 /** Presentation only: the host owns the decision, elapsed time and system navigation. */
@@ -56,12 +53,7 @@ internal fun TermsScreen(
                 title = { Text(stringResource(R.string.parts_title)) },
                 navigationIcon = {
                     if (!mandatory) {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.navigate_up),
-                            )
-                        }
+                        PartsBackButton(onBack)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
