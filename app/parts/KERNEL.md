@@ -10,9 +10,12 @@ The image identifies itself as `6.1.177-android14-11-Kraken`.
 
 That kernel does not provide the custom interfaces described below. Parts
 detects this at runtime: the CPU page shows "Updated kernel required" and labels
-frequency changes as temporary, Charger-powered mode shows as unavailable, and
-the Power HAL's `boost` request to `/proc/gpufreqv2/limit_table` is ignored by
-the stock `mtk_gpufreq_wrapper.ko`.
+frequency changes as temporary, and Charger-powered mode shows as unavailable.
+The tree is kept consistent with this kernel: init does not touch
+`scaling_locked_limits` or the `charge_bypass` nodes, and `powerhint.json` has
+no GPU `boost` request, because the stock `mtk_gpufreq_wrapper.ko` only parses
+four-field `set` writes. When a kernel with the interfaces is imported, restore
+those init lines and the power hint together with it.
 
 The sections below describe the `scaling_locked_limits` interface Parts expects
 and the build that produced a kernel with it upstream. The kernel patches and the

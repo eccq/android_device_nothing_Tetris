@@ -17,8 +17,9 @@ kernel:
 - The CPU page shows "Updated kernel required" and labels frequency changes as
   temporary. Android and the Power HAL can still change them.
 - Charger-powered mode on the Battery page shows as unavailable.
-- The Power HAL's 700 MHz GPU floor during interaction has no effect, because the
-  stock module does not implement `boost` in `/proc/gpufreqv2/limit_table`.
+- The Power HAL has no GPU floor request. The stock module does not implement
+  `boost` in `/proc/gpufreqv2/limit_table`, so that hint is left out of
+  `powerhint.json`.
 
 Everything else works with the stock kernel: thermal profile control, GPU ranges
 through the DEBUG limiter, RAM and battery readings, temperatures and adaptive
@@ -125,16 +126,14 @@ returns to 70%. Each interaction hint also starts a 120 ms margin request with a
 to 1500 ms interaction fallback. New interaction hints renew the short request;
 once it expires, the strongest remaining margin applies.
 
-The Power HAL also requests a 700 MHz minimum during interaction, app launch and
-expensive rendering, with the same hint lifetimes as the margin. The patched
-`mtk_gpufreq_wrapper.ko` implements this as the `boost <kHz>` command in
-`/proc/gpufreqv2/limit_table`: it maps 700000 kHz to the lowest working OPP at or
-above that value, combines the request with existing APIBOOST requests, restores
-the latest non-UI request on release, and lets a manual DEBUG range suspend the
-floor. Overlapping hints share one floor and the final release writes `boost 0`.
-Frequency ceilings and limiter arbitration stay in place. The module and the
-powerhint configuration have to ship together; the stock module ignores the
-command.
+A patched `mtk_gpufreq_wrapper.ko` can also take a `boost <kHz>` command in
+`/proc/gpufreqv2/limit_table`, which the Power HAL would use to request a
+700 MHz minimum during interaction, app launch and expensive rendering. The
+module maps the value to the lowest working OPP at or above it, combines the
+request with existing APIBOOST requests, restores the latest non-UI request on
+release, and lets a manual DEBUG range suspend the floor. The stock module parses
+only four-field `set` writes, so the hint is not in this tree's
+`powerhint.json`; add it back together with the module.
 
 The manual GPU controls use the existing GPUEB firmware interface, and their
 settings are not reapplied at boot. The dialog scrolls the explanation and the
