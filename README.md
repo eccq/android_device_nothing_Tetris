@@ -1,8 +1,7 @@
 # Device configuration for CMF Phone 1
 
-The CMF Phone 1 ("Tetris") is a budget/mid-range smartphone from CMF by Nothing.
-
-It was released in July 2024.
+The CMF Phone 1 ("Tetris") is a mid-range smartphone from CMF by
+Nothing, released in July 2024.
 
 ## Device specifications
 
@@ -16,7 +15,7 @@ Storage  | 128/256 GB, UFS 2.2
 Shipped Android Version | 14
 Battery  | Li-ion 5000 mAh, non-removable
 Display  | 1080 x 2400 pixels, 6.67 inches (~395 ppi density)
-Camera   | 50 MP main, 16 MP front 
+Camera   | 50 MP main, 16 MP front
 
 ## Device picture
 
@@ -24,7 +23,12 @@ Camera   | 50 MP main, 16 MP front
 
 ## DescartesOS
 
-This tree builds DescartesOS (based on LineageOS 24 / Android 17) for the CMF Phone 1.
+This tree builds DescartesOS 17.0 (based on LineageOS 24 / Android 17) for the
+CMF Phone 1. The kernel is the prebuilt `6.1.177-android14-11-Kraken` from
+[lufrz](https://github.com/lufrz/android_device_nothing_Tetris-kernel), checked
+out at `device/nothing/Tetris-kernel`. [app/parts/KERNEL.md](app/parts/KERNEL.md)
+explains which Tetris Parts controls depend on a patched kernel and what the
+app does without one.
 
 Build:
 
@@ -33,6 +37,35 @@ source build/envsetup.sh
 lunch lineage_Tetris cp2a userdebug
 m bacon
 ```
+
+The build writes `out/target/product/Tetris/DescartesOS-17.0-<date>-Tetris-v<version>.zip`
+and a matching `Tetris.json` next to it.
+
+## Installing and updating
+
+Builds are on the [releases page](https://github.com/eccq/android_device_nothing_Tetris/releases).
+A build is about 2.9 GB, larger than GitHub's 2 GiB limit for a single asset,
+so each release holds the zip in two parts with checksums. Reassemble it on a
+computer:
+
+```sh
+cat DescartesOS-17.0-<date>-Tetris-v<version>.zip.part0 \
+    DescartesOS-17.0-<date>-Tetris-v<version>.zip.part1 \
+    > DescartesOS-17.0-<date>-Tetris-v<version>.zip
+sha256sum -c DescartesOS-17.0-<date>-Tetris-v<version>.zip.sha256sum
+```
+
+First installation works like LineageOS: boot a recovery that supports A/B
+sideload and run `adb sideload` with the reassembled zip. The build expects the
+stock firmware `Tetris_B4.1-260928-1140` from the
+[Nothing archive](https://github.com/spike0en/nothing_archive/releases/tag/Tetris_B4.1-260928-1140).
+
+To update a phone already running DescartesOS, copy the reassembled zip to the
+phone, open Settings > System > Updater, choose "Install local update" from the
+menu and pick the file. The Updater installs it with `update_engine` in the
+background and asks for a reboot when it is done. Apps and data are kept. The
+Updater's online check does not list Tetris builds, because the DescartesOS OTA
+catalog has no entry for this device yet.
 
 ## Credits
 
