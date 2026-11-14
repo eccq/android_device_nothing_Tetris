@@ -1,242 +1,181 @@
-# Tetris kernel build and CPU frequency ownership
+# Tetris kernel and the Parts kernel interfaces
 
-The patched kernel `6.1.177-android14-11-lufrz` has been compiled and imported
-into `device/nothing/Tetris-kernel`, including the CPU ownership interface from
-`patches/integration/kernel-cpu-lock.patch`. The built binary contains both
-`show_scaling_locked_limits` and `store_scaling_locked_limits`.
-`BoardConfigKernel.mk` continues to select `TARGET_FORCE_PREBUILT_KERNEL := true`
-and now consumes the rebuilt `Image` and matching module distribution.
+## What DescartesOS ships
 
-The import contains 495 files, including 481 `.ko` paths representing 467 distinct
-rebuilt modules. No old module was retained. Exact symbol CRCs, vermagic and
-partition dependency metadata passed host checks; boot and on-device behavior
-have not been tested. Parts detects the interface at runtime and still reports
-ordinary frequency controls as temporary on an older kernel without it.
+The ROM uses the prebuilt kernel from `device/nothing/Tetris-kernel`
+(lufrz/android_device_nothing_Tetris-kernel, branch `a17`, commit `cfd6501`).
+`BoardConfigKernel.mk` sets `TARGET_FORCE_PREBUILT_KERNEL := true`, so the
+`Image`, DTB, DTBO and module directories in that tree are packaged as they are.
+The image identifies itself as `6.1.177-android14-11-Kraken`.
 
-The final ROM build passed, and the OTA was checked for the kernel name, the
-timestamp and the CPU lock.
+That kernel does not provide the custom interfaces described below. Parts
+detects this at runtime: the CPU page shows "Updated kernel required" and labels
+frequency changes as temporary, Charger-powered mode shows as unavailable, and
+the Power HAL's `boost` request to `/proc/gpufreqv2/limit_table` is ignored by
+the stock `mtk_gpufreq_wrapper.ko`.
 
-## Interface and scope
+The sections below describe the `scaling_locked_limits` interface Parts expects
+and the build that produced a kernel with it upstream. The kernel patches and the
+wrapper scripts named here are not part of this repository, and they are not in
+lufrz's public kernel repositories either. Treat this as a record of how that
+kernel was made, not as something this tree can rebuild on its own.
 
-Each policy exposes `scaling_locked_limits`:
+## The `scaling_locked_limits` interface
+
+Each cpufreq policy exposes `scaling_locked_limits`:
 
 - Read: `0 min max` for unlocked current limits, `1 min max` for a locked range.
-- Write `1 min max` to atomically validate, apply and own both bounds, in kHz.
+- Write `1 min max` to validate, apply and own both bounds atomically, in kHz.
 - Write `0` to release ownership and apply the current ordinary QoS requests.
 
-The kernel serializes the entire transaction with the policy write semaphore,
-requires frequencies from the available OPP table, and attempts to roll back a
-failed application. Power HAL and other ordinary frequency-QoS clients may keep
-submitting requests, but cannot replace locked policy bounds. The private state
-survives app exit and policy CPU hotplug, until explicitly released, the driver
-is removed, or the phone reboots. Parts' Restore button also releases the locks.
+The kernel serializes the whole transaction with the policy write semaphore,
+requires frequencies from the available OPP table, and rolls back a failed
+application. The Power HAL and other frequency-QoS clients can keep submitting
+requests, but they cannot replace locked policy bounds. The lock survives app
+exit and policy CPU hotplug until it is released, the driver is removed, or the
+phone reboots. Parts' Restore button also releases it.
 
-This overrides CPU cooling caps implemented through frequency QoS, regardless of the
-separate global thermal profile setting. It does not overclock, modify the
-OPP table, disable emergency shutdown, or remove hardware/firmware constraints.
-A fixed software range does not guarantee an exact physical clock in every
-condition. The CPU idle mechanism continues to operate.
+This overrides CPU cooling caps implemented through frequency QoS, whatever the
+separate thermal profile setting says. It does not overclock, modify the OPP
+table, disable emergency shutdown, or remove hardware or firmware constraints. A
+fixed software range does not guarantee an exact physical clock in every
+condition, and CPU idle keeps working.
 
-The lock node has its own SELinux label, `vendor_tetris_cpu_lock`. Only Parts can
+The node has its own SELinux label, `vendor_tetris_cpu_lock`, and only Parts can
 write it; the Power HAL rules for ordinary frequency controls do not grant
 ownership changes. The patch uses a private allocation wrapper and does not
-change the exported `struct cpufreq_policy` layout or add exported symbols.
-That avoids a KMI layout change but does not certify the ABI of an arbitrary
-rebuilt kernel against the shipped modules.
+change the exported `struct cpufreq_policy` layout or add exported symbols, so it
+avoids a KMI layout change. That alone does not make an arbitrary rebuilt kernel
+compatible with the shipped modules.
 
-## Source versions
+## How the upstream kernel was built
 
-These are the bases of this integration; keep the local CPU lock and build
-metadata patches when creating a separate kernel build checkout.
+### Sources
 
 | Checkout | Base commit |
 | --- | --- |
 | `kernel/nothing/tetris` | `f810d726b10b9ae24a627c5bf317a534c2d9a1c6` |
 | `kernel/nothing/tetris-device-modules` | `a70397a9db3c062ff2087f24881076670b4d22eb` |
 | `kernel/nothing/tetris-modules` | `48e57b184f1b092c9be69f74d6d5bf6e7f80d0cc` |
-| `device/nothing/Tetris-kernel` (original prebuilt base) | `cfd650165cc3dd743e12da86b4dd78bb870bd991` |
-| Nothing build infrastructure (`out/kernel-tetris-build/workspace/build`) | `9331088f57045ca5f136f30f767a2f7db3438f78` |
+| `device/nothing/Tetris-kernel` (prebuilt base) | `cfd650165cc3dd743e12da86b4dd78bb870bd991` |
+| Nothing build infrastructure (`NothingOSS/android_kernel_build_nothing_mt6878`) | `9331088f57045ca5f136f30f767a2f7db3438f78` |
 
-The kernel's `build.config.constants` selects Android 14 / Linux 6.1 and
-`clang-r596125`; that compiler is present in this ROM checkout.
+The first two are lufrz/android_kernel_6.1_nothing_mt6878 and
+lufrz/android_kernel_device_modules_6.1_nothing_mt6878 on `lineage-24.0`. The
+kernel's `build.config.constants` selects Android 14 / Linux 6.1 and
+`clang-r596125`, which this ROM checkout already contains. `gki_defconfig` has
+`CONFIG_CPU_FREQ=y`, so the CPU lock patch needs no extra Kconfig option.
 
-## Isolated Nothing build workspace
+### Workspace layout
 
-The completed kernel build used the separate workspace
-`out/kernel-tetris-build/workspace`, with the official
-`NothingOSS/android_kernel_build_nothing_mt6878` build infrastructure at the
-revision listed above. Its sources are local shared clones of the three kernel
-repositories, with the integration patches applied. The Android ROM's `build`
-directory is not replaced.
+The build ran in a separate workspace with the official Nothing build
+infrastructure, using shared clones of the three kernel repositories with the
+integration patches applied. The ROM's own `build` directory was not touched.
 
-The complete kernel/module build exited successfully on 2026-09-28 at
-20:11:23 UTC. Its build, selection and compatibility evidence is recorded in
-`out/kernel-tetris-build/BUILD-REPORT.md`. The validated 495-file distribution
-has been imported into the ROM's prebuilt source tree. These are host build and
-compatibility results; they do not show how the kernel behaves on the device.
-
-`gki_defconfig` contains `CONFIG_CPU_FREQ=y`, so the CPU lock patch needs no
-additional Kconfig option. The Parts thermal profile bridge uses the stock vendor
-daemon and does not require a MediaTek driver-module source change.
-
-| Kernel workspace path | Source from this ROM checkout |
+| Kernel workspace path | Source |
 | --- | --- |
-| `kernel-6.1` | `kernel/nothing/tetris` (with local patches) |
+| `kernel-6.1` | `kernel/nothing/tetris` with the local patches |
 | `kernel_device_modules-6.1` | `kernel/nothing/tetris-device-modules` |
 | `vendor/mediatek/kernel_modules` | `kernel/nothing/tetris-modules` |
 
-`out/kernel-tetris-build/prepare-workspace.sh` prepares these checkouts.
-`configure-legacy.sh` generates the MediaTek build configuration from
-`mgk_64_k61_defconfig` with `Tetris.config` and `bliss.config`, and connects the
-existing ROM compiler/build tools without modifying them. The build uses
-`clang-r596125`, thin LTO and the official Android NDK r23c sysroot
-(`23.2.8568313`). Generated configuration lives in `workspace/generated/`.
+The MediaTek configuration came from `mgk_64_k61_defconfig` with
+`Tetris.config` and `bliss.config`, built with `clang-r596125`, thin LTO and the
+Android NDK r23c sysroot (`23.2.8568313`). The entry point was the legacy
+Nothing/MediaTek path, `build/build.sh` with a generated `BUILD_CONFIG`, which
+in turn runs `kernel_device_modules-6.1/scripts/legacy_build.sh`. The
+device-modules repository also has a Kleaf `build.sh`; that was not used. The
+build was limited to 12 CPUs.
 
-The final recipe in `configure-legacy.sh` also resolves the generic external
-module list without changing driver configuration or weakening modpost checks:
+The generic external module list needed three changes, none of which alters
+driver configuration or weakens modpost checks:
 
-- Exclude `fpsgo_cus`: Tetris disables `MTK_FPSGO_V3` and ships neither `fpsgo.ko`
-  nor `game.ko`.
-- Build `conninfra_mt6653` immediately after `conninfra`, before its GPS and
-  Bluetooth consumers; retain `connfem` before the Bluetooth consumers.
+- Exclude `fpsgo_cus`: Tetris disables `MTK_FPSGO_V3` and ships neither
+  `fpsgo.ko` nor `game.ko`.
+- Build `conninfra_mt6653` right after `conninfra`, before its GPS and Bluetooth
+  consumers, and keep `connfem` before the Bluetooth consumers.
 - Replace the generic `wlan/adaptor_mt6653` group with
   `wlan/adaptor_mt6653/build/connac3x_6989_6653`, before both MT6653 Wi-Fi core
-  variants. The dedicated subgroup produces the required symbols without
-  invoking the malformed parent wrapper or duplicating the generic adapters.
+  variants. The subgroup produces the needed symbols without the malformed parent
+  wrapper and without duplicating the generic adapters.
 
-The actual entry point used here is the legacy Nothing/MediaTek path:
+### Branding and timestamp
 
-```sh
-bash out/kernel-tetris-build/run-legacy.sh
-```
+Two small patches set the kernel name and build time:
 
-This enters the isolated workspace and invokes `build/build.sh` with
-`BUILD_CONFIG=generated/build.config`; the MediaTek configuration uses
-`kernel_device_modules-6.1/scripts/legacy_build.sh`. The wrapper limits the build
-to 12 CPUs and `-j12`. It writes objects under `out/kernel-tetris-build/output`,
-the distribution under `out/kernel-tetris-build/dist`, and logs under
-`out/kernel-tetris-build/logs/`. `build.status`, `build-provenance.txt` and
-`source-revisions.txt` record the attempt and source revisions. A generated
-release string or an existing object is not evidence that the complete build
-succeeded.
+- `arch/arm64/configs/gki_defconfig` in the kernel: `CONFIG_LOCALVERSION="-lufrz"`.
+- `scripts/gen_build_config.py` in the device modules: the generated
+  configuration uses the current Unix epoch when `SOURCE_DATE_EPOCH` is unset or
+  empty and defaults `GKI_SOURCE_DATE_EPOCH` to the same value. An explicit
+  nonempty value, including `0`, is kept.
 
-The device-modules repository also contains a Kleaf-oriented `build.sh`, but
-that is not the entry point above. The legacy configuration leaves Android to
-package boot/vendor_boot/DLKM after a validated import. Before importing, check
-the rebuilt kernel against all modules that will ship, including any retained
-prebuilt modules; an unchanged public struct alone does not prove compatibility.
+The workspace writes `-android14-11` to `localversion` and an empty
+`.scmversion`, which keeps the Android KMI generation and avoids an appended Git
+suffix. The resulting release string was `6.1.177-android14-11-lufrz`. The GKI
+infrastructure overrides the build identity variables, so the image reports
+`build-user@build-host`.
 
-## Kernel branding and timestamp
+### Result
 
-The additional reproducible patches under `patches/integration/` are:
+The build finished on 2026-09-28 at 20:11:23 UTC. The imported `Image.lz4` has
+SHA-256 `8eb0c4edd2be23768f2d8b4264d197baa7015eb7735d3013615ca682bbcd36d5` and
+embeds `Mon Sep 28 19:40:05 UTC 2026` (epoch `1790624405`). The distribution had
+495 files: 481 `.ko` paths for 467 distinct modules plus 14 identical copies,
+all rebuilt, with regenerated dependency metadata in the normal and recovery
+loading order. The rebuilt MT6878 DTB was byte-identical to the previous one, so
+the DTB and DTBO stayed unchanged. Host checks found no missing symbols, CRC
+mismatches, provider conflicts or vermagic mismatches across the 467 modules.
+None of this was tested on a phone.
 
-- `kernel-build-metadata.patch`: only `arch/arm64/configs/gki_defconfig`, setting
-  `CONFIG_LOCALVERSION="-lufrz"` in `kernel/nothing/tetris`.
-- `device-modules-build-timestamp.patch`: only `scripts/gen_build_config.py` in
-  `kernel/nothing/tetris-device-modules`. Its generated configuration uses the
-  current Unix epoch when `SOURCE_DATE_EPOCH` is unset or empty, and defaults
-  `GKI_SOURCE_DATE_EPOCH` to that value. Explicit nonempty values, including
-  `0`, are preserved independently.
+## Importing a rebuilt kernel into this tree
 
-`run-legacy.sh` writes `-android14-11` to the isolated kernel's `localversion`
-and creates an empty `.scmversion`, preserving the Android KMI generation while
-avoiding an appended Git suffix. The generated release was verified as
-`6.1.177-android14-11-lufrz`. These workspace files do not change the original
-kernel checkout.
-
-Each wrapper invocation sets both build epochs to its current time, uses UTC,
-and records that time in `build-provenance.txt`. For an intentionally repeatable
-timestamp, pass `TETRIS_BUILD_EPOCH` explicitly:
-
-```sh
-TETRIS_BUILD_EPOCH=1790624405 bash out/kernel-tetris-build/run-legacy.sh
-```
-
-This override takes precedence over externally supplied `SOURCE_DATE_EPOCH`
-when using the wrapper. Direct users of the generated build configuration retain
-the explicit epoch behavior described above. The imported binary embeds
-`Mon Sep 28 19:40:05 UTC 2026` (epoch `1790624405`). Its actual build identity is
-`build-user@build-host`: the official GKI infrastructure overrides the identity
-variables exported by the wrapper. The name and timestamp behavior remain saved
-in the source patches above, rather than depending on binary editing.
-
-## Imported artifacts and future rebuilds
-
-The previous `device/nothing/Tetris-kernel` artifacts are preserved in
-`out/tetris-build/previous-kernel`. The completed import selected only the
-original Tetris module layout from the generic distribution: 481 `.ko` paths,
-467 distinct modules and 14 identical copies. All were rebuilt; zero old `.ko`
-files were retained. Module dependency metadata was regenerated while preserving
-normal and recovery loading order.
-
-The imported legacy-LZ4 `Image` has SHA-256
-`8eb0c4edd2be23768f2d8b4264d197baa7015eb7735d3013615ca682bbcd36d5`.
-The rebuilt MT6878 DTB was byte-identical to the previous one, so the existing
-DTB and DTBO were kept unchanged. The 495 imported files are recorded in
-`out/kernel-tetris-build/import-ready-sha256.json`.
-
-For future rebuilds, preserve the current artifacts before replacement. The ROM
-uses these exact destinations:
+Keep the current artifacts before replacing them. The ROM uses these
+destinations:
 
 | Rebuilt artifact | Destination |
 | --- | --- |
-| ARM64 `Image.lz4`, compressed in legacy LZ4 format | `device/nothing/Tetris-kernel/Image` |
+| ARM64 `Image.lz4`, legacy LZ4 format | `device/nothing/Tetris-kernel/Image` |
 | system kernel modules and module metadata | `device/nothing/Tetris-kernel/system_dlkm/` |
 | device/vendor modules and module metadata | `device/nothing/Tetris-kernel/vendor_dlkm/` |
 | early boot modules and module metadata | `device/nothing/Tetris-kernel/vendor_boot/` |
 | matching DTB image(s), if changed | `device/nothing/Tetris-kernel/dtbs/` |
 | matching DTBO image, if changed | `device/nothing/Tetris-kernel/dtbo.img` |
 
-Keep the module partition assignment and required `modules.load`,
-`modules.dep`, `modules.alias`, `modules.softdep`, signing and release/version
-metadata consistent with the rebuilt kernel. Replacing only `.ko` files while
-leaving stale dependency metadata is not a complete import. The CPU lock patch
-itself does not modify the DTB/DTBO interface.
+Replace modules together with their `modules.load`, `modules.dep`,
+`modules.alias`, `modules.softdep`, signing and version metadata; swapping only
+the `.ko` files leaves stale dependency data behind. Check the rebuilt kernel
+against every module that will ship, including any prebuilt module you keep.
 
-The existing prebuilt named `Image` is compressed with legacy LZ4 and is not a
-raw ARM64 image (`file` identifies LZ4 v0.1-v0.9). The kernel's compression rule uses
-`lz4 -l`; import the matching `Image.lz4` under the ROM's expected filename
-`Image`, preserving that format. Do not copy the uncompressed `Image` merely
-because its name matches the destination.
-
-After the build and compatibility checks pass, set `matched_kernel_image` to
-the actual `Image.lz4` from the matching distribution:
+The prebuilt `Image` is LZ4 compressed in the legacy format (`file` reports
+LZ4 v0.1-v0.9), produced by `lz4 -l`. Import the matching `Image.lz4` under the
+name `Image` and keep that format; the uncompressed `Image` has the same name but
+is not what the boot image expects.
 
 ```sh
 matched_kernel_image=/absolute/path/to/matched/distribution/Image.lz4
 install -m 0644 "$matched_kernel_image" device/nothing/Tetris-kernel/Image
 ```
 
-Then run the normal Tetris ROM build to package the imported Image and matched
-modules into its boot/vendor_boot/DLKM images. There is no need to disable
-`TARGET_FORCE_PREBUILT_KERNEL` when using this import path. Merely pointing
-`TARGET_KERNEL_SOURCE` at another folder while leaving the force-prebuilt flag
-set would still package the old Image.
+Then run the normal ROM build; it packages the imported image and modules into
+boot, vendor_boot and the DLKM partitions. `TARGET_FORCE_PREBUILT_KERNEL` stays
+set. Pointing `TARGET_KERNEL_SOURCE` elsewhere while that flag is set would still
+package the old image.
 
 ## Verification
 
-`out/kernel-tetris-build/selected-final-abi.json` validates all 467 selected
-modules against the rebuilt kernel and selected module exports, with zero
-missing symbols, CRC mismatches, provider conflicts or vermagic mismatches.
-`module-metadata/report.json` in the same build directory reports zero metadata
-errors. Debug stripping preserved module names, symbol exports, imported CRCs
-and dependencies. These checks do not replace a boot or hardware test.
-
-Additional host checks available in the ROM checkout:
+Host checks in this tree:
 
 ```sh
 device/nothing/Tetris/app/parts/tests/run-cpu-tests.sh
 python3 device/nothing/Tetris/app/parts/tests/check-kernel-cpu-lock.py
 ```
 
-The latter compiles the actual added kernel parser/store/policy functions in a
-host harness. It checks competing QoS, unlock behavior, malformed input, driver
-failure and rollback. It does not build the kernel, certify the KMI or replace a
-phone test.
+The second compiles the kernel parser, store and policy functions added by the
+patch in a host harness and exercises competing QoS, unlock, malformed input,
+driver failure and rollback. It does not build the kernel or certify the KMI.
 
-On a phone running the rebuilt kernel and updated ROM, both
+On a phone running a kernel with the interface, both
 `/sys/devices/system/cpu/cpufreq/policy0/scaling_locked_limits` and
-`policy4/scaling_locked_limits` must exist. Apply a range in Parts; readback must
-show `1 min max`, and `scaling_min_freq`/`scaling_max_freq` must remain that pair
-through normal Android boosts and mode changes. Unlock and verify that current
-Android requests take effect again. Reboot and verify that both locks are off.
+`policy4/scaling_locked_limits` must exist. Apply a range in Parts: readback must
+show `1 min max`, and `scaling_min_freq` and `scaling_max_freq` must stay at that
+pair through normal Android boosts and mode changes. Unlock and confirm that
+Android's requests take effect again. Reboot and confirm both locks are off.
