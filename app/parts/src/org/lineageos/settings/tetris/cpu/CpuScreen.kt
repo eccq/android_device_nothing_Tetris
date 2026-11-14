@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.lineageos.settings.tetris.R
 import org.lineageos.settings.tetris.thermal.ThermalControls
+import org.lineageos.settings.tetris.ui.PartsConfirmDialog
 import org.lineageos.settings.tetris.ui.PartsInfoCard
 import org.lineageos.settings.tetris.ui.PartsMetricCard
 import org.lineageos.settings.tetris.ui.PartsPreference
@@ -231,21 +232,15 @@ fun CpuScreen(onBack: () -> Unit) {
         )
     }
     if (restoreDialog) {
-        AlertDialog(
-            onDismissRequest = { restoreDialog = false },
-            title = { Text(stringResource(R.string.cpu_restore_title)) },
-            text = { Text(stringResource(R.string.cpu_restore_summary)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    restoreDialog = false
-                    runOperation { it.restoreInitialValues() }
-                }) { Text(stringResource(R.string.cpu_restore_action)) }
+        PartsConfirmDialog(
+            title = stringResource(R.string.cpu_restore_title),
+            text = stringResource(R.string.cpu_restore_summary),
+            confirmLabel = stringResource(R.string.cpu_restore_action),
+            onConfirm = {
+                restoreDialog = false
+                runOperation { it.restoreInitialValues() }
             },
-            dismissButton = {
-                TextButton(onClick = { restoreDialog = false }) {
-                    Text(stringResource(android.R.string.cancel))
-                }
-            },
+            onDismiss = { restoreDialog = false },
         )
     }
 }
