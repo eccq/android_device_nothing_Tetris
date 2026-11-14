@@ -4,6 +4,11 @@ All notable changes to the DescartesOS device tree for the CMF Phone 1 (Tetris).
 
 ## Unreleased
 
+- Removed the SELinux labels and rules for `scaling_locked_limits` and the
+  `charge_bypass` nodes, which the shipped kernel does not have.
+- Tetris Parts: one shared back button for the page scaffold and the terms
+  screen.
+- README: how to compare this tree with lufrz's upstream tree.
 - Split the ImsService blob patches so each smali stub is created by one patch;
   `extract-files.py` failed on the second patch before.
 - Removed the `GpuUiMinFreq` power hint. The shipped gpufreq module does not

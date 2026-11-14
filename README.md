@@ -67,6 +67,24 @@ background and asks for a reboot when it is done. Apps and data are kept. The
 Updater's online check does not list Tetris builds, because the DescartesOS OTA
 catalog has no entry for this device yet.
 
+## Keeping up with lufrz
+
+This tree is a snapshot of lufrz's `lineage-24.0` device tree with DescartesOS
+product configuration on top, without the upstream commit history. To see what
+changed upstream since the snapshot:
+
+```sh
+git remote add lufrz https://github.com/lufrz/android_device_nothing_Tetris
+git fetch lufrz lineage-24.0
+git log --oneline b4b53df..lufrz/lineage-24.0
+git diff b4b53df lufrz/lineage-24.0 -- . ':!README.md'
+```
+
+`b4b53df` is the upstream commit this tree matches as of 2026-11-14. Apply the
+upstream diff with `git apply` or cherry-pick the commits, then update that
+hash here. The vendor tree follows the same procedure against
+lufrz/proprietary_vendor_nothing_Tetris, matched at `6a6e43f`.
+
 ## Credits
 
 | Who | What |
