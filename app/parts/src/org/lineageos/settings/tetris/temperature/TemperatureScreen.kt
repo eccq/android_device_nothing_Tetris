@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,9 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -56,6 +52,7 @@ import org.lineageos.settings.tetris.ui.PartsPageGutter
 import org.lineageos.settings.tetris.ui.PartsPreference
 import org.lineageos.settings.tetris.ui.PartsPreferenceGroup
 import org.lineageos.settings.tetris.ui.PartsScaffold
+import org.lineageos.settings.tetris.ui.rememberPartsResumed
 
 private data class HistorySample(val time: Long, val cpu: Float?, val battery: Float?)
 
@@ -63,17 +60,9 @@ private data class HistorySample(val time: Long, val cpu: Float?, val battery: F
 fun TemperatureScreen(onBack: () -> Unit) {
     val context = LocalContext.current.applicationContext
     val repository = remember(context) { TemperatureRepository(context) }
-    val owner = LocalLifecycleOwner.current
-    var resumed by remember(owner) { mutableStateOf(owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) }
+    val resumed = rememberPartsResumed()
     var snapshot by remember { mutableStateOf(TemperatureSnapshot()) }
     var history by remember { mutableStateOf(emptyList<HistorySample>()) }
-    DisposableEffect(owner) {
-        val observer = LifecycleEventObserver { _, _ ->
-            resumed = owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
-        }
-        owner.lifecycle.addObserver(observer)
-        onDispose { owner.lifecycle.removeObserver(observer) }
-    }
     LaunchedEffect(repository, resumed) {
         if (!resumed) return@LaunchedEffect
         while (isActive) {

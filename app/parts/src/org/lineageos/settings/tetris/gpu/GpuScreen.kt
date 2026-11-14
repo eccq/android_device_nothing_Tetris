@@ -46,6 +46,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.lineageos.settings.tetris.R
+import org.lineageos.settings.tetris.ui.PartsConfirmDialog
 import org.lineageos.settings.tetris.ui.PartsInfoCard
 import org.lineageos.settings.tetris.ui.PartsMetricCard
 import org.lineageos.settings.tetris.ui.PartsPageGutter
@@ -253,21 +254,15 @@ fun GpuScreen(onBack: () -> Unit) {
         )
     }
     if (restoreDialog) {
-        AlertDialog(
-            onDismissRequest = { restoreDialog = false },
-            title = { Text(stringResource(R.string.gpu_restore_automatic)) },
-            text = { Text(stringResource(R.string.gpu_restore_summary)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    restoreDialog = false
-                    runOperation { GpuControlSession.manual { it.restoreAutomatic() } }
-                }) { Text(stringResource(R.string.gpu_restore_action)) }
+        PartsConfirmDialog(
+            title = stringResource(R.string.gpu_restore_automatic),
+            text = stringResource(R.string.gpu_restore_summary),
+            confirmLabel = stringResource(R.string.gpu_restore_action),
+            onConfirm = {
+                restoreDialog = false
+                runOperation { GpuControlSession.manual { it.restoreAutomatic() } }
             },
-            dismissButton = {
-                TextButton(onClick = { restoreDialog = false }) {
-                    Text(stringResource(android.R.string.cancel))
-                }
-            },
+            onDismiss = { restoreDialog = false },
         )
     }
 }

@@ -38,7 +38,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,9 +53,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -72,25 +68,18 @@ import org.lineageos.settings.tetris.ui.PartsPageGutter
 import org.lineageos.settings.tetris.ui.PartsPreferenceGroup
 import org.lineageos.settings.tetris.ui.PartsScaffold
 import org.lineageos.settings.tetris.ui.PartsSwitchPreference
+import org.lineageos.settings.tetris.ui.rememberPartsResumed
 
 @Composable
 fun BatteryScreen(onBack: () -> Unit) {
     val context = LocalContext.current.applicationContext
-    val owner = LocalLifecycleOwner.current
-    var resumed by remember(owner) { mutableStateOf(owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) }
+    val resumed = rememberPartsResumed()
     var snapshot by remember { mutableStateOf(BatterySnapshot()) }
     var bypass by remember { mutableStateOf(ChargeBypassState()) }
     var bypassBusy by remember { mutableStateOf(false) }
     var bypassFailed by remember { mutableStateOf(false) }
     var bypassRevision by remember { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
-    DisposableEffect(owner) {
-        val observer = LifecycleEventObserver { _, _ ->
-            resumed = owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
-        }
-        owner.lifecycle.addObserver(observer)
-        onDispose { owner.lifecycle.removeObserver(observer) }
-    }
     LaunchedEffect(context, resumed) {
         if (!resumed) return@LaunchedEffect
         while (isActive) {

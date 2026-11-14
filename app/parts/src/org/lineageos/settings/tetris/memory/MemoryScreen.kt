@@ -33,7 +33,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,9 +49,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -69,27 +65,20 @@ import org.lineageos.settings.tetris.ui.PartsPageGutter
 import org.lineageos.settings.tetris.ui.PartsPreference
 import org.lineageos.settings.tetris.ui.PartsPreferenceGroup
 import org.lineageos.settings.tetris.ui.PartsScaffold
+import org.lineageos.settings.tetris.ui.rememberPartsResumed
 
 @Composable
 fun MemoryScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val repository = remember(context.applicationContext) { MemoryRepository(context.applicationContext) }
-    val owner = LocalLifecycleOwner.current
-    var resumed by remember(owner) { mutableStateOf(owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) }
+    val resumed = rememberPartsResumed()
     var snapshot by remember { mutableStateOf<MemorySnapshot?>(null) }
     var confirmation by remember { mutableStateOf<List<BackgroundApp>?>(null) }
     var pending by remember { mutableStateOf<List<BackgroundApp>?>(null) }
     var working by remember { mutableStateOf(false) }
     var actionResult by remember { mutableStateOf<String?>(null) }
 
-    DisposableEffect(owner) {
-        val observer = LifecycleEventObserver { _, _ ->
-            resumed = owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
-            if (!resumed) confirmation = null
-        }
-        owner.lifecycle.addObserver(observer)
-        onDispose { owner.lifecycle.removeObserver(observer) }
-    }
+    LaunchedEffect(resumed) { if (!resumed) confirmation = null }
     LaunchedEffect(repository, resumed) {
         if (!resumed) return@LaunchedEffect
         while (isActive) {
