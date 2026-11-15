@@ -1,4 +1,4 @@
-name: CodeQL
+name: code scanning
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   analyze:
-    name: Analyze (${{ matrix.language }})
+    name: scan ${{ matrix.language }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

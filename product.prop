@@ -47,8 +47,8 @@ ro.opa.eligible_device=true
 ro.zram_backing_device_min_free_mb=1536
 
 # AxBlur defaults for the Mali-G615: lighter radii than the 100% upstream default.
-ro.descartes.blur.system_pct=60
-ro.descartes.blur.launcher_pct=50
+ro.descartes.blur.system_pct=40
+ro.descartes.blur.launcher_pct=35
 
 # The backdrop-blurred Settings app bar loses its title and buttons on this GPU.
 ro.descartes.appbar_blur=false

@@ -1,5 +1,5 @@
 diff --git a/src/com/android/launcher3/LauncherPrefs.kt b/src/com/android/launcher3/LauncherPrefs.kt
-index 17cdc0f..175da4a 100644
+index 17cdc0f..4a41684 100644
 --- a/src/com/android/launcher3/LauncherPrefs.kt
 +++ b/src/com/android/launcher3/LauncherPrefs.kt
 @@ -302,7 +302,8 @@ constructor(@ApplicationContext private val encryptedContext: Context) {
@@ -8,7 +8,7 @@ index 17cdc0f..175da4a 100644
          @JvmField val AUTO_HIDE_DOTS = backedUpItem("pref_auto_hide_dots", true)
 -        @JvmField val BLUR_DEPTH = backedUpItem("pref_blur_depth", 30)
 +        // 30 px of window blur during drawer and recents animations is too much for mid-range GPUs.
-+        @JvmField val BLUR_DEPTH = backedUpItem("pref_blur_depth", 18)
++        @JvmField val BLUR_DEPTH = backedUpItem("pref_blur_depth", 12)
          @JvmField val DARK_STATUS_BAR = backedUpItem("pref_dark_status_bar", false)
          @JvmField val DOCK_MUSIC_SEARCH = backedUpItem("pref_dock_music_search", false)
          @JvmField val DOCK_SEARCH = backedUpItem("pref_dock_search", true)
