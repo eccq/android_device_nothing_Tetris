@@ -51,3 +51,24 @@ index 9f06d75c..edeb95f8 100644
      private fun getSecureFloat(context: Context, key: String, def: Float): Float = try {
          Settings.Secure.getFloatForUser(context.contentResolver, key, def, UserHandle.myUserId())
      } catch (_: Exception) {
+diff --git a/sdk/ax_blur/src/com/android/axion/blur/AxBlurSupport.kt b/sdk/ax_blur/src/com/android/axion/blur/AxBlurSupport.kt
+index 97b9ec9e..b851d828 100644
+--- a/sdk/ax_blur/src/com/android/axion/blur/AxBlurSupport.kt
++++ b/sdk/ax_blur/src/com/android/axion/blur/AxBlurSupport.kt
+@@ -16,11 +16,16 @@
+ 
+ package com.android.axion.blur
+ 
++import android.os.SystemProperties
++
+ import android.app.ActivityManager
+ import android.view.CrossWindowBlurListeners
+ 
+ internal object AxBlurSupport {
+     fun supportsCrossWindowBlur(): Boolean {
++        // Compositor blur regions ignore corner radii on some GPUs; such devices draw the
++        // in-app source blur instead.
++        if (!SystemProperties.getBoolean("ro.descartes.ax_window_blur", true)) return false
+         if (
+             !CrossWindowBlurListeners.CROSS_WINDOW_BLUR_SUPPORTED ||
+             !ActivityManager.isHighEndGfx() ||
