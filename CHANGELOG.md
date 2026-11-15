@@ -4,6 +4,10 @@ All notable changes to the DescartesOS device tree for the CMF Phone 1 (Tetris).
 
 ## Unreleased
 
+- lock styles: fixed "keep home" breaking a live home screen, the on-lock shuffle
+  advancing on every app launch, a depth cut-out taken from the wrong picture, a
+  stale picture when adopting the current wallpaper, and bitmap leaks in the
+  wallpaper and effect code (patch 0005).
 - Blur on this GPU: the Settings app bar keeps its plain scrim instead of a
   backdrop blur (it lost its title and buttons), the ColorOS quick settings use
   flat tiles instead of compositor glass regions (the icons vanished and the
