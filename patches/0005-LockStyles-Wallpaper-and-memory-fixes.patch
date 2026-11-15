@@ -1,0 +1,148 @@
+diff --git a/src/org/lunaris/lockstyles/AutoDepthExtractor.kt b/src/org/lunaris/lockstyles/AutoDepthExtractor.kt
+index 77b1124..f66dff4 100644
+--- a/src/org/lunaris/lockstyles/AutoDepthExtractor.kt
++++ b/src/org/lunaris/lockstyles/AutoDepthExtractor.kt
+@@ -43,6 +43,8 @@ object AutoDepthExtractor {
+ 
+     fun extractCurrent(context: Context): String? {
+         val manager = WallpaperManager.getInstance(context)
++        // A live lock screen has no file, and the home photo is a different picture.
++        if (manager.getWallpaperInfo(WallpaperManager.FLAG_LOCK) != null) return null
+         val descriptor = manager.getWallpaperFile(WallpaperManager.FLAG_LOCK)
+             ?: manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM) ?: return null
+         val photo = descriptor.use { BitmapFactory.decodeFileDescriptor(it.fileDescriptor) }
+diff --git a/src/org/lunaris/lockstyles/GalleryApplier.kt b/src/org/lunaris/lockstyles/GalleryApplier.kt
+index 53d5bea..ec24c78 100644
+--- a/src/org/lunaris/lockstyles/GalleryApplier.kt
++++ b/src/org/lunaris/lockstyles/GalleryApplier.kt
+@@ -30,6 +30,14 @@ object GalleryApplier {
+     private const val DEPTH_AUTO_SUBJECT = "depth_wallpaper_auto_subject"
+     const val DEPTH_SUBJECT = "depth_wallpaper_subject_image_uri"
+ 
++    private fun setRecycled(wm: WallpaperManager, bitmap: Bitmap, flags: Int) {
++        try {
++            wm.setBitmap(bitmap, null, true, flags)
++        } finally {
++            bitmap.recycle()
++        }
++    }
++
+     fun screenSize(context: Context): Pair<Int, Int> {
+         val bounds = context.getSystemService(WindowManager::class.java)!!
+             .maximumWindowMetrics.bounds
+@@ -59,6 +67,11 @@ object GalleryApplier {
+                 wallpaper = wallpaper.copy(subjectPath = subject)
+                 store.save(lockScreen.copy(wallpaper = wallpaper))
+             }
++            // An engine-drawn home falls back to the lock spec once its own is gone, so KEEP
++            // has to pin the current home before the lock spec changes.
++            if (lockScreen.home == HomeStyle.KEEP && store.liveWallpaper(false) == null) {
++                store.setLiveWallpaper(lock = false, wallpaper = store.liveWallpaper(true))
++            }
+             if (wallpaper.effect != 0) {
+                 store.setLiveWallpaper(lock = true, wallpaper = wallpaper)
+                 val flags = if (lockScreen.home == HomeStyle.KEEP) {
+@@ -75,7 +88,7 @@ object GalleryApplier {
+                     wm.setWallpaperComponentWithFlags(live, WallpaperManager.FLAG_LOCK)
+                 } else {
+                     store.setLiveWallpaper(lock = true, wallpaper = null)
+-                    wm.setBitmap(GalleryRenderer.toBitmap(context, wallpaper, w, h), null, true,
++                    setRecycled(wm, GalleryRenderer.toBitmap(context, wallpaper, w, h),
+                         WallpaperManager.FLAG_LOCK)
+                 }
+             } else if (lockScreen.home == HomeStyle.PAIR) {
+@@ -86,20 +99,20 @@ object GalleryApplier {
+                         WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
+                 } else {
+                     store.setLiveWallpaper(lock = true, wallpaper = null)
+-                    wm.setBitmap(GalleryRenderer.toBitmap(context, wallpaper, w, h), null, true,
++                    setRecycled(wm, GalleryRenderer.toBitmap(context, wallpaper, w, h),
+                         WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
+                 }
+             } else {
+                 // Home first, so the old shared wallpaper doesn't linger on the lock screen.
+                 store.setLiveWallpaper(lock = false, wallpaper = null)
+-                wm.setBitmap(homeBitmap(context, lockScreen, w, h), null, true,
++                setRecycled(wm, homeBitmap(context, lockScreen, w, h),
+                     WallpaperManager.FLAG_SYSTEM)
+                 if (wallpaper.kind.live) {
+                     store.setLiveWallpaper(lock = true, wallpaper = wallpaper)
+                     wm.setWallpaperComponentWithFlags(live, WallpaperManager.FLAG_LOCK)
+                 } else {
+                     store.setLiveWallpaper(lock = true, wallpaper = null)
+-                    wm.setBitmap(GalleryRenderer.toBitmap(context, wallpaper, w, h), null, true,
++                    setRecycled(wm, GalleryRenderer.toBitmap(context, wallpaper, w, h),
+                         WallpaperManager.FLAG_LOCK)
+                 }
+             }
+@@ -173,7 +186,9 @@ object GalleryApplier {
+         val root = RenderNode("GalleryBlurRoot").apply { setPosition(0, 0, w, h) }
+         root.beginRecording().drawRenderNode(content)
+         root.endRecording()
+-        return render(root, w, h) ?: source
++        val blurred = render(root, w, h) ?: return source
++        source.recycle()
++        return blurred
+     }
+ 
+     /**
+diff --git a/src/org/lunaris/lockstyles/GalleryEffects.kt b/src/org/lunaris/lockstyles/GalleryEffects.kt
+index 192ff48..503c648 100644
+--- a/src/org/lunaris/lockstyles/GalleryEffects.kt
++++ b/src/org/lunaris/lockstyles/GalleryEffects.kt
+@@ -316,6 +316,11 @@ class GalleryEffectRenderer(private val context: Context) {
+         upload(textures[3], empty)
+         hasTextures = true
+         makeBlobs(blur)
++        // The GL textures hold copies; `source` belongs to the photo cache and stays.
++        sharp.recycle()
++        if (blur !== small) blur.recycle()
++        mask?.recycle()
++        empty.recycle()
+     }
+ 
+     /** The cut-out's alpha as white on black, in the red channel the shaders read. */
+diff --git a/src/org/lunaris/lockstyles/GalleryWallpaperService.kt b/src/org/lunaris/lockstyles/GalleryWallpaperService.kt
+index e4165c9..55cd81d 100644
+--- a/src/org/lunaris/lockstyles/GalleryWallpaperService.kt
++++ b/src/org/lunaris/lockstyles/GalleryWallpaperService.kt
+@@ -1,5 +1,7 @@
+ package org.lunaris.lockstyles
+ 
++import android.os.PowerManager
++import android.app.KeyguardManager
+ import android.app.WallpaperManager
+ import android.database.ContentObserver
+ import android.net.Uri
+@@ -68,8 +70,13 @@ class GalleryWallpaperService : WallpaperService() {
+                 handler.post(drawFrame)
+             } else {
+                 handler.removeCallbacks(drawFrame)
+-                // "On lock": the next photo is waiting the next time the screen comes on.
+-                maybeAdvanceShuffle(onLock = true)
++                // "On lock": the next photo is waiting the next time the screen comes on. With a
++                // paired home, opening an app hides this engine too, which is not a lock.
++                val power = getSystemService(PowerManager::class.java)
++                val keyguard = getSystemService(KeyguardManager::class.java)
++                if (power?.isInteractive == false || keyguard?.isKeyguardLocked == true) {
++                    maybeAdvanceShuffle(onLock = true)
++                }
+             }
+         }
+ 
+diff --git a/src/org/lunaris/lockstyles/ui/LockScreenGalleryActivity.kt b/src/org/lunaris/lockstyles/ui/LockScreenGalleryActivity.kt
+index a7d8ed4..5eb74d1 100644
+--- a/src/org/lunaris/lockstyles/ui/LockScreenGalleryActivity.kt
++++ b/src/org/lunaris/lockstyles/ui/LockScreenGalleryActivity.kt
+@@ -323,8 +323,10 @@ class LockScreenGalleryActivity : ComponentActivity() {
+         val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+         drawable.setBounds(0, 0, w, h)
+         drawable.draw(Canvas(bitmap))
+-        val file = File(File(filesDir, "gallery").apply { mkdirs() }, "current.jpg")
++        val file = File(File(filesDir, "gallery").apply { mkdirs() },
++            "current-${java.util.UUID.randomUUID()}.jpg")
+         FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 92, it) }
++        bitmap.recycle()
+         val lockScreen = LockScreen(store.newId(),
+             GalleryWallpaper(Kind.PHOTO, photos = listOf(file.absolutePath)))
+         store.save(lockScreen)
