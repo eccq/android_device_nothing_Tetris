@@ -4,6 +4,12 @@ All notable changes to the DescartesOS device tree for the CMF Phone 1 (Tetris).
 
 ## Unreleased
 
+- Settings: the floating search bar on the home page takes taps again, and the
+  language pickers show what you type in the search field. Shipped as patches
+  under `patches/` because Settings lives in another repository.
+- Lock Styles: the custom clock side margin now reaches the lock screen, with
+  the top margin, through a SystemUI patch under `patches/`.
+- Face unlock enabled (`TARGET_FACE_UNLOCK_SUPPORTED`).
 - Tetris Parts: one shared back button for the page scaffold and the terms
   screen.
 - README: how to compare this tree with lufrz's upstream tree.

@@ -1,0 +1,88 @@
+diff --git a/src/com/android/settings/homepage/SettingsHomepageActivity.java b/src/com/android/settings/homepage/SettingsHomepageActivity.java
+index 0c164d8..b73d896 100644
+--- a/src/com/android/settings/homepage/SettingsHomepageActivity.java
++++ b/src/com/android/settings/homepage/SettingsHomepageActivity.java
+@@ -452,20 +452,23 @@ public class SettingsHomepageActivity extends FragmentActivity implements
+     }
+ 
+     private void initSearchBarView() {
+-        View toolbar = findViewById(R.id.search_action_bar);
+-        if (toolbar != null) {
++        // Both search bars share the same ids, and the hidden two-pane one comes first in
++        // the tree, so look each one up through its own container.
++        View floatingContainer = findViewById(R.id.floating_search_bar_container);
++        View floatingToolbar = floatingContainer != null
++                ? floatingContainer.findViewById(R.id.search_action_bar) : null;
++        if (floatingToolbar != null) {
+             FeatureFactory.getFeatureFactory().getSearchFeatureProvider()
+-                    .initSearchToolbar(this /* activity */, toolbar,
++                    .initSearchToolbar(this /* activity */, floatingToolbar,
+                             SettingsEnums.SETTINGS_HOMEPAGE);
+         }
+         View twoPaneContainer = findViewById(R.id.two_pane_search_bar);
+-        if (twoPaneContainer != null) {
+-            View twoPaneToolbar = twoPaneContainer.findViewById(R.id.search_action_bar);
+-            if (twoPaneToolbar != null && twoPaneToolbar != toolbar) {
+-                FeatureFactory.getFeatureFactory().getSearchFeatureProvider()
+-                        .initSearchToolbar(this /* activity */, twoPaneToolbar,
+-                                SettingsEnums.SETTINGS_HOMEPAGE);
+-            }
++        View twoPaneToolbar = twoPaneContainer != null
++                ? twoPaneContainer.findViewById(R.id.search_action_bar) : null;
++        if (twoPaneToolbar != null) {
++            FeatureFactory.getFeatureFactory().getSearchFeatureProvider()
++                    .initSearchToolbar(this /* activity */, twoPaneToolbar,
++                            SettingsEnums.SETTINGS_HOMEPAGE);
+         }
+     }
+ 
+diff --git a/src/com/android/settings/localepicker/AppLocalePickerActivity.java b/src/com/android/settings/localepicker/AppLocalePickerActivity.java
+index e608ba6..c0dd017 100644
+--- a/src/com/android/settings/localepicker/AppLocalePickerActivity.java
++++ b/src/com/android/settings/localepicker/AppLocalePickerActivity.java
+@@ -141,6 +141,9 @@ public class AppLocalePickerActivity extends SettingsBaseActivity
+     @Override
+     public boolean onMenuItemActionCollapse(MenuItem item) {
+         mAppBarLayout.setExpanded(false /*expanded*/, false /*animate*/);
++        if (mCollapsingToolbarLayout != null) {
++            mCollapsingToolbarLayout.setTitleEnabled(true);
++        }
+         ViewCompat.setNestedScrollingEnabled(mAppLocaleDetails.getListView(), true);
+         ViewCompat.setNestedScrollingEnabled(mLocalePickerWithRegion.getListView(), true);
+         return true;
+@@ -149,6 +152,10 @@ public class AppLocalePickerActivity extends SettingsBaseActivity
+     @Override
+     public boolean onMenuItemActionExpand(MenuItem item) {
+         mAppBarLayout.setExpanded(false /*expanded*/, false /*animate*/);
++        // The collapsed title is drawn over the toolbar and would cover the search field.
++        if (mCollapsingToolbarLayout != null) {
++            mCollapsingToolbarLayout.setTitleEnabled(false);
++        }
+         ViewCompat.setNestedScrollingEnabled(mAppLocaleDetails.getListView(), false);
+         ViewCompat.setNestedScrollingEnabled(mLocalePickerWithRegion.getListView(), false);
+         return true;
+diff --git a/src/com/android/settings/localepicker/LocalePickerWithRegionActivity.java b/src/com/android/settings/localepicker/LocalePickerWithRegionActivity.java
+index ab50178..4c7a1b4 100644
+--- a/src/com/android/settings/localepicker/LocalePickerWithRegionActivity.java
++++ b/src/com/android/settings/localepicker/LocalePickerWithRegionActivity.java
+@@ -222,6 +222,10 @@ public class LocalePickerWithRegionActivity extends SettingsBaseActivity
+     public boolean onMenuItemActionExpand(MenuItem item) {
+         // To prevent a large space on tool bar.
+         mAppBarLayout.setExpanded(false /*expanded*/, false /*animate*/);
++        // The collapsed title is drawn over the toolbar and would cover the search field.
++        if (mCollapsingToolbarLayout != null) {
++            mCollapsingToolbarLayout.setTitleEnabled(false);
++        }
+         // To prevent user can expand the collpasing tool bar view.
+         ViewCompat.setNestedScrollingEnabled(mSelector.getListView(), false);
+         return true;
+@@ -230,6 +234,9 @@ public class LocalePickerWithRegionActivity extends SettingsBaseActivity
+     @Override
+     public boolean onMenuItemActionCollapse(MenuItem item) {
+         mAppBarLayout.setExpanded(false /*expanded*/, false /*animate*/);
++        if (mCollapsingToolbarLayout != null) {
++            mCollapsingToolbarLayout.setTitleEnabled(true);
++        }
+         ViewCompat.setNestedScrollingEnabled(mSelector.getListView(), true);
+         return true;
+     }
