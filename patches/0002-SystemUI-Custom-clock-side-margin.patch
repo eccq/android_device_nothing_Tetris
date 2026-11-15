@@ -1,0 +1,65 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
+index 373179293..83cc11bda 100644
+--- a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
++++ b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
+@@ -56,6 +56,7 @@ class ClockStyle @JvmOverloads constructor(
+     private var customColor = DEFAULT_CUSTOM_COLOR
+     private var clockOpacity = DEFAULT_OPACITY
+     private var clockFrameMarginTop = DEFAULT_MARGIN_TOP
++    private var clockFrameMarginStart = DEFAULT_MARGIN_START
+     private var clockSizeScale = DEFAULT_CLOCK_SIZE
+     private var aodAnimEnabled = true
+ 
+@@ -129,6 +130,7 @@ class ClockStyle @JvmOverloads constructor(
+             CLOCK_CUSTOM_COLOR_KEY,
+             CLOCK_TEXT_OPACITY_KEY,
+             CLOCK_FRAME_MARGIN_TOP_KEY,
++            CLOCK_FRAME_MARGIN_START_KEY,
+             CLOCK_SIZE_KEY,
+             CLOCK_AOD_ANIM_KEY,
+         )
+@@ -205,6 +207,11 @@ class ClockStyle @JvmOverloads constructor(
+                     .coerceIn(0, 100)
+                 updateClockFrameMargin()
+             }
++            CLOCK_FRAME_MARGIN_START_KEY -> {
++                clockFrameMarginStart = TunerService.parseInteger(newValue, DEFAULT_MARGIN_START)
++                    .coerceIn(-100, 100)
++                updateClockFrameMargin()
++            }
+             CLOCK_SIZE_KEY -> {
+                 clockSizeScale = TunerService.parseInteger(newValue, DEFAULT_CLOCK_SIZE)
+                     .coerceIn(MIN_CLOCK_SIZE, MAX_CLOCK_SIZE)
+@@ -382,8 +389,15 @@ class ClockStyle @JvmOverloads constructor(
+     private fun updateClockFrameMargin() {
+         val clockFrame = findViewById<View?>(R.id.clock_frame) ?: return
+         val params = clockFrame.layoutParams as? ViewGroup.MarginLayoutParams ?: return
+-        params.topMargin = (clockFrameMarginTop * resources.displayMetrics.density).toInt()
++        val density = resources.displayMetrics.density
++        // Same geometry as the Settings preview: the side margin moves both edges inwards.
++        val side = resources.getDimensionPixelSize(R.dimen.below_clock_padding_start) +
++            (clockFrameMarginStart * density).toInt()
++        params.topMargin = (clockFrameMarginTop * density).toInt()
++        params.marginStart = side
++        params.marginEnd = side
+         clockFrame.layoutParams = params
++        requestLayout()
+     }
+ 
+     private fun updateClockAppearance() {
+@@ -585,6 +599,7 @@ class ClockStyle @JvmOverloads constructor(
+         @JvmField val CLOCK_CUSTOM_COLOR_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_CUSTOM_COLOR
+         @JvmField val CLOCK_TEXT_OPACITY_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_OPACITY
+         @JvmField val CLOCK_FRAME_MARGIN_TOP_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_MARGIN_TOP
++        @JvmField val CLOCK_FRAME_MARGIN_START_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_MARGIN_START
+         @JvmField val CLOCK_SIZE_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_SIZE
+         @JvmField val CLOCK_AOD_ANIM_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_AOD_ANIM
+ 
+@@ -597,6 +612,7 @@ class ClockStyle @JvmOverloads constructor(
+         private const val DEFAULT_STYLE = 0
+         private const val DEFAULT_OPACITY = 100
+         private const val DEFAULT_MARGIN_TOP = 15
++        private const val DEFAULT_MARGIN_START = 0
+         private const val DEFAULT_CUSTOM_COLOR = Color.WHITE
+         private const val AOD_OPACITY_CAP = 70
+         private const val DEFAULT_CLOCK_SIZE = 100
