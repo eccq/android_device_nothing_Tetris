@@ -4,6 +4,8 @@ All notable changes to the DescartesOS device tree for the CMF Phone 1 (Tetris).
 
 ## Unreleased
 
+- smaller blur radii to cut lag in the shade, quick settings and lock screen:
+  shade 12dp (was 17), axblur 40% system / 35% launcher, launcher depth 12.
 - lock styles: fixed "keep home" breaking a live home screen, the on-lock shuffle
   advancing on every app launch, a depth cut-out taken from the wrong picture, a
   stale picture when adopting the current wallpaper, and bitmap leaks in the
