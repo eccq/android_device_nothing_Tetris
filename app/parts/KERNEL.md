@@ -3,25 +3,20 @@
 ## What DescartesOS ships
 
 The ROM uses the prebuilt kernel from `device/nothing/Tetris-kernel`
-(lufrz/android_device_nothing_Tetris-kernel, branch `a17`, commit `cfd6501`).
+(lufrz/android_device_nothing_Tetris-kernel, branch `lineage-24.0-tetris`).
 `BoardConfigKernel.mk` sets `TARGET_FORCE_PREBUILT_KERNEL := true`, so the
 `Image`, DTB, DTBO and module directories in that tree are packaged as they are.
-The image identifies itself as `6.1.177-android14-11-Kraken`.
+The image identifies itself as `6.1.177-android14-11-lufrz` and provides the
+`scaling_locked_limits` node, the gpufreq `boost` command and the charger
+`charge_bypass` interface described below. The init files, SELinux labels and
+Power HAL hint for them live in this tree.
 
-That kernel does not provide the custom interfaces described below. Parts
-detects this at runtime: the CPU page shows "Updated kernel required" and labels
-frequency changes as temporary, and Charger-powered mode shows as unavailable.
-The tree is kept consistent with this kernel: init does not touch
-`scaling_locked_limits` or the `charge_bypass` nodes, and `powerhint.json` has
-no GPU `boost` request, because the stock `mtk_gpufreq_wrapper.ko` only parses
-four-field `set` writes. When a kernel with the interfaces is imported, restore
-those init lines and the power hint together with it.
-
-The sections below describe the `scaling_locked_limits` interface Parts expects
-and the build that produced a kernel with it upstream. The kernel patches and the
-wrapper scripts named here are not part of this repository, and they are not in
-lufrz's public kernel repositories either. Treat this as a record of how that
-kernel was made, not as something this tree can rebuild on its own.
+The older `a17` branch of the same repository holds the stock-derived
+`6.1.177-android14-11-Kraken` kernel without those interfaces; a build on it
+makes Parts fall back to the ordinary controls. The kernel patches and the
+wrapper scripts named below are not published, so the sections that follow are
+a record of how the kernel was built, not something this tree can rebuild on
+its own.
 
 ## The `scaling_locked_limits` interface
 

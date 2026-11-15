@@ -4,18 +4,16 @@ All notable changes to the DescartesOS device tree for the CMF Phone 1 (Tetris).
 
 ## Unreleased
 
-- Removed the SELinux labels and rules for `scaling_locked_limits` and the
-  `charge_bypass` nodes, which the shipped kernel does not have.
 - Tetris Parts: one shared back button for the page scaffold and the terms
   screen.
 - README: how to compare this tree with lufrz's upstream tree.
 - Split the ImsService blob patches so each smali stub is created by one patch;
   `extract-files.py` failed on the second patch before.
-- Removed the `GpuUiMinFreq` power hint. The shipped gpufreq module does not
-  understand the `boost` command, so the write never did anything.
-- Stopped init from touching `scaling_locked_limits` and the `charge_bypass`
-  nodes, which the shipped kernel does not expose. Removed the charging init
-  file.
+- Moved the prebuilt kernel to lufrz's `lineage-24.0-tetris` branch
+  (`6.1.177-android14-11-lufrz`, November 2026 build). It matches the B4.1
+  vendor blobs and provides the CPU lock, GPU floor and charger bypass
+  interfaces Tetris Parts uses. The September `a17` kernel panicked at boot.
+- dm-verity stays disabled in vbmeta, as in the LineageOS tree.
 - cpufreq and gpufreq nodes used by Tetris Parts stay world-readable (0664)
   instead of 0660.
 - Removed a duplicated `TARGET_SCREEN_DENSITY` in `BoardConfig.mk`.
