@@ -1,0 +1,53 @@
+diff --git a/sdk/ax_blur/src/com/android/axion/blur/AxBlurConfig.kt b/sdk/ax_blur/src/com/android/axion/blur/AxBlurConfig.kt
+index 9f06d75c..edeb95f8 100644
+--- a/sdk/ax_blur/src/com/android/axion/blur/AxBlurConfig.kt
++++ b/sdk/ax_blur/src/com/android/axion/blur/AxBlurConfig.kt
+@@ -18,6 +18,7 @@ package com.android.axion.blur
+ 
+ import android.content.Context
+ import android.content.res.Resources
++import android.os.SystemProperties
+ import android.os.UserHandle
+ import android.provider.Settings
+ import com.android.axion.kotlin.math.scaleRatioLocked
+@@ -34,6 +35,9 @@ object AxBlurConfig {
+     const val MIN_BLUR_RADIUS_PCT = 0f
+     const val MAX_BLUR_RADIUS_PCT = 100f
+     const val DEFAULT_BLUR_RADIUS_PCT = MAX_BLUR_RADIUS_PCT
++    // Device trees can lower the defaults for weaker GPUs; the user setting still wins.
++    private const val PROP_SYSTEM_BLUR_RADIUS_PCT = "ro.descartes.blur.system_pct"
++    private const val PROP_LAUNCHER_BLUR_RADIUS_PCT = "ro.descartes.blur.launcher_pct"
+ 
+     const val KEY_LAUNCHER_BLUR_ENABLED = "pulse_launcher_blur_enabled"
+     const val KEY_LAUNCHER_BLUR_RADIUS_PCT = "pulse_launcher_blur_radius_pct"
+@@ -75,7 +79,7 @@ object AxBlurConfig {
+         baseRadiusPx: Float = BASE_MAX_BLUR_RADIUS_PX,
+     ): Float {
+         val maxRadius = getMaxBlurRadiusPx(context, baseRadiusPx)
+-        val percent = getSecureFloat(context, KEY_SYSTEM_BLUR_RADIUS_PCT, DEFAULT_BLUR_RADIUS_PCT)
++        val percent = getSecureFloat(context, KEY_SYSTEM_BLUR_RADIUS_PCT, deviceDefaultPct(PROP_SYSTEM_BLUR_RADIUS_PCT, DEFAULT_BLUR_RADIUS_PCT))
+         if (!percent.isFinite()) return maxRadius
+         return maxRadius * percent.coerceIn(MIN_BLUR_RADIUS_PCT, MAX_BLUR_RADIUS_PCT) / MAX_BLUR_RADIUS_PCT
+     }
+@@ -87,7 +91,8 @@ object AxBlurConfig {
+ 
+     @JvmStatic
+     fun getLauncherBlurRadiusPct(context: Context): Int {
+-        val raw = getSecureInt(context, KEY_LAUNCHER_BLUR_RADIUS_PCT, DEFAULT_LAUNCHER_BLUR_RADIUS_PCT)
++        val raw = getSecureInt(context, KEY_LAUNCHER_BLUR_RADIUS_PCT,
++            deviceDefaultPct(PROP_LAUNCHER_BLUR_RADIUS_PCT, DEFAULT_LAUNCHER_BLUR_RADIUS_PCT.toFloat()).roundToInt())
+         return raw.coerceIn(MIN_LAUNCHER_BLUR_RADIUS_PCT, MAX_LAUNCHER_BLUR_RADIUS_PCT)
+     }
+ 
+@@ -99,6 +104,11 @@ object AxBlurConfig {
+         return (maxRadius * pct / MAX_LAUNCHER_BLUR_RADIUS_PCT.toFloat()).roundToInt()
+     }
+ 
++    private fun deviceDefaultPct(prop: String, def: Float): Float {
++        val value = SystemProperties.getInt(prop, -1)
++        return if (value in 0..100) value.toFloat() else def
++    }
++
+     private fun getSecureFloat(context: Context, key: String, def: Float): Float = try {
+         Settings.Secure.getFloatForUser(context.contentResolver, key, def, UserHandle.myUserId())
+     } catch (_: Exception) {

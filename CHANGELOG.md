@@ -4,6 +4,8 @@ All notable changes to the DescartesOS device tree for the CMF Phone 1 (Tetris).
 
 ## Unreleased
 
+- Blur: AxBlur starts at 60% system and 50% launcher radius on this device
+  instead of 100%, to cut the GPU cost on the Mali-G615. Adjustable in Atelier.
 - Settings: the floating search bar on the home page takes taps again, and the
   language pickers show what you type in the search field. Shipped as patches
   under `patches/` because Settings lives in another repository.
