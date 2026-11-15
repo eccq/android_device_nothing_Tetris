@@ -8,23 +8,17 @@ and the optional adaptive control each have their own page.
 
 ## Kernel support
 
-DescartesOS ships the prebuilt `6.1.177-android14-11-Kraken` kernel from
-`device/nothing/Tetris-kernel`. That kernel has none of the custom interfaces
-Parts can use: the `scaling_locked_limits` cpufreq node, the `boost` command of
-`mtk_gpufreq_wrapper.ko` and the charger's `charge_bypass` request. On this
-kernel:
+DescartesOS ships lufrz's prebuilt `6.1.177-android14-11-lufrz` kernel from
+`device/nothing/Tetris-kernel`, which provides the three custom interfaces Parts
+can use: the `scaling_locked_limits` cpufreq node, the `boost` command of
+`mtk_gpufreq_wrapper.ko` and the charger's `charge_bypass` request. The init
+files, SELinux labels and the Power HAL hint for them are in this tree.
 
-- The CPU page shows "Updated kernel required" and labels frequency changes as
-  temporary. Android and the Power HAL can still change them.
-- Charger-powered mode on the Battery page shows as unavailable.
-- The Power HAL has no GPU floor request. The stock module does not implement
-  `boost` in `/proc/gpufreqv2/limit_table`, so that hint is left out of
-  `powerhint.json`.
-
-Everything else works with the stock kernel: thermal profile control, GPU ranges
-through the DEBUG limiter, RAM and battery readings, temperatures and adaptive
-control. [KERNEL.md](KERNEL.md) describes the interfaces and how a kernel that
-provides them was built upstream.
+Parts still checks for the interfaces at runtime. On a kernel without them the
+CPU page shows "Updated kernel required" and labels frequency changes as
+temporary, Charger-powered mode shows as unavailable, and the Power HAL's GPU
+floor request is ignored. [KERNEL.md](KERNEL.md) describes the interfaces and
+how the kernel was built.
 
 ## Languages and navigation
 
@@ -126,14 +120,15 @@ returns to 70%. Each interaction hint also starts a 120 ms margin request with a
 to 1500 ms interaction fallback. New interaction hints renew the short request;
 once it expires, the strongest remaining margin applies.
 
-A patched `mtk_gpufreq_wrapper.ko` can also take a `boost <kHz>` command in
-`/proc/gpufreqv2/limit_table`, which the Power HAL would use to request a
-700 MHz minimum during interaction, app launch and expensive rendering. The
-module maps the value to the lowest working OPP at or above it, combines the
-request with existing APIBOOST requests, restores the latest non-UI request on
-release, and lets a manual DEBUG range suspend the floor. The stock module parses
-only four-field `set` writes, so the hint is not in this tree's
-`powerhint.json`; add it back together with the module.
+The Power HAL also requests a 700 MHz minimum during interaction, app launch and
+expensive rendering, with the same hint lifetimes as the margin, through the
+`boost <kHz>` command of `mtk_gpufreq_wrapper.ko` in
+`/proc/gpufreqv2/limit_table`. The module maps the value to the lowest working
+OPP at or above it, combines the request with existing APIBOOST requests,
+restores the latest non-UI request on release, and lets a manual DEBUG range
+suspend the floor. Overlapping hints share one floor and the final release
+writes `boost 0`. The stock Nothing module parses only four-field `set` writes
+and ignores the command, so the hint and the module have to ship together.
 
 The manual GPU controls use the existing GPUEB firmware interface, and their
 settings are not reapplied at boot. The dialog scrolls the explanation and the

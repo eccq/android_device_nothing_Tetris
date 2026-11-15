@@ -24,11 +24,12 @@ Camera   | 50 MP main, 16 MP front
 ## DescartesOS
 
 This tree builds DescartesOS 17.0 (based on LineageOS 24 / Android 17) for the
-CMF Phone 1. The kernel is the prebuilt `6.1.177-android14-11-Kraken` from
-[lufrz](https://github.com/lufrz/android_device_nothing_Tetris-kernel), checked
-out at `device/nothing/Tetris-kernel`. [app/parts/KERNEL.md](app/parts/KERNEL.md)
-explains which Tetris Parts controls depend on a patched kernel and what the
-app does without one.
+CMF Phone 1. The kernel is the prebuilt `6.1.177-android14-11-lufrz` from the
+`lineage-24.0-tetris` branch of
+[lufrz's kernel tree](https://github.com/lufrz/android_device_nothing_Tetris-kernel),
+checked out at `device/nothing/Tetris-kernel`. It carries the interfaces Tetris
+Parts uses for CPU frequency locking, the GPU floor and Charger-powered mode;
+[app/parts/KERNEL.md](app/parts/KERNEL.md) describes them.
 
 Build:
 
