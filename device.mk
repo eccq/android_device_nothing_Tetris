@@ -124,7 +124,12 @@ PRODUCT_COPY_FILES += \
 $(call inherit-product, hardware/dolby/dolby.mk)
 
 PRODUCT_PACKAGES += \
-    LunarisDolby
+    DolbyAtmos
+
+# HIDL (MediaTek interfaces built from hardware/mediatek)
+PRODUCT_PACKAGES += \
+    vendor.mediatek.hardware.lbs@1.0.vendor \
+    vendor.mediatek.hardware.netdagent@1.0.vendor
 
 # Doze
 PRODUCT_PACKAGES += \

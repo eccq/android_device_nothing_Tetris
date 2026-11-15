@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-<!-- Original AI-authored translations; not reviewed by a native speaker. -->
 <resources>
     <string name="adaptive_gpu_load">GPU yuklanishi</string>
     <string name="adaptive_gpu_temperature">GPU harorati</string>

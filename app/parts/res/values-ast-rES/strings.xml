@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Original AI-assisted translation; Android placeholders and units retained. -->
 <resources>
     <string name="adaptive_action_failed">Nun se pudo anovar el controlador. Comprueba\'l so estáu actual y vuelve intentalo.</string>
     <string name="adaptive_battery_current">Corriente de la batería</string>

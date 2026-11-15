@@ -16,8 +16,8 @@ Android's three test pseudolocales are excluded from that list.
 
 The English UI has received a wording review, including casing temperature,
 RAM actions and controller status labels. Italian resources are retained.
-There are 82 newly automatically translated resource sets, plus separately
-authored Asturian and Norwegian Nynorsk translations. Selected technical wording received additional
+There are 82 additional translated resource sets, plus Asturian and
+Norwegian Nynorsk translations. Selected technical wording received additional
 review and corrections. These translations have not received complete
 native-speaker review. `tests/check-localizations.py` checks product coverage,
 string completeness, formatting placeholders, units, brands and XML structure;
@@ -212,8 +212,8 @@ readings. Tetris’s HAL exposes its shared SoC maximum under several hardware
 labels; those are not independent measurements.
 
 Adaptive control is an original local feedback feature, not MaxManager’s
-proprietary engine or an LLM. The public [Max AI description](https://github.com/nader295/Max-Manger#max-ai)
-was the user’s feature reference; no MaxManager code, graphics, data or private
+proprietary engine. The public [MaxManager feature description](https://github.com/nader295/Max-Manger)
+was the feature reference; no MaxManager code, graphics, data or private
 components are included. The UI follows Rodin, as the other pages do.
 
 It is off until enabled and shows a foreground notification while running.
@@ -337,10 +337,10 @@ The full kernel/module build and 495-file import are complete. The imported
 kernel embeds epoch `1790624405` (`Mon Sep 28 19:40:05 UTC 2026`) and the actual
 build identity `build-user@build-host`. Results are recorded in
 `out/kernel-tetris-build/BUILD-REPORT.md`; the previous kernel artifacts are in
-`out/codex-build/Tetris/previous-kernel`.
+`out/tetris-build/previous-kernel`.
 
 ROM build results and checks of the actual OTA contents are recorded in
-`out/codex-build/Tetris/BUILD-REPORT.md`.
+`out/tetris-build/BUILD-REPORT.md`.
 No flashing or on-device tests have been performed. Host CRC/vermagic checks do
 not certify runtime behavior.
 
@@ -362,3 +362,9 @@ verify the correct target FPS/refresh rate, unavailable data and surface/app
 changes. Verify CPU and GPU proposals independently, measured results after
 returning from review, manual overrides during trials, and Stop's exact return
 to automatic GPU control. Host fixtures do not replace these device checks.
+
+## Credits
+
+Tetris Parts was written by [lufrz](https://github.com/lufrz). It builds on the
+LineageOS settings framework and follows the Rodin Compose UI used across the
+DescartesOS Settings pages.

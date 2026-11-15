@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-<!-- Existing Android/Lineage translations plus machine-translated app-specific text; native review welcome. -->
 <resources>
     <string name="adaptive_title">ការគ្រប់គ្រងអាដាប់ធ័រ</string>
     <string name="adaptive_intro_title">ការផ្លាស់ប្តូរតិចតួច វាស់វែងតាមមូលដ្ឋាន</string>

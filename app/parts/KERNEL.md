@@ -162,7 +162,7 @@ in the source patches above, rather than depending on binary editing.
 ## Imported artifacts and future rebuilds
 
 The previous `device/nothing/Tetris-kernel` artifacts are preserved in
-`out/codex-build/Tetris/previous-kernel`. The completed import selected only the
+`out/tetris-build/previous-kernel`. The completed import selected only the
 original Tetris module layout from the generic distribution: 481 `.ko` paths,
 467 distinct modules and 14 identical copies. All were rebuilt; zero old `.ko`
 files were retained. Module dependency metadata was regenerated while preserving

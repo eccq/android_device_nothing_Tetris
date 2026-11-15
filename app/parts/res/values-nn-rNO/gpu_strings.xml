@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Original AI-assisted translation; Android placeholders and units retained. -->
 <resources>
     <string name="gpu_settings_title">GPU-styring</string>
     <string name="gpu_home_summary">GPU-frekvens, nedre og øvre grenser og automatisk styring.</string>

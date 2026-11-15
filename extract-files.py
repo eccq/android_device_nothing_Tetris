@@ -63,8 +63,6 @@ lib_fixups: lib_fixups_user_type = {
         'libtflite_mtk',
         'vendor.mediatek.hardware.apuware.utils@2.0',
         'vendor.mediatek.hardware.bluetooth.audio-V1-ndk',
-        'vendor.mediatek.hardware.lbs@1.0',
-        'vendor.mediatek.hardware.netdagent@1.0',
         'vendor.mediatek.hardware.videotelephony@1.0'
     ): lib_fixup_vendor_suffix,
 }

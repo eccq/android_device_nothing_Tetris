@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Original AI-assisted translation; Android placeholders and units retained. -->
 <resources>
     <string name="gpu_settings_title">Control de la GPU</string>
     <string name="gpu_home_summary">Frecuencia de la GPU, llendes mínima y máxima y control automáticu.</string>

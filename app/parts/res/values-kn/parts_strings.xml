@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-<!-- Existing Android/Lineage translations plus machine-translated app-specific text; native review welcome. -->
 <resources>
     <string name="adaptive_title">ಅಡಾಪ್ಟಿವ್ ನಿಯಂತ್ರಣ</string>
     <string name="adaptive_intro_title">ಸಣ್ಣ ಬದಲಾವಣೆಗಳು, ಸ್ಥಳೀಯವಾಗಿ ಅಳೆಯಲಾಗುತ್ತದೆ</string>

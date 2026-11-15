@@ -121,6 +121,11 @@ ro.vendor.mtk_widevine_drm_l1_support=1
 # Dex2oat64
 dalvik.vm.dex2oat64.enabled=true
 
+# Dex2oat: use all cores only while booting (first boot / post-OTA dexopt).
+# Runtime dexopt stays on cores 2-5 (see init.mt6878.power.rc).
+dalvik.vm.boot-dex2oat-cpu-set=0,1,2,3,4,5,6,7
+dalvik.vm.boot-dex2oat-threads=8
+
 # Display
 debug.graphics.game_default_frame_rate.disabled=true
 debug.sf.auto_latch_unsignaled=1

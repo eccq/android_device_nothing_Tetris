@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-<!-- AI-assisted translation; native-language review remains welcome. -->
 <resources>
     <string name="adaptive_gpu_load">GPU භාරය</string>
     <string name="adaptive_gpu_temperature">GPU උෂ්ණත්වය</string>

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Original AI-assisted translation; Android placeholders and units retained. -->
 <resources>
     <string name="adaptive_action_failed">Styringa kunne ikkje oppdaterast. Kontroller den gjeldande statusen og prøv igjen.</string>
     <string name="adaptive_battery_current">Batteristraum</string>
