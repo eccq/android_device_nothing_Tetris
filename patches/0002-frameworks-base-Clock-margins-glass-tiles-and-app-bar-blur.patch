@@ -1,3 +1,18 @@
+diff --git a/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java b/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java
+index cf30cf416..c44a25853 100644
+--- a/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java
++++ b/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java
+@@ -313,6 +313,10 @@ public class CollapsingToolbarDelegate {
+         if (!SystemProperties.getBoolean("ro.surface_flinger.supports_background_blur", false)) {
+             return false;
+         }
++        // Some GPUs render a backdrop-blurred app bar without its own content.
++        if (!SystemProperties.getBoolean("ro.descartes.appbar_blur", true)) {
++            return false;
++        }
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+             WindowManager wm = context.getSystemService(WindowManager.class);
+             if (wm != null && !wm.isCrossWindowBlurEnabled()) {
 diff --git a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
 index 373179293..83cc11bda 100644
 --- a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
@@ -63,3 +78,18 @@ index 373179293..83cc11bda 100644
          private const val DEFAULT_CUSTOM_COLOR = Color.WHITE
          private const val AOD_OPACITY_CAP = 70
          private const val DEFAULT_CLOCK_SIZE = 100
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/ColorOSGlassBlur.kt b/packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/ColorOSGlassBlur.kt
+index d8a6b5f77..332806374 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/ColorOSGlassBlur.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/ColorOSGlassBlur.kt
+@@ -167,7 +167,9 @@ private fun rememberCrossWindowBlurEnabled(): Boolean {
+     val supported = remember {
+         CrossWindowBlurListeners.CROSS_WINDOW_BLUR_SUPPORTED &&
+             ActivityManager.isHighEndGfx() &&
+-            !SystemProperties.getBoolean("persist.sysui.disableBlur", false)
++            !SystemProperties.getBoolean("persist.sysui.disableBlur", false) &&
++            // Device trees turn the glass regions off where the compositor draws them wrong.
++            SystemProperties.getBoolean("ro.descartes.qs_glass", true)
+     }
+     val context = LocalContext.current
+     var enabled by remember { mutableStateOf(false) }

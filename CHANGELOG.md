@@ -4,6 +4,13 @@ All notable changes to the DescartesOS device tree for the CMF Phone 1 (Tetris).
 
 ## Unreleased
 
+- Blur on this GPU: the Settings app bar keeps its plain scrim instead of a
+  backdrop blur (it lost its title and buttons), the ColorOS quick settings use
+  flat tiles instead of compositor glass regions (the icons vanished and the
+  lock screen showed through), and AxBlur surfaces such as the volume panel
+  draw their own in-app blur instead of compositor regions (which came out
+  square). Device switches in `product.prop`: `ro.descartes.appbar_blur`,
+  `ro.descartes.qs_glass`, `ro.descartes.ax_window_blur`.
 - Blur: AxBlur starts at 60% system and 50% launcher radius on this device
   instead of 100%, to cut the GPU cost on the Mali-G615. Adjustable in Atelier.
 - Settings: the floating search bar on the home page takes taps again, and the

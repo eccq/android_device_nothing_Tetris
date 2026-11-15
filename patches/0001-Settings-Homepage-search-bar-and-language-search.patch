@@ -1,5 +1,5 @@
 diff --git a/src/com/android/settings/homepage/SettingsHomepageActivity.java b/src/com/android/settings/homepage/SettingsHomepageActivity.java
-index 0c164d8..b73d896 100644
+index 0c164d8..a5ea810 100644
 --- a/src/com/android/settings/homepage/SettingsHomepageActivity.java
 +++ b/src/com/android/settings/homepage/SettingsHomepageActivity.java
 @@ -452,20 +452,23 @@ public class SettingsHomepageActivity extends FragmentActivity implements
@@ -36,6 +36,16 @@ index 0c164d8..b73d896 100644
          }
      }
  
+@@ -540,6 +543,9 @@ public class SettingsHomepageActivity extends FragmentActivity implements
+     private void setupFrostedAppBar(
+             @NonNull AppBarLayout appBarLayout,
+             @NonNull CollapsingToolbarLayout collapsingToolbar) {
++        if (!android.os.SystemProperties.getBoolean("ro.descartes.appbar_blur", true)) {
++            return;
++        }
+         final Context context = this;
+         final int surfaceColor = getColor(
+                 com.android.settingslib.widget.theme.R.color.settingslib_materialColorSurfaceContainerHigh);
 diff --git a/src/com/android/settings/localepicker/AppLocalePickerActivity.java b/src/com/android/settings/localepicker/AppLocalePickerActivity.java
 index e608ba6..c0dd017 100644
 --- a/src/com/android/settings/localepicker/AppLocalePickerActivity.java
