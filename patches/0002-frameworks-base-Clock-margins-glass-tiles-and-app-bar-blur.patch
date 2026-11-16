@@ -14,7 +14,7 @@ index cf30cf416..c44a25853 100644
              WindowManager wm = context.getSystemService(WindowManager.class);
              if (wm != null && !wm.isCrossWindowBlurEnabled()) {
 diff --git a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
-index 373179293..83cc11bda 100644
+index 373179293..af6f95997 100644
 --- a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
 +++ b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
 @@ -56,6 +56,7 @@ class ClockStyle @JvmOverloads constructor(
@@ -45,24 +45,25 @@ index 373179293..83cc11bda 100644
              CLOCK_SIZE_KEY -> {
                  clockSizeScale = TunerService.parseInteger(newValue, DEFAULT_CLOCK_SIZE)
                      .coerceIn(MIN_CLOCK_SIZE, MAX_CLOCK_SIZE)
-@@ -382,8 +389,15 @@ class ClockStyle @JvmOverloads constructor(
+@@ -382,8 +389,16 @@ class ClockStyle @JvmOverloads constructor(
      private fun updateClockFrameMargin() {
          val clockFrame = findViewById<View?>(R.id.clock_frame) ?: return
          val params = clockFrame.layoutParams as? ViewGroup.MarginLayoutParams ?: return
 -        params.topMargin = (clockFrameMarginTop * resources.displayMetrics.density).toInt()
 +        val density = resources.displayMetrics.density
-+        // Same geometry as the Settings preview: the side margin moves both edges inwards.
-+        val side = resources.getDimensionPixelSize(R.dimen.below_clock_padding_start) +
-+            (clockFrameMarginStart * density).toInt()
++        // Same geometry as the Lock Styles preview: the side margin shifts the clock sideways
++        // and keeps its width, so one edge moves in while the other moves out.
++        val base = resources.getDimensionPixelSize(R.dimen.below_clock_padding_start)
++        val shift = (clockFrameMarginStart * density).toInt()
 +        params.topMargin = (clockFrameMarginTop * density).toInt()
-+        params.marginStart = side
-+        params.marginEnd = side
++        params.marginStart = base + shift
++        params.marginEnd = base - shift
          clockFrame.layoutParams = params
 +        requestLayout()
      }
  
      private fun updateClockAppearance() {
-@@ -585,6 +599,7 @@ class ClockStyle @JvmOverloads constructor(
+@@ -585,6 +600,7 @@ class ClockStyle @JvmOverloads constructor(
          @JvmField val CLOCK_CUSTOM_COLOR_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_CUSTOM_COLOR
          @JvmField val CLOCK_TEXT_OPACITY_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_OPACITY
          @JvmField val CLOCK_FRAME_MARGIN_TOP_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_MARGIN_TOP
@@ -70,7 +71,7 @@ index 373179293..83cc11bda 100644
          @JvmField val CLOCK_SIZE_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_SIZE
          @JvmField val CLOCK_AOD_ANIM_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_AOD_ANIM
  
-@@ -597,6 +612,7 @@ class ClockStyle @JvmOverloads constructor(
+@@ -597,6 +613,7 @@ class ClockStyle @JvmOverloads constructor(
          private const val DEFAULT_STYLE = 0
          private const val DEFAULT_OPACITY = 100
          private const val DEFAULT_MARGIN_TOP = 15
@@ -93,3 +94,39 @@ index d8a6b5f77..332806374 100644
      }
      val context = LocalContext.current
      var enabled by remember { mutableStateOf(false) }
+diff --git a/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt b/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt
+index b3c0f5a11..41c871c31 100644
+--- a/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt
++++ b/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt
+@@ -18,6 +18,7 @@ package com.android.systemui.volume.dialog.ui.view
+ 
+ import android.content.Context
+ import android.graphics.Canvas
++import android.os.SystemProperties
+ import android.util.AttributeSet
+ import android.view.View
+ import com.android.axion.blur.AxBlurBackgroundRenderer
+@@ -35,6 +36,14 @@ class VolumeDialogBackgroundView @JvmOverloads constructor(
+ 
+     private val blurRenderer = AxBlurBackgroundRenderer(this)
+ 
++    // Without compositor blur regions the in-app blur has nothing behind this window to
++    // sample and paints a square; keep the plain rounded background then.
++    private val useBlur = SystemProperties.getBoolean("ro.descartes.ax_window_blur", true)
++
++    init {
++        if (!useBlur) blurRenderer.setEnabled(false)
++    }
++
+     override fun onAttachedToWindow() {
+         super.onAttachedToWindow()
+         blurRenderer.onAttachedToWindow()
+@@ -52,7 +61,7 @@ class VolumeDialogBackgroundView @JvmOverloads constructor(
+ 
+     override fun onDraw(canvas: Canvas) {
+         // Try to draw blur; if blur is unavailable, fall through to the normal background drawable
+-        if (!blurRenderer.drawBackground(canvas, background)) {
++        if (!useBlur || !blurRenderer.drawBackground(canvas, background)) {
+             super.onDraw(canvas)
+         }
+     }

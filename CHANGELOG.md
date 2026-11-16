@@ -4,6 +4,10 @@ All notable changes to the DescartesOS device tree for the CMF Phone 1 (Tetris).
 
 ## Unreleased
 
+- stock volume panel: no more square blur at the bottom; with compositor blur off it
+  keeps its plain rounded background.
+- lock screen clock: the side margin now shifts the clock sideways like the lock styles
+  preview, instead of squeezing it from both sides.
 - smaller blur radii to cut lag in the shade, quick settings and lock screen:
   shade 12dp (was 17), axblur 40% system / 35% launcher, launcher depth 12.
 - lock styles: fixed "keep home" breaking a live home screen, the on-lock shuffle
