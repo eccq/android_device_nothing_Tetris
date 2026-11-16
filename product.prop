@@ -58,3 +58,6 @@ ro.descartes.qs_glass=false
 
 # AxBlur surfaces (volume, island, popups) come out as squares with compositor regions here.
 ro.descartes.ax_window_blur=false
+
+# Keep half-open colorOS/hyperOS shades solid enough to hide the lock screen behind them.
+ro.descartes.shade_min_alpha_pct=85

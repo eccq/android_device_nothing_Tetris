@@ -4,6 +4,10 @@ All notable changes to the DescartesOS device tree for the CMF Phone 1 (Tetris).
 
 ## Unreleased
 
+- settings pages (status bar and the rest of atelier): with app bar blur off the title
+  bar is opaque again, no page showing through and no dark band under the title.
+- colorOS/hyperOS quick settings: a half-open shade from the lock screen keeps an 85%
+  solid panel, so the clock, fingerprint ring and shortcuts no longer show through the tiles.
 - stock volume panel: no more square blur at the bottom; with compositor blur off it
   keeps its plain rounded background.
 - lock screen clock: the side margin now shifts the clock sideways like the lock styles

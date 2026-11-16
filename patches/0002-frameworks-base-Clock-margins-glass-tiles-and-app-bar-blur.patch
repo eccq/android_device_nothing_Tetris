@@ -1,8 +1,20 @@
 diff --git a/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java b/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java
-index cf30cf416..c44a25853 100644
+index cf30cf416..a234faf49 100644
 --- a/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java
 +++ b/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java
-@@ -313,6 +313,10 @@ public class CollapsingToolbarDelegate {
+@@ -243,6 +243,11 @@ public class CollapsingToolbarDelegate {
+         if (collapsingToolbarLayout == null || appBarLayout == null) {
+             return;
+         }
++        // Without app bar blur keep the stock opaque bar; a translucent scrim lets the page
++        // show through and leaves a dark band under the title.
++        if (!SystemProperties.getBoolean("ro.descartes.appbar_blur", true)) {
++            return;
++        }
+ 
+         final Context context = appBarLayout.getContext();
+         final int surfaceColor = context.getColor(
+@@ -313,6 +318,10 @@ public class CollapsingToolbarDelegate {
          if (!SystemProperties.getBoolean("ro.surface_flinger.supports_background_blur", false)) {
              return false;
          }
@@ -94,6 +106,40 @@ index d8a6b5f77..332806374 100644
      }
      val context = LocalContext.current
      var enabled by remember { mutableStateOf(false) }
+diff --git a/packages/SystemUI/src/com/android/systemui/shade/ui/ShadeColors.kt b/packages/SystemUI/src/com/android/systemui/shade/ui/ShadeColors.kt
+index 480e20e58..d845e31fa 100644
+--- a/packages/SystemUI/src/com/android/systemui/shade/ui/ShadeColors.kt
++++ b/packages/SystemUI/src/com/android/systemui/shade/ui/ShadeColors.kt
+@@ -26,6 +26,7 @@ import android.database.ContentObserver
+ import android.graphics.Color
+ import android.os.Handler
+ import android.os.Looper
++import android.os.SystemProperties
+ import android.os.UserHandle
+ import android.provider.Settings
+ import com.android.internal.graphics.ColorUtils
+@@ -150,7 +151,11 @@ object ShadeColors {
+         val text = context.getColor(
+             if (night) android.R.color.system_neutral1_50 else android.R.color.system_neutral1_900)
+         val backdrop = Cam.getInt(neutralHue(context), 6f, if (night) 82f else 22f)
+-        var alpha = (panel ushr 24) / 255f
++        // Half-open shades only get a weak blur behind them, so a device can ask for a more
++        // solid panel to keep the lock screen from showing through the tiles.
++        val floor = SystemProperties.getInt("ro.descartes.shade_min_alpha_pct", 0)
++            .coerceIn(0, 100) / 100f
++        var alpha = max((panel ushr 24) / 255f, floor)
+         val opaque = ColorUtils.setAlphaComponent(panel, 255)
+         while (alpha < s.maxAlpha) {
+             val c = ColorUtils.setAlphaComponent(opaque, (alpha * 255).roundToInt())
+@@ -159,7 +164,7 @@ object ShadeColors {
+             }
+             alpha += 0.03f
+         }
+-        return ColorUtils.setAlphaComponent(opaque, (min(alpha, s.maxAlpha) * 255).roundToInt())
++        return ColorUtils.setAlphaComponent(opaque, (min(alpha, max(s.maxAlpha, floor)) * 255).roundToInt())
+     }
+ 
+     private fun hct(context: Context, s: Spec, chroma: Float, tone: Float, alpha: Float): Int {
 diff --git a/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt b/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt
 index b3c0f5a11..41c871c31 100644
 --- a/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt
