@@ -25,6 +25,18 @@ index cf30cf416..a234faf49 100644
          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
              WindowManager wm = context.getSystemService(WindowManager.class);
              if (wm != null && !wm.isCrossWindowBlurEnabled()) {
+diff --git a/packages/SystemUI/res/layout/status_bar.xml b/packages/SystemUI/res/layout/status_bar.xml
+index f2874da75..4300d21a5 100644
+--- a/packages/SystemUI/res/layout/status_bar.xml
++++ b/packages/SystemUI/res/layout/status_bar.xml
+@@ -24,6 +24,7 @@
+     android:layout_width="match_parent"
+     android:layout_height="@dimen/status_bar_height"
+     android:id="@+id/status_bar"
++    android:clipToPadding="false"
+     android:orientation="vertical"
+     android:focusable="false"
+     android:descendantFocusability="afterDescendants"
 diff --git a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
 index 373179293..af6f95997 100644
 --- a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
