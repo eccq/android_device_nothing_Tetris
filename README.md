@@ -53,25 +53,6 @@ launcher3 and lock styles live there.
 The build writes `out/target/product/Tetris/DescartesOS-17.0-<date>-Tetris-v<version>.zip`
 and a matching `Tetris.json` next to it.
 
-## Installing and updating
-
-Builds are on the [releases page](https://github.com/eccq/android_device_nothing_Tetris/releases).
-A build is about 2.9 GB, larger than GitHub's 2 GiB limit for a single asset,
-so each release holds the zip in two parts with checksums. Reassemble it on a
-computer:
-
-```sh
-cat DescartesOS-17.0-<date>-Tetris-v<version>.zip.part0 \
-    DescartesOS-17.0-<date>-Tetris-v<version>.zip.part1 \
-    > DescartesOS-17.0-<date>-Tetris-v<version>.zip
-sha256sum -c DescartesOS-17.0-<date>-Tetris-v<version>.zip.sha256sum
-```
-
-First installation works like LineageOS: boot a recovery that supports A/B
-sideload and run `adb sideload` with the reassembled zip. The build expects the
-stock firmware `Tetris_B4.1-260928-1140` from the
-[Nothing archive](https://github.com/spike0en/nothing_archive/releases/tag/Tetris_B4.1-260928-1140).
-
 To update a phone already running DescartesOS, copy the reassembled zip to the
 phone, open Settings > System > Updater, choose "Install local update" from the
 menu and pick the file. The Updater installs it with `update_engine` in the
@@ -100,11 +81,9 @@ taken from other projects is listed in the credits below.
 | [Abhay Singh Gill](https://github.com/HELLBOY017), [sidharthify](https://github.com/sidharthify) | Fingerprint and UDFPS |
 | [swiitch-OFF-Lab](https://github.com/swiitch-OFF-Lab) | `hardware/dolby` and `DolbyUI` |
 | [Nothing archive](https://github.com/spike0en/nothing_archive) | Stock firmware archive (`Tetris_B4.1-260928-1140`) |
-| [chakra](https://github.com/eccq) | DescartesOS port and maintenance |
+| [chakra](https://github.com/eccq) | DescartesOS port |
 
-### Contributors
-
-Everyone who authored commits in this tree's history:
+### Contributors:
 
 Aaron Kling, Abhay Singh Gill, Adam Shih, AdarshGrewal, Alexander Koskovich, alextrack2013, Arian, Arthur Hung, Avichal Rakesh, Bart Van Assche, basamaryan, bengris32, Beverly, Bowgo Tsai, Bruno Martins, chandu078, ChrisCatto, Chungkai Mei, cjh1249131356, claxten10, codeworkx, Cosmin Tanislav, Cyber Knight, Danny Lin, electimon, Erfan Abdi, Evgenii Stepanov, Giovanni Ricca, guibing, hiroshi, Jaegeuk Kim, Jake Weinstein, J. Avila, Jeff Chang, Jenhao Chen, Jesse Chan, jiabin, Jis G Jacob, Jooyung Han, JoshuaDoes, Kshitij, Kujou Yuko, Kyle Tso, Lennart Wieboldt, Lokesh Gidra, lufrz, LuK1337, Martin Liu, Mashopy, me-cafebabe, Michael Bestas, Michael Wright, mikoker, Minchan Kim, Nicholas Lim, nift4, Nolen Johnson, Omkar Chandorkar, Pedro Garau Martínez, pjgowtham, Pullakavi Srinivas, Qais Yousef, Rachel Lee, Randall Huang, Ray Chi, rio004, Saalim Quadri, SahilSonar, Sebastiano Barezzi, Seth Moore, sidharthify, sm455, snapboss, sreelekshman, Sriharsha Allenki, Sungtak Lee, swiitchOFF, TheMysticle, Thierry Strudel, Tim Zimmermann, Vaisakh Murali, Victor Hsieh, Vincent Wang, Wei Wang, Woody Lin, Woomymy, Yan Yan, Yong Zhang, Yumi Yukimura.
 
