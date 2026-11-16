@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <project path="device/nothing/Tetris" name="eccq/android_device_nothing_Tetris" remote="github" revision="lineage-24.0" />
+  <project path="device/nothing/Tetris-kernel" name="lufrz/android_device_nothing_Tetris-kernel" remote="github" revision="lineage-24.0-tetris" />
+  <project path="vendor/nothing/Tetris" name="eccq/proprietary_vendor_nothing_Tetris" remote="github" revision="lineage-24.0" />
+  <project path="device/mediatek/sepolicy_vndr" name="LineageOS/android_device_mediatek_sepolicy_vndr" remote="github" />
+  <project path="hardware/mediatek" name="LineageOS/android_hardware_mediatek" remote="github" />
+  <project path="hardware/dolby" name="swiitch-OFF-Lab/hardware_dolby" remote="github" revision="moto-A17" />
+  <project path="packages/apps/DolbyUI" name="swiitch-OFF-Lab/packages_apps_DolbyUI" remote="github" revision="a" />
+</manifest>

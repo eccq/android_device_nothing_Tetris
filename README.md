@@ -31,13 +31,24 @@ checked out at `device/nothing/Tetris-kernel`. It carries the interfaces Tetris
 Parts uses for CPU frequency locking, the GPU floor and Charger-powered mode;
 [app/parts/KERNEL.md](app/parts/KERNEL.md) describes them.
 
-Build:
+Build from scratch:
 
 ```
+repo init -u https://github.com/DescartesOS/android.git -b lineage-24.0 --git-lfs
+mkdir -p .repo/local_manifests
+curl -L -o .repo/local_manifests/tetris.xml \
+  https://raw.githubusercontent.com/eccq/android_device_nothing_Tetris/lineage-24.0/manifest/tetris.xml
+repo sync -c -j8
+for p in patches/*.patch; do :; done   # see patches/README.md for the repos they go into
 source build/envsetup.sh
-lunch lineage_Tetris cp2a userdebug
+lunch lineage_Tetris cp2a user
 m bacon
 ```
+
+`manifest/tetris.xml` pulls this tree, the vendor tree, lufrz's `lineage-24.0-tetris`
+prebuilt kernel and the mediatek/dolby repos. Apply the patches in `patches/` after the
+sync, as `patches/README.md` explains; the fixes for settings, systemui, axblur,
+launcher3 and lock styles live there.
 
 The build writes `out/target/product/Tetris/DescartesOS-17.0-<date>-Tetris-v<version>.zip`
 and a matching `Tetris.json` next to it.
