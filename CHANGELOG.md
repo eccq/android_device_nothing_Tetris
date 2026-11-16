@@ -4,6 +4,19 @@ All notable changes to the DescartesOS device tree for the CMF Phone 1 (Tetris).
 
 ## Unreleased
 
+- status bar: a negative start padding past about -12 no longer cuts the clock off,
+  it now moves into the rounded corner.
+- stock volume panel, for real this time: the square at the bottom was the ringer
+  drawer's compositor blur region. on this gpu the volume dialog, ringer and power
+  menu now use their plain rounded backgrounds.
+- colorOS/hyperOS quick settings with blur: the scrim turned transparent for a glass
+  that is switched off here, so nothing was behind the half-open panel. it keeps
+  its colour now.
+- lock styles clock gradient works: systemui reads the colours, centre and size.
+- smoother doze animation for the custom clocks, no more fade-out and pop back,
+  and the aod size follows the clock size you picked.
+- three new screen off animations in atelier: slide down, zoom in and fold (patch 0006).
+
 - settings pages (status bar and the rest of atelier): with app bar blur off the title
   bar is opaque again, no page showing through and no dark band under the title.
 - colorOS/hyperOS quick settings: a half-open shade from the lock screen keeps an 85%

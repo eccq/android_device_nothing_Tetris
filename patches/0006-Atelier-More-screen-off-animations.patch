@@ -1,0 +1,51 @@
+diff --git a/res/values-it-rIT/cr_strings.xml b/res/values-it-rIT/cr_strings.xml
+index 5588407..7816d35 100644
+--- a/res/values-it-rIT/cr_strings.xml
++++ b/res/values-it-rIT/cr_strings.xml
+@@ -639,6 +639,9 @@
+     <string name="screen_off_animation_default">Predefinita</string>
+     <string name="screen_off_animation_crt">Tubo catodico</string>
+     <string name="screen_off_animation_scale">Scala</string>
++    <string name="screen_off_animation_slide">Scorri verso il basso</string>
++    <string name="screen_off_animation_zoom">Zoom avanti</string>
++    <string name="screen_off_animation_fold">Piega</string>
+     <!-- Fingerprint authentication vibration -->
+     <string name="fp_success_vibrate_title">Autenticazione impronta digitale con vibrazione</string>
+     <string name="fp_success_vibrate_summary">Vibra quando l\'autenticazione dell\'impronta digitale è riuscita</string>
+diff --git a/res/values/cr_arrays.xml b/res/values/cr_arrays.xml
+index 8929b10..0b88d66 100644
+--- a/res/values/cr_arrays.xml
++++ b/res/values/cr_arrays.xml
+@@ -494,12 +494,18 @@
+         <item>@string/screen_off_animation_default</item>
+         <item>@string/screen_off_animation_crt</item>
+         <item>@string/screen_off_animation_scale</item>
++        <item>@string/screen_off_animation_slide</item>
++        <item>@string/screen_off_animation_zoom</item>
++        <item>@string/screen_off_animation_fold</item>
+     </string-array>
+ 
+     <string-array name="screen_off_animation_values" translatable="false">
+         <item>0</item>
+         <item>1</item>
+         <item>2</item>
++        <item>3</item>
++        <item>4</item>
++        <item>5</item>
+     </string-array>
+ 
+     <!-- Face Unlock -->
+diff --git a/res/values/cr_strings.xml b/res/values/cr_strings.xml
+index 6e9cdbe..16ab6ed 100644
+--- a/res/values/cr_strings.xml
++++ b/res/values/cr_strings.xml
+@@ -734,6 +734,9 @@
+     <string name="screen_off_animation_default">Default</string>
+     <string name="screen_off_animation_crt">CRT</string>
+     <string name="screen_off_animation_scale">Scale</string>
++    <string name="screen_off_animation_slide">Slide down</string>
++    <string name="screen_off_animation_zoom">Zoom in</string>
++    <string name="screen_off_animation_fold">Fold</string>
+ 
+     <!-- Fingerprint authentication vibration -->
+     <string name="fp_success_vibrate_title">Fingerprint authentication vibration</string>
