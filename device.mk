@@ -149,6 +149,13 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/generic_ramdisk.mk)
 # Enable project quotas and casefolding for emulated storage without sdcardfs
 $(call inherit-product, $(SRC_TARGET_DIR)/product/emulated_storage.mk)
 
+# Emoji styles, chosen with persist.sys.emoji_style
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/fonts/fonts_customization_emoji_ios.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/fonts_customization_emoji_ios.xml \
+    $(LOCAL_PATH)/configs/fonts/fonts_customization_emoji_samsung.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/fonts_customization_emoji_samsung.xml \
+    vendor/themes/emoji/LunarisIosEmoji.ttf:$(TARGET_COPY_OUT_PRODUCT)/fonts/LunarisIosEmoji.ttf \
+    vendor/themes/emoji/SamsungColorEmoji.ttf:$(TARGET_COPY_OUT_PRODUCT)/fonts/SamsungColorEmoji.ttf
+
 # Fingerprint
 PRODUCT_PACKAGES += \
     android.hardware.biometrics.fingerprint-service.nothing \

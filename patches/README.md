@@ -25,6 +25,7 @@ cd packages/apps/SettingsIntelligence && git apply ../../../device/nothing/Tetri
 cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0019-*.patch && cd -
 cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0020-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0021-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0022-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -50,3 +51,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0021-*.patch
 | `0019-Launcher3-Fade-into-the-splash-on-app-launch.patch` | Opening an app from its icon cut from the icon colour to the splash screen in one frame, white to dark blue for Weather. The COS launch skipped the fade when the app had a splash, and the handoff from the tap preview seeked past it. The splash now fades in over 120 ms from the handoff and the preview stays under it until it is covered. Needs 0004. |
 | `0020-Launcher3-Add-recents-styles-from-Lunaris.patch` | Recents layout styles from Lunaris 16.2 (Default, Scale effect, Kami, iOS, OxygenOS), chosen in Home settings > Recents. Default keeps the stock overview. Leaves out the unrelated parts of that series. Needs 0004, 0015 and 0019. |
 | `0021-SystemUI-Keep-the-live-lock-wallpaper-under-depth.patch` | With a live lock screen wallpaper, as LockStyles sets, the depth wallpaper drew the home or default image behind the subject and covered it on the lock screen and the PIN. It now draws no background then, and turns spatial off without one. |
+| `0022-fonts-Add-a-system-emoji-style.patch` | Emoji style read at boot from persist.sys.emoji_style: android, ios or samsung. The ios and samsung fonts come from vendor/themes/emoji, added by device.mk. Based on Lunaris. |
