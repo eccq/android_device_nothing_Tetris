@@ -7,3 +7,6 @@ system_restricted_prop(tetrisparts_thermal_daemon_prop)
 
 # Parts publishes consent for the vendor init control services.
 system_restricted_prop(tetris_parts_consent_prop)
+
+# system_server mirrors the Laboratory switch here; every app reads it.
+system_public_prop(penguin_luminous_prop)

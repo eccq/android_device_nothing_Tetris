@@ -1,0 +1,2 @@
+get_prop(appdomain, penguin_luminous_prop)
+set_prop(system_server, penguin_luminous_prop)
