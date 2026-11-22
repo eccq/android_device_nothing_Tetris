@@ -1,5 +1,5 @@
 diff --git a/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java b/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java
-index cf30cf416..a234faf49 100644
+index cf30cf4160ff..a234faf499b7 100644
 --- a/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java
 +++ b/packages/SettingsLib/CollapsingToolbarBaseActivity/src/com/android/settingslib/collapsingtoolbar/CollapsingToolbarDelegate.java
 @@ -243,6 +243,11 @@ public class CollapsingToolbarDelegate {
@@ -26,7 +26,7 @@ index cf30cf416..a234faf49 100644
              WindowManager wm = context.getSystemService(WindowManager.class);
              if (wm != null && !wm.isCrossWindowBlurEnabled()) {
 diff --git a/packages/SystemUI/res/layout/status_bar.xml b/packages/SystemUI/res/layout/status_bar.xml
-index f2874da75..4300d21a5 100644
+index f2874da75825..4300d21a5400 100644
 --- a/packages/SystemUI/res/layout/status_bar.xml
 +++ b/packages/SystemUI/res/layout/status_bar.xml
 @@ -24,6 +24,7 @@
@@ -38,7 +38,7 @@ index f2874da75..4300d21a5 100644
      android:focusable="false"
      android:descendantFocusability="afterDescendants"
 diff --git a/packages/SystemUI/shared/src/com/android/systemui/shared/system/BlurUtils.java b/packages/SystemUI/shared/src/com/android/systemui/shared/system/BlurUtils.java
-index 872c6229d..1b2f4c776 100644
+index 872c6229d15c..1b2f4c776f08 100644
 --- a/packages/SystemUI/shared/src/com/android/systemui/shared/system/BlurUtils.java
 +++ b/packages/SystemUI/shared/src/com/android/systemui/shared/system/BlurUtils.java
 @@ -37,7 +37,10 @@ public abstract class BlurUtils {
@@ -54,7 +54,7 @@ index 872c6229d..1b2f4c776 100644
  
      private static boolean isBlurExpansionEnabledOnDevice() {
 diff --git a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
-index 373179293..93bea86de 100644
+index f6e83df4e788..be92b0ee5a43 100644
 --- a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
 +++ b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
 @@ -10,6 +10,9 @@ import android.content.Intent
@@ -82,7 +82,7 @@ index 373179293..93bea86de 100644
  import com.android.systemui.Dependency
  import com.android.systemui.plugins.statusbar.StatusBarStateController
  import com.android.systemui.res.R
-@@ -56,8 +58,15 @@ class ClockStyle @JvmOverloads constructor(
+@@ -60,8 +62,15 @@ class ClockStyle @JvmOverloads constructor(
      private var customColor = DEFAULT_CUSTOM_COLOR
      private var clockOpacity = DEFAULT_OPACITY
      private var clockFrameMarginTop = DEFAULT_MARGIN_TOP
@@ -98,7 +98,7 @@ index 373179293..93bea86de 100644
  
      private var lastUpdateTimeMillis = 0L
      private var isDozing = false
-@@ -129,8 +138,14 @@ class ClockStyle @JvmOverloads constructor(
+@@ -134,8 +143,14 @@ class ClockStyle @JvmOverloads constructor(
              CLOCK_CUSTOM_COLOR_KEY,
              CLOCK_TEXT_OPACITY_KEY,
              CLOCK_FRAME_MARGIN_TOP_KEY,
@@ -111,9 +111,9 @@ index 373179293..93bea86de 100644
 +            CLOCK_GRADIENT_ANCHOR_Y_KEY,
 +            CLOCK_GRADIENT_RADIUS_KEY,
          )
-         statusBarStateController.addCallback(statusBarStateListener)
+         if (!forHome) statusBarStateController.addCallback(statusBarStateListener)
  
-@@ -162,6 +177,7 @@ class ClockStyle @JvmOverloads constructor(
+@@ -168,6 +183,7 @@ class ClockStyle @JvmOverloads constructor(
          handler.removeCallbacks(aodTickRunnable)
          currentClockView?.animate()?.cancel()
          removePendingLayoutListener()
@@ -121,7 +121,7 @@ index 373179293..93bea86de 100644
          runCatching { context.unregisterReceiver(screenReceiver) }
          callbacksRegistered = false
      }
-@@ -205,6 +221,11 @@ class ClockStyle @JvmOverloads constructor(
+@@ -211,6 +227,11 @@ class ClockStyle @JvmOverloads constructor(
                      .coerceIn(0, 100)
                  updateClockFrameMargin()
              }
@@ -133,7 +133,7 @@ index 373179293..93bea86de 100644
              CLOCK_SIZE_KEY -> {
                  clockSizeScale = TunerService.parseInteger(newValue, DEFAULT_CLOCK_SIZE)
                      .coerceIn(MIN_CLOCK_SIZE, MAX_CLOCK_SIZE)
-@@ -213,13 +234,34 @@ class ClockStyle @JvmOverloads constructor(
+@@ -219,13 +240,34 @@ class ClockStyle @JvmOverloads constructor(
              CLOCK_AOD_ANIM_KEY -> {
                  aodAnimEnabled = TunerService.parseInteger(newValue, 1) != 0
              }
@@ -170,7 +170,7 @@ index 373179293..93bea86de 100644
          applyClockColors()
          if (dozing) {
              startBurnInProtection()
-@@ -258,35 +300,26 @@ class ClockStyle @JvmOverloads constructor(
+@@ -264,35 +306,26 @@ class ClockStyle @JvmOverloads constructor(
          }
      }
  
@@ -225,7 +225,7 @@ index 373179293..93bea86de 100644
      }
  
      fun onTimeChanged() {
-@@ -382,8 +415,16 @@ class ClockStyle @JvmOverloads constructor(
+@@ -388,8 +421,16 @@ class ClockStyle @JvmOverloads constructor(
      private fun updateClockFrameMargin() {
          val clockFrame = findViewById<View?>(R.id.clock_frame) ?: return
          val params = clockFrame.layoutParams as? ViewGroup.MarginLayoutParams ?: return
@@ -243,7 +243,7 @@ index 373179293..93bea86de 100644
      }
  
      private fun updateClockAppearance() {
-@@ -394,9 +435,12 @@ class ClockStyle @JvmOverloads constructor(
+@@ -400,9 +441,12 @@ class ClockStyle @JvmOverloads constructor(
      }
  
      private fun applyClockAlpha() {
@@ -258,7 +258,7 @@ index 373179293..93bea86de 100644
      }
  
      private fun resolveClockColor(): Int = when (colorMode) {
-@@ -410,6 +454,7 @@ class ClockStyle @JvmOverloads constructor(
+@@ -416,6 +460,7 @@ class ClockStyle @JvmOverloads constructor(
      private fun applyClockColors() {
          if (isNoColorClock(clockStyle) || textClocks.isEmpty()) return
          val whiteColor = context.getColor(android.R.color.white)
@@ -266,7 +266,7 @@ index 373179293..93bea86de 100644
          for (i in textClocks.indices) {
              val tc = textClocks[i]
              if (tc.getTag(R.id.original_typeface) == null && tc.typeface != null) {
-@@ -429,6 +474,7 @@ class ClockStyle @JvmOverloads constructor(
+@@ -435,6 +480,7 @@ class ClockStyle @JvmOverloads constructor(
                      else -> resolveClockColor()
                  }
              )
@@ -274,7 +274,7 @@ index 373179293..93bea86de 100644
          }
  
          for (i in styledTextViews.indices) {
-@@ -446,7 +492,61 @@ class ClockStyle @JvmOverloads constructor(
+@@ -452,7 +498,61 @@ class ClockStyle @JvmOverloads constructor(
                      else -> resolveClockColor()
                  }
              )
@@ -336,7 +336,7 @@ index 373179293..93bea86de 100644
      }
  
      private fun getScaleFactor(): Float =
-@@ -454,7 +554,7 @@ class ClockStyle @JvmOverloads constructor(
+@@ -460,7 +560,7 @@ class ClockStyle @JvmOverloads constructor(
  
      private fun applyClockScale() {
          val view = currentClockView ?: return
@@ -345,7 +345,7 @@ index 373179293..93bea86de 100644
          view.scaleX = scale
          view.scaleY = scale
          view.pivotX = view.width / 2f
-@@ -585,8 +685,19 @@ class ClockStyle @JvmOverloads constructor(
+@@ -605,8 +705,19 @@ class ClockStyle @JvmOverloads constructor(
          @JvmField val CLOCK_CUSTOM_COLOR_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_CUSTOM_COLOR
          @JvmField val CLOCK_TEXT_OPACITY_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_OPACITY
          @JvmField val CLOCK_FRAME_MARGIN_TOP_KEY: String = Settings.Secure.LOCK_SCREEN_CUSTOM_CLOCK_MARGIN_TOP
@@ -365,7 +365,7 @@ index 373179293..93bea86de 100644
  
          const val COLOR_MODE_DEFAULT = "default"
          const val COLOR_MODE_ACCENT = "accent"
-@@ -597,8 +708,13 @@ class ClockStyle @JvmOverloads constructor(
+@@ -617,8 +728,13 @@ class ClockStyle @JvmOverloads constructor(
          private const val DEFAULT_STYLE = 0
          private const val DEFAULT_OPACITY = 100
          private const val DEFAULT_MARGIN_TOP = 15
@@ -379,7 +379,7 @@ index 373179293..93bea86de 100644
          private const val DEFAULT_CLOCK_SIZE = 100
          private const val MIN_CLOCK_SIZE = 50
          private const val MAX_CLOCK_SIZE = 150
-@@ -610,7 +726,7 @@ class ClockStyle @JvmOverloads constructor(
+@@ -630,7 +746,7 @@ class ClockStyle @JvmOverloads constructor(
          private const val BURN_IN_PROTECTION_MAX_SHIFT = 4
  
          private const val AOD_SCALE_DOWN = 0.85f
@@ -389,10 +389,10 @@ index 373179293..93bea86de 100644
      }
  }
 diff --git a/packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/ColorOSGlassBlur.kt b/packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/ColorOSGlassBlur.kt
-index d8a6b5f77..332806374 100644
+index 22ce0913be58..e5d667bbdbf0 100644
 --- a/packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/ColorOSGlassBlur.kt
 +++ b/packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/ColorOSGlassBlur.kt
-@@ -167,7 +167,9 @@ private fun rememberCrossWindowBlurEnabled(): Boolean {
+@@ -177,7 +177,9 @@ private fun rememberCrossWindowBlurEnabled(): Boolean {
      val supported = remember {
          CrossWindowBlurListeners.CROSS_WINDOW_BLUR_SUPPORTED &&
              ActivityManager.isHighEndGfx() &&
@@ -404,7 +404,7 @@ index d8a6b5f77..332806374 100644
      val context = LocalContext.current
      var enabled by remember { mutableStateOf(false) }
 diff --git a/packages/SystemUI/src/com/android/systemui/shade/ui/ShadeColors.kt b/packages/SystemUI/src/com/android/systemui/shade/ui/ShadeColors.kt
-index 480e20e58..d845e31fa 100644
+index 480e20e58c20..d845e31fa96c 100644
 --- a/packages/SystemUI/src/com/android/systemui/shade/ui/ShadeColors.kt
 +++ b/packages/SystemUI/src/com/android/systemui/shade/ui/ShadeColors.kt
 @@ -26,6 +26,7 @@ import android.database.ContentObserver
@@ -438,7 +438,7 @@ index 480e20e58..d845e31fa 100644
  
      private fun hct(context: Context, s: Spec, chroma: Float, tone: Float, alpha: Float): Int {
 diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimController.java b/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimController.java
-index 808782fe7..094989348 100644
+index 808782fe7449..094989348928 100644
 --- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimController.java
 +++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimController.java
 @@ -36,6 +36,7 @@ import android.content.res.Configuration;
@@ -461,7 +461,7 @@ index 808782fe7..094989348 100644
                          Settings.System.QS_PANEL_STYLE, 0, UserHandle.USER_CURRENT));
      }
 diff --git a/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt b/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt
-index b3c0f5a11..41c871c31 100644
+index b3c0f5a11060..41c871c31e0b 100644
 --- a/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt
 +++ b/packages/SystemUI/src/com/android/systemui/volume/dialog/ui/view/VolumeDialogBackgroundView.kt
 @@ -18,6 +18,7 @@ package com.android.systemui.volume.dialog.ui.view
@@ -497,7 +497,7 @@ index b3c0f5a11..41c871c31 100644
          }
      }
 diff --git a/services/core/java/com/android/server/display/DisplayPowerController.java b/services/core/java/com/android/server/display/DisplayPowerController.java
-index f8be1168b..0d1d2a223 100644
+index f8be1168b79f..0d1d2a2239fa 100644
 --- a/services/core/java/com/android/server/display/DisplayPowerController.java
 +++ b/services/core/java/com/android/server/display/DisplayPowerController.java
 @@ -450,6 +450,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
@@ -527,7 +527,7 @@ index f8be1168b..0d1d2a223 100644
                  return ScreenStateAnimator.MODE_FADE;
          }
 diff --git a/services/core/java/com/android/server/display/ElectronBeam.java b/services/core/java/com/android/server/display/ElectronBeam.java
-index f28416703..a84b9fd74 100644
+index f28416703077..a84b9fd74822 100644
 --- a/services/core/java/com/android/server/display/ElectronBeam.java
 +++ b/services/core/java/com/android/server/display/ElectronBeam.java
 @@ -74,6 +74,7 @@ final class ElectronBeam implements ScreenStateAnimator {
@@ -639,7 +639,7 @@ index f28416703..a84b9fd74 100644
       * Draws a frame where the content of the electron beam is collapsing inwards upon
       * itself vertically with red / green / blue channels dispersing and eventually
 diff --git a/services/core/java/com/android/server/display/ScreenStateAnimator.java b/services/core/java/com/android/server/display/ScreenStateAnimator.java
-index 9722e1949..2f71b74e6 100644
+index 9722e1949dd6..2f71b74e6638 100644
 --- a/services/core/java/com/android/server/display/ScreenStateAnimator.java
 +++ b/services/core/java/com/android/server/display/ScreenStateAnimator.java
 @@ -27,6 +27,9 @@ public interface ScreenStateAnimator {
