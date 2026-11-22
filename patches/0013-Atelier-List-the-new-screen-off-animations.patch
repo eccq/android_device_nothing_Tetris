@@ -1,0 +1,52 @@
+diff --git a/res/values-it-rIT/cr_strings.xml b/res/values-it-rIT/cr_strings.xml
+index 7816d351..daec4994 100644
+--- a/res/values-it-rIT/cr_strings.xml
++++ b/res/values-it-rIT/cr_strings.xml
+@@ -642,6 +642,9 @@
+     <string name="screen_off_animation_slide">Scorri verso il basso</string>
+     <string name="screen_off_animation_zoom">Zoom avanti</string>
+     <string name="screen_off_animation_fold">Piega</string>
++    <string name="screen_off_animation_iris">Diaframma</string>
++    <string name="screen_off_animation_desaturate">Desaturazione</string>
++    <string name="screen_off_animation_shutter">Otturatore</string>
+     <!-- Fingerprint authentication vibration -->
+     <string name="fp_success_vibrate_title">Autenticazione impronta digitale con vibrazione</string>
+     <string name="fp_success_vibrate_summary">Vibra quando l\'autenticazione dell\'impronta digitale è riuscita</string>
+diff --git a/res/values/cr_arrays.xml b/res/values/cr_arrays.xml
+index 0b88d66f..869b63be 100644
+--- a/res/values/cr_arrays.xml
++++ b/res/values/cr_arrays.xml
+@@ -497,6 +497,9 @@
+         <item>@string/screen_off_animation_slide</item>
+         <item>@string/screen_off_animation_zoom</item>
+         <item>@string/screen_off_animation_fold</item>
++        <item>@string/screen_off_animation_iris</item>
++        <item>@string/screen_off_animation_desaturate</item>
++        <item>@string/screen_off_animation_shutter</item>
+     </string-array>
+ 
+     <string-array name="screen_off_animation_values" translatable="false">
+@@ -506,6 +509,9 @@
+         <item>3</item>
+         <item>4</item>
+         <item>5</item>
++        <item>6</item>
++        <item>7</item>
++        <item>8</item>
+     </string-array>
+ 
+     <!-- Face Unlock -->
+diff --git a/res/values/cr_strings.xml b/res/values/cr_strings.xml
+index ba893956..09c75671 100644
+--- a/res/values/cr_strings.xml
++++ b/res/values/cr_strings.xml
+@@ -737,6 +737,9 @@
+     <string name="screen_off_animation_slide">Slide down</string>
+     <string name="screen_off_animation_zoom">Zoom in</string>
+     <string name="screen_off_animation_fold">Fold</string>
++    <string name="screen_off_animation_iris">Iris</string>
++    <string name="screen_off_animation_desaturate">Desaturate</string>
++    <string name="screen_off_animation_shutter">Shutter</string>
+ 
+     <!-- Fingerprint authentication vibration -->
+     <string name="fp_success_vibrate_title">Fingerprint authentication vibration</string>
