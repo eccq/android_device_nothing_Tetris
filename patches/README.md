@@ -11,6 +11,7 @@ cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0
 cd packages/apps/LockStyles && git apply ../../../device/nothing/Tetris/patches/0005-*.patch && cd -
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0006-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0007-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0008-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -22,3 +23,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0007-*.patch
 | `0005-LockStyles-Wallpaper-and-memory-fixes.patch` | lock styles: "keep home" no longer turns an engine-drawn home screen black or into the new lock picture, the "on lock" shuffle stops skipping a photo every time an app opens, no depth cut-out taken from the home photo when the lock screen is live, re-adopting the current wallpaper can't show a stale cached picture, and the full-screen bitmaps used for wallpapers and effects get recycled instead of piling up in memory. |
 | `0006-Atelier-More-screen-off-animations.patch` | Atelier > User interface > Screen off animation lists the new slide down, zoom in and fold animations next to default, CRT and scale. Needs the 0002 framework part. |
 | `0007-SystemUI-Wi-Fi-standard-icon-without-end-margin.patch` | Status bar > Icons > Wi-Fi standard moved the icon left and left a gap before the battery: the standard icon shares a frame with the signal icon and its 4sp end margin widened it. Without the margin it sits where the plain signal icon does. |
+| `0008-frameworks-base-OmniJawsClient-air-quality-fields.patch` | OmniJaws from crDroid shows an air quality card since 6ecc2cb and reads aqi, aqiScale, pm25, pm10 and AQI_SCALE_IN from OmniJawsClient. The DescartesOS framework did not have them yet and the build failed in DetailCards.kt. Same change as OmniJawsClient.java in crDroid frameworks_base 17.0. |
