@@ -12,6 +12,7 @@ cd packages/apps/LockStyles && git apply ../../../device/nothing/Tetris/patches/
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0006-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0007-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0008-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0009-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -24,3 +25,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0008-*.patch
 | `0006-Atelier-More-screen-off-animations.patch` | Atelier > User interface > Screen off animation lists the new slide down, zoom in and fold animations next to default, CRT and scale. Needs the 0002 framework part. |
 | `0007-SystemUI-Wi-Fi-standard-icon-without-end-margin.patch` | Status bar > Icons > Wi-Fi standard moved the icon left and left a gap before the battery: the standard icon shares a frame with the signal icon and its 4sp end margin widened it. Without the margin it sits where the plain signal icon does. |
 | `0008-frameworks-base-OmniJawsClient-air-quality-fields.patch` | OmniJaws from crDroid shows an air quality card since 6ecc2cb and reads aqi, aqiScale, pm25, pm10 and AQI_SCALE_IN from OmniJawsClient. The DescartesOS framework did not have them yet and the build failed in DetailCards.kt. Same change as OmniJawsClient.java in crDroid frameworks_base 17.0. |
+| `0009-SystemUI-Back-dispatcher-for-the-lock-screen-media-card.patch` | SystemUI crashed every few seconds on the lock screen while music played: the media card's SceneTransitionLayout asks for a back dispatcher and the keyguard root view has none (IllegalStateException: No NavigationEventDispatcherOwner was provided). The card's compose view now gets one when attached, the way the communal hub does. |

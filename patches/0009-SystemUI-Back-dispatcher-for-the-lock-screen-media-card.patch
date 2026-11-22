@@ -1,0 +1,33 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/layout/sections/LockscreenPlayerSection.kt b/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/layout/sections/LockscreenPlayerSection.kt
+index 30034e30f248..3d735c4ca742 100644
+--- a/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/layout/sections/LockscreenPlayerSection.kt
++++ b/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/layout/sections/LockscreenPlayerSection.kt
+@@ -27,11 +27,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
+ import com.android.axion.compose.host.AxComposeView
+ import com.android.compose.theme.PlatformTheme
+ import com.android.systemui.classifier.Classifier
++import com.android.systemui.initOnBackPressedDispatcherOwner
+ import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+ import com.android.systemui.keyguard.shared.model.KeyguardSection
+ import com.android.systemui.keyguard.ui.composable.media.LockscreenExpandedMediaArt
+ import com.android.systemui.keyguard.ui.composable.media.LockscreenMediaCard
+ import com.android.systemui.keyguard.ui.composable.media.LockscreenMediaExpansion
++import com.android.systemui.lifecycle.repeatWhenAttached
+ import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
+ import com.android.systemui.media.remedia.ui.compose.Media
+ import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
+@@ -60,7 +62,13 @@ constructor(
+ 
+     override fun addViews(constraintLayout: ConstraintLayout) {
+         constraintLayout.addView(AxComposeView(context).apply { id = artId }, 0)
+-        constraintLayout.addView(AxComposeView(context).apply { id = cardId })
++        constraintLayout.addView(
++            AxComposeView(context).apply {
++                id = cardId
++                // The media card's back handler needs a dispatcher the keyguard root lacks.
++                repeatWhenAttached { initOnBackPressedDispatcherOwner(lifecycle) }
++            }
++        )
+     }
+ 
+     override fun bindData(constraintLayout: ConstraintLayout) {
