@@ -1,0 +1,74 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
+--- a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
++++ b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
+@@ -566,7 +566,48 @@
+         view.pivotX = view.width / 2f
+         view.pivotY = 0f
+         disableClippingOnParents(view)
++        post { updateOverflowPadding() }
+     }
++
++    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
++        super.onLayout(changed, l, t, r, b)
++        post { updateOverflowPadding() }
++    }
++
++    // The keyguard places the media card and notifications under this view's measured bottom,
++    // but negative margins and the size scale draw parts of many clocks below it.
++    private fun updateOverflowPadding() {
++        val view = currentClockView
++        val overflow =
++            if (forHome || view == null || view.visibility != View.VISIBLE) 0
++            else (drawnBottom(view) - (height - paddingBottom)).coerceAtLeast(0)
++        if (overflow != paddingBottom) setPadding(paddingLeft, paddingTop, paddingRight, overflow)
++    }
++
++    private fun drawnBottom(clock: View): Int {
++        var top = 0
++        var v: View = clock
++        while (v !== this) {
++            top += v.top
++            v = v.parent as? View ?: return 0
++        }
++        // The AOD scale-down is left out so the content below does not move when dozing.
++        return top + (contentBottom(clock) * getScaleFactor()).toInt()
++    }
++
++    private fun contentBottom(view: View): Int {
++        var bottom = view.height
++        if (view is ViewGroup) {
++            for (i in 0 until view.childCount) {
++                val child = view.getChildAt(i)
++                if (child.visibility == View.VISIBLE) {
++                    bottom = maxOf(bottom, child.top + contentBottom(child))
++                }
++            }
++        }
++        return bottom
++    }
++
+     /** Restore the current appearance, rather than a pre-unlock alpha saved by the launcher. */
+     fun restoreAfterHandoff() {
+         val dozing = !forHome && statusBarStateController.isDozing
+diff --git a/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/layout/sections/LockscreenPlayerSection.kt b/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/layout/sections/LockscreenPlayerSection.kt
+--- a/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/layout/sections/LockscreenPlayerSection.kt
++++ b/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/layout/sections/LockscreenPlayerSection.kt
+@@ -103,15 +103,15 @@
+             constrainHeight(cardId, ConstraintSet.WRAP_CONTENT)
+             connect(cardId, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
+             connect(cardId, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
++            val bottomMargin =
++                context.resources.getDimensionPixelSize(R.dimen.keyguard_status_view_bottom_margin)
+             connect(
+                 cardId,
+                 ConstraintSet.TOP,
+                 R.id.smart_space_barrier_bottom,
+                 ConstraintSet.BOTTOM,
++                bottomMargin,
+             )
+-
+-            val bottomMargin =
+-                context.resources.getDimensionPixelSize(R.dimen.keyguard_status_view_bottom_margin)
+             connect(
+                 R.id.nssl_placeholder,
+                 ConstraintSet.TOP,
