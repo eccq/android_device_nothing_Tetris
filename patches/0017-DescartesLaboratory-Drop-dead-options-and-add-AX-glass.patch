@@ -1,0 +1,410 @@
+diff --git a/res/values/strings.xml b/res/values/strings.xml
+index f2fb410..3968b81 100644
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -162,6 +162,8 @@
+     <string name="liquid_glass_refraction_summary">How far the rim of the glass bends in what lies just beyond it, as on the iPadOS dock and Search field</string>
+     <string name="liquid_glass_use">Use Liquid Glass</string>
+     <string name="liquid_glass_use_summary">Turn the system\'s frosted surfaces into light-bending glass</string>
++    <string name="liquid_glass_ax_glass">Lighter Quick Settings glass</string>
++    <string name="liquid_glass_ax_glass_summary">Blur tiles with AxionBlur, which is lighter on mid-range devices</string>
+     <string name="liquid_glass_hint">Applies to every blurred surface at once.</string>
+     <string name="tab_bars_header">In apps</string>
+     <string name="tab_bars_use">Glass tab bars</string>
+@@ -183,15 +185,14 @@
+     <string name="styles_default">Default</string>
+     <string name="styles_qs_title">Quick Settings</string>
+     <string name="styles_qs_style">Style</string>
+-    <string name="styles_qs_penguin">Penguin</string>
+-    <string name="styles_qs_myui">MyUI</string>
+-    <string name="styles_qs_harmony">HarmonyOS</string>
++    <string name="styles_qs_classic">Classic</string>
+     <string name="styles_qs_coloros" translatable="false">ColorOS</string>
+-    <string name="styles_qs_stock">Stock Android</string>
+-    <string name="styles_qs_oneui_active">Unavailable while One UI Quick Settings is on in Experiments</string>
+-    <string name="styles_qs_folder">Connectivity folder</string>
+-    <string name="styles_qs_folder_summary">Group Wi-Fi, mobile data and Bluetooth into one Quick Settings card</string>
++    <string name="styles_qs_nothingos" translatable="false">Nothing OS</string>
++    <string name="styles_qs_hyperos" translatable="false">HyperOS</string>
++    <string name="styles_qs_axion" translatable="false">Axion</string>
++    <string name="styles_qs_motorola" translatable="false">Motorola</string>
+     <string name="styles_volume_title">Volume panel</string>
++    <string name="styles_volume_cos_active">COS experience has its own volume panel on. Turn it off there to use these styles</string>
+     <string name="styles_volume_expandable">Expandable</string>
+     <string name="styles_volume_oneui">One UI</string>
+     <string name="styles_volume_myui">MyUI</string>
+@@ -211,24 +212,10 @@
+     </plurals>
+     <string name="experiments_lock_screen">Lock screen</string>
+     <string name="experiments_system">System</string>
+-    <string name="experiments_ls_now_bar">Now bar</string>
+-    <string name="experiments_ls_now_bar_summary">Swipe the lock screen player down to fold it and the notifications into a pill and show the artwork</string>
+-    <string name="experiments_ls_now_bar_art">Show artwork when folded</string>
+-    <string name="experiments_ls_now_bar_art_summary">Fill the lock screen with the album art behind the now bar. Off, or pulled down again, the wallpaper shows instead</string>
+-    <string name="experiments_ls_lock_icon_top">Lock icon at the top</string>
+-    <string name="experiments_ls_lock_icon_top_summary">Show the padlock under the status bar and give its space to the lock screen content</string>
+     <string name="experiments_ls_media_expand">iOS-style lock screen media art</string>
+     <string name="experiments_ls_media_expand_summary">Tap the lock screen player\'s artwork to fill the screen with it</string>
+     <string name="experiments_ls_media_motion_art">Animated album art</string>
+     <string name="experiments_ls_media_motion_art_summary">Loop Apple Music\'s motion artwork in the expanded player</string>
+-    <string name="experiments_depth_floating">Floating depth wallpaper</string>
+-    <string name="experiments_depth_floating_summary">Float the lock screen clock between wallpaper and subject on tilt</string>
+-    <string name="experiments_qs_oneui">One UI Quick Settings</string>
+-    <string name="experiments_qs_oneui_summary">Use a One UI style Quick Settings with the split shade</string>
+-    <string name="experiments_back_to_app">Back to app</string>
+-    <string name="experiments_back_to_app_summary">Show the app you came from in the status bar to go back to it</string>
+-    <string name="experiments_recents_frequent_apps">Frequently used apps in recents</string>
+-    <string name="experiments_recents_frequent_apps_summary">Show the four apps you used most this week below recent apps</string>
+ 
+     <plurals name="cos_status">
+         <item quantity="one">%d part on</item>
+@@ -243,18 +230,8 @@
+     <string name="cos_app_motion_summary">Apps open from and close into their icons on ColorOS springs</string>
+     <string name="cos_recents">Recents</string>
+     <string name="cos_recents_summary">ColorOS card motion when opening and leaving recents</string>
+-    <string name="cos_shade">Shade motion</string>
+-    <string name="cos_shade_summary">ColorOS pull-down and close for the shade and Quick Settings</string>
+-    <string name="cos_qs">Quick Settings look</string>
+-    <string name="cos_qs_summary">ColorOS glass tiles, sliders and media card</string>
+     <string name="cos_volume">Volume panel</string>
+     <string name="cos_volume_summary">ColorOS volume slider and its expanded panel</string>
+-    <string name="cos_media">Media lights</string>
+-    <string name="cos_media_summary">Artwork glow on media cards, seekbar light and status sweeps</string>
+-    <string name="cos_lockscreen_media">Lockscreen player</string>
+-    <string name="cos_lockscreen_media_summary">Full-screen artwork behind the expanded lockscreen player</string>
+-    <string name="cos_lockscreen_glass">Lockscreen glass</string>
+-    <string name="cos_lockscreen_glass_summary">Glass lock icon, shortcuts and player card</string>
+     <string name="cos_clock">Fluid Clock</string>
+     <string name="cos_clock_summary">The clock carries over from the lockscreen into the home screen when you unlock</string>
+     <string name="cos_footer">Parts follow the whole experience until you set them here.</string>
+diff --git a/src/com/descartes/laboratory/cos/CosExperienceActivity.kt b/src/com/descartes/laboratory/cos/CosExperienceActivity.kt
+index 677c94c..e5d918f 100644
+--- a/src/com/descartes/laboratory/cos/CosExperienceActivity.kt
++++ b/src/com/descartes/laboratory/cos/CosExperienceActivity.kt
+@@ -64,42 +64,12 @@ object CosExperienceStore {
+             R.string.cos_recents_summary,
+             R.drawable.materialsymbols_ic_tab_recent_rounded_filled,
+         ),
+-        Shade(
+-            "penguin_cos_shade",
+-            R.string.cos_shade,
+-            R.string.cos_shade_summary,
+-            R.drawable.materialsymbols_ic_swipe_up_rounded_filled,
+-        ),
+-        QuickSettings(
+-            "penguin_cos_qs",
+-            R.string.cos_qs,
+-            R.string.cos_qs_summary,
+-            R.drawable.materialsymbols_ic_toggle_on_rounded_filled,
+-        ),
+         Volume(
+             "penguin_cos_volume",
+             R.string.cos_volume,
+             R.string.cos_volume_summary,
+             R.drawable.materialsymbols_ic_volume_up_rounded_filled,
+         ),
+-        MediaLights(
+-            "penguin_cos_media",
+-            R.string.cos_media,
+-            R.string.cos_media_summary,
+-            R.drawable.materialsymbols_ic_graphic_eq_rounded_filled,
+-        ),
+-        LockscreenMedia(
+-            "penguin_cos_lockscreen_media",
+-            R.string.cos_lockscreen_media,
+-            R.string.cos_lockscreen_media_summary,
+-            R.drawable.materialsymbols_ic_music_note_rounded_filled,
+-        ),
+-        LockscreenGlass(
+-            "penguin_cos_lockscreen_glass",
+-            R.string.cos_lockscreen_glass,
+-            R.string.cos_lockscreen_glass_summary,
+-            R.drawable.materialsymbols_ic_blur_on_rounded_filled,
+-        ),
+         Clock(
+             "penguin_cos_clock",
+             R.string.cos_clock,
+diff --git a/src/com/descartes/laboratory/experiments/ExperimentsActivity.kt b/src/com/descartes/laboratory/experiments/ExperimentsActivity.kt
+index d83ff52..51a4a40 100644
+--- a/src/com/descartes/laboratory/experiments/ExperimentsActivity.kt
++++ b/src/com/descartes/laboratory/experiments/ExperimentsActivity.kt
+@@ -55,31 +55,6 @@ object ExperimentsStore {
+ 
+     val lockScreen =
+         listOf(
+-            Experiment(
+-                "ls_now_bar",
+-                secure = false,
+-                R.string.experiments_ls_now_bar,
+-                R.string.experiments_ls_now_bar_summary,
+-                R.drawable.materialsymbols_ic_music_note_rounded_filled,
+-                defaultOn = true,
+-            ),
+-            Experiment(
+-                "ls_now_bar_art",
+-                secure = false,
+-                R.string.experiments_ls_now_bar_art,
+-                R.string.experiments_ls_now_bar_art_summary,
+-                R.drawable.materialsymbols_ic_wallpaper_rounded_filled,
+-                dependsOn = "ls_now_bar",
+-                defaultOn = true,
+-            ),
+-            Experiment(
+-                "ls_lock_icon_top",
+-                secure = false,
+-                R.string.experiments_ls_lock_icon_top,
+-                R.string.experiments_ls_lock_icon_top_summary,
+-                R.drawable.materialsymbols_ic_layers_rounded_filled,
+-                defaultOn = true,
+-            ),
+             Experiment(
+                 "ls_media_expand",
+                 secure = false,
+@@ -95,31 +70,10 @@ object ExperimentsStore {
+                 R.drawable.materialsymbols_ic_wallpaper_rounded_filled,
+                 dependsOn = "ls_media_expand",
+             ),
+-            Experiment(
+-                "depth_wallpaper_floating",
+-                secure = true,
+-                R.string.experiments_depth_floating,
+-                R.string.experiments_depth_floating_summary,
+-                R.drawable.materialsymbols_ic_layers_rounded_filled,
+-            ),
+         )
+ 
+     val system =
+         listOf(
+-            Experiment(
+-                "qs_oneui_experimental",
+-                secure = true,
+-                R.string.experiments_qs_oneui,
+-                R.string.experiments_qs_oneui_summary,
+-                R.drawable.materialsymbols_ic_dashboard_customize_rounded_filled,
+-            ),
+-            Experiment(
+-                "back_to_app_indicator",
+-                secure = false,
+-                R.string.experiments_back_to_app,
+-                R.string.experiments_back_to_app_summary,
+-                R.drawable.materialsymbols_ic_arrow_back_rounded_filled,
+-            ),
+             Experiment(
+                 "penguin_luminous_all_apps",
+                 secure = true,
+@@ -127,13 +81,6 @@ object ExperimentsStore {
+                 R.string.experiments_luminous_all_apps_summary,
+                 R.drawable.materialsymbols_ic_animation_rounded_filled,
+             ),
+-            Experiment(
+-                "recents_frequent_apps",
+-                secure = true,
+-                R.string.experiments_recents_frequent_apps,
+-                R.string.experiments_recents_frequent_apps_summary,
+-                R.drawable.materialsymbols_ic_history_rounded_filled,
+-            ),
+         )
+ 
+     val all = lockScreen + system
+diff --git a/src/com/descartes/laboratory/glass/LiquidGlassActivity.kt b/src/com/descartes/laboratory/glass/LiquidGlassActivity.kt
+index 2fdad69..1d4b952 100644
+--- a/src/com/descartes/laboratory/glass/LiquidGlassActivity.kt
++++ b/src/com/descartes/laboratory/glass/LiquidGlassActivity.kt
+@@ -84,6 +84,16 @@ object LiquidGlassStore {
+         Settings.Secure.putInt(context.contentResolver, REFRACTION_KEY, percent.coerceIn(0, 100))
+     }
+ 
++    /** Read by SystemUI: on, the Quick Settings tiles use AxionBlur instead of compositor glass. */
++    private const val AX_GLASS_KEY = "descartes_ax_glass"
++
++    fun isAxGlass(context: Context) =
++        Settings.Secure.getInt(context.contentResolver, AX_GLASS_KEY, 1) != 0
++
++    fun setAxGlass(context: Context, on: Boolean) {
++        Settings.Secure.putInt(context.contentResolver, AX_GLASS_KEY, if (on) 1 else 0)
++    }
++
+ }
+ 
+ class LiquidGlassActivity : ComponentActivity() {
+@@ -100,6 +110,7 @@ class LiquidGlassActivity : ComponentActivity() {
+         var tabBars by remember { mutableStateOf(TabBarStore.isEnabled(this)) }
+         var style by remember { mutableStateOf(LiquidGlassStore.style(this)) }
+         var refraction by remember { mutableIntStateOf(LiquidGlassStore.refraction(this)) }
++        var axGlass by remember { mutableStateOf(LiquidGlassStore.isAxGlass(this)) }
+         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+         Scaffold(
+             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+@@ -142,9 +153,21 @@ class LiquidGlassActivity : ComponentActivity() {
+                                 enabled = it
+                             },
+                             index = 0,
+-                            count = 1,
++                            count = 2,
+                             icon = R.drawable.materialsymbols_ic_water_drop_rounded_filled,
+                         )
++                        SwitchItem(
++                            title = stringResource(R.string.liquid_glass_ax_glass),
++                            supporting = stringResource(R.string.liquid_glass_ax_glass_summary),
++                            checked = axGlass,
++                            onCheckedChange = {
++                                LiquidGlassStore.setAxGlass(this@LiquidGlassActivity, it)
++                                axGlass = it
++                            },
++                            index = 1,
++                            count = 2,
++                            icon = R.drawable.materialsymbols_ic_dashboard_customize_rounded_filled,
++                        )
+                     }
+                 }
+                 item { SectionHeader(stringResource(R.string.liquid_glass_style_header)) }
+diff --git a/src/com/descartes/laboratory/styles/StylesActivity.kt b/src/com/descartes/laboratory/styles/StylesActivity.kt
+index 703ac6d..04706a7 100644
+--- a/src/com/descartes/laboratory/styles/StylesActivity.kt
++++ b/src/com/descartes/laboratory/styles/StylesActivity.kt
+@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
+ import androidx.lifecycle.Lifecycle
+ import androidx.lifecycle.compose.LifecycleEventEffect
+ import com.descartes.laboratory.R
++import com.descartes.laboratory.cos.CosExperienceStore
+ import com.descartes.laboratory.ui.ConnectedChoice
+ import com.descartes.laboratory.ui.DropdownItem
+ import com.descartes.laboratory.ui.LabTheme
+@@ -59,11 +60,9 @@ import com.descartes.laboratory.ui.SegmentedBlock
+ import com.descartes.laboratory.ui.SegmentedGroup
+ import com.descartes.laboratory.ui.SwitchItem
+ 
+-/** The looks PenguinSystemUI can draw its panels in. All in Settings.Secure, read by SystemUI. */
++/** The looks SystemUI can draw its panels in. QS_PANEL is in Settings.System, the rest Secure. */
+ object StylesStore {
+     const val QS_PANEL = "qs_panel_style"
+-    const val QS_FOLDER = "qs_connectivity_folder"
+-    const val QS_ONE_UI = "qs_oneui_experimental"
+     const val VOLUME_PANEL = "volume_panel_style"
+     const val POWER_MENU = "power_menu_style"
+ 
+@@ -72,11 +71,12 @@ object StylesStore {
+ 
+     val qsPanel =
+         listOf(
+-            Choice(1, R.string.styles_qs_penguin),
+-            Choice(2, R.string.styles_qs_myui),
+-            Choice(3, R.string.styles_qs_harmony),
+-            Choice(6, R.string.styles_qs_stock),
+-            Choice(5, R.string.styles_qs_coloros),
++            Choice(1, R.string.styles_qs_classic),
++            Choice(2, R.string.styles_qs_coloros),
++            Choice(3, R.string.styles_qs_nothingos),
++            Choice(4, R.string.styles_qs_hyperos),
++            Choice(5, R.string.styles_qs_axion),
++            Choice(6, R.string.styles_qs_motorola),
+         )
+     val volumePanel =
+         listOf(
+@@ -88,16 +88,18 @@ object StylesStore {
+         listOf(Choice(0, R.string.styles_power_penguin), Choice(1, R.string.styles_power_ios))
+ 
+     fun get(context: Context, key: String, default: Int) =
+-        Settings.Secure.getInt(context.contentResolver, key, default)
++        if (key == QS_PANEL) Settings.System.getInt(context.contentResolver, key, default)
++        else Settings.Secure.getInt(context.contentResolver, key, default)
+ 
+     fun put(context: Context, key: String, value: Int) {
+-        Settings.Secure.putInt(context.contentResolver, key, value)
++        if (key == QS_PANEL) Settings.System.putInt(context.contentResolver, key, value)
++        else Settings.Secure.putInt(context.contentResolver, key, value)
+     }
+ 
+     /** How many styles are in use other than AOSP's, for the Laboratory's list. */
+     fun customised(context: Context) =
+         listOf(
+-                get(context, QS_PANEL, 1) != 0,
++                get(context, QS_PANEL, 0) != 0,
+                 get(context, VOLUME_PANEL, 0) != 0,
+                 get(context, POWER_MENU, 0) != 0,
+                 UdfpsPack.ICON.get(context) != 0,
+@@ -119,14 +121,13 @@ class StylesActivity : ComponentActivity() {
+         val context = this
+         var generation by remember { mutableIntStateOf(0) }
+         LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { generation++ }
+-        val oneUi = remember(generation) { StylesStore.get(context, StylesStore.QS_ONE_UI, 0) != 0 }
+-        var qs by remember(generation) { mutableStateOf(StylesStore.get(context, StylesStore.QS_PANEL, 1)) }
+-        var folder by
+-            remember(generation) {
+-                mutableStateOf(StylesStore.get(context, StylesStore.QS_FOLDER, 1) != 0)
+-            }
++        var qs by remember(generation) { mutableStateOf(StylesStore.get(context, StylesStore.QS_PANEL, 0)) }
+         var volume by
+             remember(generation) { mutableStateOf(StylesStore.get(context, StylesStore.VOLUME_PANEL, 0)) }
++        val cosVolume =
++            remember(generation) {
++                CosExperienceStore.isOn(context, CosExperienceStore.Part.Volume)
++            }
+         var power by
+             remember(generation) { mutableStateOf(StylesStore.get(context, StylesStore.POWER_MENU, 0)) }
+         val udfpsIcons = remember { UdfpsPack.ICON.load(context) }
+@@ -185,22 +186,7 @@ class StylesActivity : ComponentActivity() {
+                             },
+                             label = { stringResource(labels[it] ?: R.string.styles_default) },
+                             index = 0,
+-                            count = 2,
+-                            enabled = !oneUi,
+-                            supporting =
+-                                if (oneUi) stringResource(R.string.styles_qs_oneui_active) else null,
+-                        )
+-                        SwitchItem(
+-                            title = stringResource(R.string.styles_qs_folder),
+-                            supporting = stringResource(R.string.styles_qs_folder_summary),
+-                            checked = folder,
+-                            onCheckedChange = {
+-                                StylesStore.put(context, StylesStore.QS_FOLDER, if (it) 1 else 0)
+-                                folder = it
+-                            },
+-                            index = 1,
+-                            count = 2,
+-                            icon = R.drawable.materialsymbols_ic_grid_view_rounded_filled,
++                            count = 1,
+                         )
+                     }
+                 }
+@@ -212,12 +198,24 @@ class StylesActivity : ComponentActivity() {
+                             selected = volume,
+                             // AOSP's own volume panel, for when none of these is wanted.
+                             default = Pair(0, R.string.styles_default),
++                            enabled = !cosVolume,
+                         ) {
+                             StylesStore.put(context, StylesStore.VOLUME_PANEL, it)
+                             volume = it
+                         }
+                     }
+                 }
++                // SystemUI draws the ColorOS panel whenever COS volume is on, whatever is set here.
++                if (cosVolume) {
++                    item {
++                        Text(
++                            stringResource(R.string.styles_volume_cos_active),
++                            style = MaterialTheme.typography.bodySmall,
++                            color = MaterialTheme.colorScheme.onSurfaceVariant,
++                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
++                        )
++                    }
++                }
+                 item { SectionHeader(stringResource(R.string.styles_power_title)) }
+                 item {
+                     SegmentedBlock(index = 0, count = 1) {
+@@ -306,6 +304,7 @@ class StylesActivity : ComponentActivity() {
+         choices: List<StylesStore.Choice>,
+         selected: Int,
+         default: Pair<Int, Int>? = null,
++        enabled: Boolean = true,
+         onSelect: (Int) -> Unit,
+     ) {
+         val options = listOfNotNull(default?.first) + choices.map { it.value }
+@@ -315,6 +314,7 @@ class StylesActivity : ComponentActivity() {
+             selected = selected,
+             onSelect = onSelect,
+             label = { stringResource(labels.getValue(it)) },
++            enabled = enabled,
+             modifier = Modifier.padding(bottom = 12.dp),
+         )
+     }
