@@ -1,0 +1,47 @@
+diff --git a/quickstep/src/com/android/launcher3/QuickstepTransitionManager.java b/quickstep/src/com/android/launcher3/QuickstepTransitionManager.java
+index 3d034abd66..b005603b56 100644
+--- a/quickstep/src/com/android/launcher3/QuickstepTransitionManager.java
++++ b/quickstep/src/com/android/launcher3/QuickstepTransitionManager.java
+@@ -215,8 +215,8 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
+ 
+     private static final long APP_LAUNCH_ALPHA_DURATION = 100;
+     private static final long APP_LAUNCH_ALPHA_START_DELAY = 20;
+-    // ColorOS 17 has the window fully in place of its icon 43 ms into a launch.
+-    private static final long COS_LAUNCH_ALPHA_DURATION = 43;
++    // At 43 ms (ColorOS 17) the icon colour cut straight to the splash; 120 ms reads as a fade.
++    private static final long COS_LAUNCH_ALPHA_DURATION = 120;
+     // ColorOS 17 zooms the wallpaper in over half a second, half way at 85 ms.
+     private static final long COS_LAUNCH_DEPTH_DURATION = 500;
+     // OxygenOS 16 grows the window out of its icon on one spring of stiffness 420 and damping
+@@ -549,7 +549,9 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
+             removeCallbacks(timeout);
+             source.setAlpha(originalAlpha);
+             postOnAnimation(() -> {
+-                if (!removed) animate().alpha(0f).setDuration(64).withEndAction(this::remove).start();
++                // Stay under the window until its fade in has covered the preview.
++                if (!removed) animate().alpha(0f).setStartDelay(COS_LAUNCH_ALPHA_DURATION)
++                        .setDuration(64).withEndAction(this::remove).start();
+             });
+         }
+ 
+@@ -1449,11 +1451,18 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
+                             matrix.postTranslate(windowTransX0, windowTransY0);
+                         }
+ 
+-                        floatingView.update(mIconAlpha.value, floatingIconBounds, percent, 0f,
++                        // The handoff seeks past the start, so time the fade from the join.
++                        float fadeIn = Utilities.boundToRange((percent * mLaunchDuration - joinMs)
++                                / COS_LAUNCH_ALPHA_DURATION, 0, 1);
++                        float iconAlpha = joinMs > 0
++                                ? prop.iconAlphaStart * (1f - fadeIn) : mIconAlpha.value;
++                        // A splash rarely shares the icon colour; fade it in instead of cutting.
++                        float windowAlpha = mCosLaunch && hasSplashScreen ? fadeIn : 1f - iconAlpha;
++                        floatingView.update(iconAlpha, floatingIconBounds, percent, 0f,
+                                 iconRadius, true /* isOpening */);
+                         builder.setMatrix(matrix)
+                                 .setWindowCrop(crop)
+-                                .setAlpha(1f - mIconAlpha.value)
++                                .setAlpha(windowAlpha)
+                                 .setCornerRadius(windowRadius)
+                                 .setShadowRadius(mShadowRadius.value);
+                     } else if (AnimatedSurfaceUtils.isClosing(surface)) {
