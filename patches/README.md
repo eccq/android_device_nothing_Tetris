@@ -27,6 +27,7 @@ cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0021-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0022-*.patch && cd -
 cd packages/apps/LockStyles && git apply ../../../device/nothing/Tetris/patches/0023-*.patch && cd -
+cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0024-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -54,3 +55,4 @@ cd packages/apps/LockStyles && git apply ../../../device/nothing/Tetris/patches/
 | `0021-SystemUI-Keep-the-live-lock-wallpaper-under-depth.patch` | With a live lock screen wallpaper, as LockStyles sets, the depth wallpaper drew the home or default image behind the subject and covered it on the lock screen and the PIN. It now draws no background then, and turns spatial off without one. |
 | `0022-fonts-Add-a-system-emoji-style.patch` | Emoji style read at boot from persist.sys.emoji_style: android, ios or samsung. The ios and samsung fonts come from vendor/themes/emoji, added by device.mk. Based on Lunaris. |
 | `0023-LockStyles-Apply-the-photo-filter-with-effects.patch` | The photo filters had no effect with an unlock effect on, in the preview and on the lock screen. The depth settings page keeps only the fade tuning; the rest is set per lock screen in Customise. |
+| `0024-Atelier-Add-the-emoji-style-option.patch` | Emoji style option in Atelier > User interface, applied after a reboot. Needs 0022. |

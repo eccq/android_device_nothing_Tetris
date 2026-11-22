@@ -1,0 +1,134 @@
+diff --git a/res/values-it-rIT/cr_strings.xml b/res/values-it-rIT/cr_strings.xml
+index daec4994..cbefddaa 100644
+--- a/res/values-it-rIT/cr_strings.xml
++++ b/res/values-it-rIT/cr_strings.xml
+@@ -1541,4 +1541,5 @@
+     <string name="reading_engine_mode_title">Comfort display (Reading mode)</string>
+     <string name="display_engine_default">Predefinito</string>
+     <string name="display_engine_mode_footer_text">Inspired by Sony\'s Bravia/X-Reality engine, the Display Engine features Vivid mode for enhanced brightness and color saturation, X-Reality mode for improved detail and color accuracy, and Triluminous mode for a wider color range.</string>
++    <string name="emoji_style_title">Stile emoji</string>
+ </resources>
+diff --git a/res/values/cr_arrays.xml b/res/values/cr_arrays.xml
+index 869b63be..73d3caa6 100644
+--- a/res/values/cr_arrays.xml
++++ b/res/values/cr_arrays.xml
+@@ -1338,4 +1338,16 @@
+         <item>1</item>
+         <item>2</item>
+     </string-array>
++
++    <!-- Emoji style -->
++    <string-array name="emoji_style_entries" translatable="false">
++        <item>@string/emoji_style_android</item>
++        <item>@string/emoji_style_ios</item>
++        <item>@string/emoji_style_samsung</item>
++    </string-array>
++    <string-array name="emoji_style_values" translatable="false">
++        <item>android</item>
++        <item>ios</item>
++        <item>samsung</item>
++    </string-array>
+ </resources>
+diff --git a/res/values/cr_strings.xml b/res/values/cr_strings.xml
+index 47ef6906..04208d9a 100644
+--- a/res/values/cr_strings.xml
++++ b/res/values/cr_strings.xml
+@@ -1273,6 +1273,12 @@
+     <string name="action_later">Later</string>
+     <string name="action_reboot_now">Reboot now</string>
+ 
++    <!-- Emoji style -->
++    <string name="emoji_style_title">Emoji style</string>
++    <string name="emoji_style_android">Android</string>
++    <string name="emoji_style_ios" translatable="false">iOS</string>
++    <string name="emoji_style_samsung" translatable="false">Samsung One UI</string>
++
+     <!-- Notification / Power Menu Styles -->
+     <string name="notification_style_title">Notification style</string>
+     <string name="powermenu_style_title">Power menu style</string>
+diff --git a/res/xml/crdroid_settings_ui.xml b/res/xml/crdroid_settings_ui.xml
+index 560606e2..88b7b56a 100644
+--- a/res/xml/crdroid_settings_ui.xml
++++ b/res/xml/crdroid_settings_ui.xml
+@@ -76,6 +76,16 @@
+         android:title="@string/theme_customization_font_title"
+         android:summary="theme_customization_font_summary" />
+ 
++    <ListPreference
++        android:key="emoji_style"
++        android:icon="@drawable/ic_font"
++        android:title="@string/emoji_style_title"
++        android:summary="%s"
++        android:entries="@array/emoji_style_entries"
++        android:entryValues="@array/emoji_style_values"
++        android:defaultValue="android"
++        android:persistent="false" />
++
+     <!-- Monet Theme Engine -->
+     <Preference
+         android:key="monet_engine"
+diff --git a/src/com/crdroid/settings/fragments/UserInterface.java b/src/com/crdroid/settings/fragments/UserInterface.java
+index 00cb6888..2627f4ae 100644
+--- a/src/com/crdroid/settings/fragments/UserInterface.java
++++ b/src/com/crdroid/settings/fragments/UserInterface.java
+@@ -16,11 +16,13 @@
+ package com.crdroid.settings.fragments;
+ 
+ import android.app.Activity;
++import android.app.AlertDialog;
+ import android.content.ContentResolver;
+ import android.content.Context;
+ import android.content.Intent;
+ import android.content.res.Resources;
+ import android.os.Bundle;
++import android.os.SystemProperties;
+ import android.os.UserHandle;
+ import android.provider.Settings;
+ import android.text.TextUtils;
+@@ -37,6 +39,7 @@ import com.android.settings.search.BaseSearchIndexProvider;
+ import com.android.settingslib.search.SearchIndexable;
+ 
+ import com.crdroid.settings.fragments.ui.DozeSettings;
++import com.crdroid.settings.preferences.ExternalFontInstaller;
+ import com.crdroid.settings.fragments.ui.EdgeLightSettings;
+ import com.crdroid.settings.fragments.ui.GradientSettings;
+ import com.crdroid.settings.fragments.ui.MonetSettings;
+@@ -53,6 +56,9 @@ public class UserInterface extends SettingsPreferenceFragment implements
+ 
+     private static final String KEY_FORCE_FULL_SCREEN = "display_cutout_force_fullscreen_settings";
+     private static final String KEY_SHADE_COLOR_STYLE = "shade_color_style";
++    private static final String KEY_EMOJI_STYLE = "emoji_style";
++    // Read by SystemFonts at boot.
++    private static final String PROP_EMOJI_STYLE = "persist.sys.emoji_style";
+ 
+     private static final int QS_PANEL_STYLE_COLOROS = 2;
+     private static final int QS_PANEL_STYLE_HYPEROS = 4;
+@@ -77,6 +83,10 @@ public class UserInterface extends SettingsPreferenceFragment implements
+         }
+ 
+         updateShadeStyleState();
++
++        ListPreference emoji = findPreference(KEY_EMOJI_STYLE);
++        emoji.setValue(SystemProperties.get(PROP_EMOJI_STYLE, "android"));
++        emoji.setOnPreferenceChangeListener(this);
+     }
+ 
+     @Override
+@@ -100,6 +110,17 @@ public class UserInterface extends SettingsPreferenceFragment implements
+ 
+     @Override
+     public boolean onPreferenceChange(Preference preference, Object newValue) {
++        if (KEY_EMOJI_STYLE.equals(preference.getKey())) {
++            SystemProperties.set(PROP_EMOJI_STYLE, (String) newValue);
++            new AlertDialog.Builder(getContext())
++                    .setTitle(R.string.reboot_required_title)
++                    .setMessage(R.string.reboot_required_message)
++                    .setPositiveButton(R.string.action_reboot_now,
++                            (d, w) -> ExternalFontInstaller.Companion.rebootDevice())
++                    .setNegativeButton(R.string.action_later, null)
++                    .show();
++            return true;
++        }
+         return false;
+     }
+ 
