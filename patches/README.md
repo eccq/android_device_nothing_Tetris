@@ -14,6 +14,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0007-*.patch
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0008-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0009-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0010-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0011-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -28,3 +29,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0010-*.patch
 | `0008-frameworks-base-OmniJawsClient-air-quality-fields.patch` | OmniJaws from crDroid shows an air quality card since 6ecc2cb and reads aqi, aqiScale, pm25, pm10 and AQI_SCALE_IN from OmniJawsClient. The DescartesOS framework did not have them yet and the build failed in DetailCards.kt. Same change as OmniJawsClient.java in crDroid frameworks_base 17.0. |
 | `0009-SystemUI-Back-dispatcher-for-the-lock-screen-media-card.patch` | SystemUI crashed every few seconds on the lock screen while music played: the media card's SceneTransitionLayout asks for a back dispatcher and the keyguard root view has none (IllegalStateException: No NavigationEventDispatcherOwner was provided). The card's compose view now gets one when attached, the way the communal hub does. |
 | `0010-SystemUI-Space-under-the-drawn-lock-screen-clock.patch` | The lock screen put the media card and the notifications under the measured bottom of the custom clock, so the date of clocks with negative margins or a size above 100% sat on top of them. The clock view now pads its bottom to where its content is drawn, and the media card keeps the same 16dp gap as the notifications. Needs 0002 and 0009. |
+| `0011-SystemUI-Center-the-lock-screen-island-card-over-the-player.patch` | An island card opened on the lock screen, such as a download or the Buds panel, started under the small clock and the media card, added later, drew over its lower part. The expanded card now spans from the status bar to the fingerprint icon, so it sits mid screen and a tap anywhere around it closes it, and the media card is hidden while it is open. |
