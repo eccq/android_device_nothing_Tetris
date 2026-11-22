@@ -7,4 +7,12 @@
   <project path="hardware/mediatek" name="LineageOS/android_hardware_mediatek" remote="github" />
   <project path="hardware/dolby" name="swiitch-OFF-Lab/hardware_dolby" remote="github" revision="moto-A17" />
   <project path="packages/apps/DolbyUI" name="swiitch-OFF-Lab/packages_apps_DolbyUI" remote="github" revision="a" />
+  <!-- DescartesOS has only a 17.0 branch for these two -->
+  <extend-project name="DescartesOS/android_packages_inputmethods_LatinIME" revision="17.0" />
+  <extend-project name="DescartesOS/android_packages_modules_Bluetooth" revision="17.0" />
+  <!-- Missing from the DescartesOS manifest, needed by config/descartes.mk and Launcher3 -->
+  <project path="packages/apps/PenguinDex" name="DescartesOS/android_packages_apps_PenguinDex" remote="descartes" revision="lineage-24.0" />
+  <project path="packages/apps/DescartesLaboratory" name="DescartesOS/android_packages_apps_DescartesLaboratory" remote="descartes" revision="lineage-24.0" />
+  <!-- Later commits need crDroid lineage-sdk key actions that DescartesOS lacks -->
+  <extend-project name="crdroidandroid/android_packages_apps_ColumbusService" revision="b8167ad9c86adebdf54fe3bba0e03f37ee112ed6" />
 </manifest>
