@@ -17,6 +17,12 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0010-*.patch
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0011-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0012-*.patch && cd -
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0013-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0014-*.patch && cd -
+cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0015-*.patch && cd -
+cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0016-*.patch && cd -
+cd packages/apps/DescartesLaboratory && git apply ../../../device/nothing/Tetris/patches/0017-*.patch && cd -
+cd packages/apps/SettingsIntelligence && git apply ../../../device/nothing/Tetris/patches/0018-*.patch && cd -
+cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0019-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -34,3 +40,9 @@ cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/001
 | `0011-SystemUI-Center-the-lock-screen-island-card-over-the-player.patch` | An island card opened on the lock screen, such as a download or the Buds panel, started under the small clock and the media card, added later, drew over its lower part. The expanded card now spans from the status bar to the fingerprint icon, so it sits mid screen and a tap anywhere around it closes it, and the media card is hidden while it is open. |
 | `0012-services-Add-iris-desaturate-and-shutter-screen-off-animations.patch` | Adds the Iris, Desaturate and Shutter screen off animations from Lunaris. ElectronBeam now draws with the Lunaris GLES2 shaders, and slide, zoom and fold from 0002 are drawn with them too. Needs 0002. |
 | `0013-Atelier-List-the-new-screen-off-animations.patch` | Lists Iris, Desaturate and Shutter in the screen off animation setting, as values 6, 7 and 8. Needs 0006 and 0012. |
+| `0014-services-Mirror-the-Luminous-switch-to-a-property.patch` | The window manager copies the Laboratory switch `penguin_luminous_all_apps` to `persist.sys.penguin.luminous` (1 system apps, 2 all apps), which apps read to move view animations to the RenderThread. Before, nothing set the property and the switch did nothing. Needs the device sepolicy for `penguin_luminous_prop`. |
+| `0015-Launcher3-Apply-the-GPU-blur-tier-once.patch` | The app drawer blur took the mid-range GPU tier twice, through the max radius and again on the COS cap, and ended near zero under the scrim. The tier is now applied once. Needs 0004. |
+| `0016-Atelier-Index-every-page-and-drop-the-misc-glass-switches.patch` | Settings search finds the options of every Atelier page: the 15 sub-pages without a search provider now have one. Miscellaneous loses the Liquid glass, refraction and AX glass switches, which now live in Descartes Laboratory, and the glass tab bars start off. Needs 0006 and 0013. |
+| `0017-DescartesLaboratory-Drop-dead-options-and-add-AX-glass.patch` | Removes Laboratory switches that nothing reads any more (now bar, lock icon on top, floating depth wallpaper, One UI panel, back to app, frequent apps and five COS parts). The QS panel style is saved in Settings.System, where SystemUI reads it, and the volume style says when the COS volume panel overrides it. Liquid glass gets the AX glass switch moved from Atelier. |
+| `0018-SettingsIntelligence-Search-on-the-existing-index.patch` | Settings search no longer waits for the background refresh of non-indexable keys before it answers: when the index was built for this build and locale it is queried right away, and the results reload when the refresh ends. A full rebuild after an update or a language change still waits. |
+| `0019-Launcher3-Fade-into-the-splash-on-app-launch.patch` | Opening an app from its icon cut from the icon colour to the splash screen in one frame, white to dark blue for Weather. The COS launch skipped the fade when the app had a splash, and the handoff from the tap preview seeked past it. The splash now fades in over 120 ms from the handoff and the preview stays under it until it is covered. Needs 0004. |

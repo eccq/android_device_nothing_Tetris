@@ -1,0 +1,57 @@
+diff --git a/services/core/java/com/android/server/wm/WindowManagerService.java b/services/core/java/com/android/server/wm/WindowManagerService.java
+index a0c317d4d52d..53c9576b27a6 100644
+--- a/services/core/java/com/android/server/wm/WindowManagerService.java
++++ b/services/core/java/com/android/server/wm/WindowManagerService.java
+@@ -878,6 +878,7 @@ public class WindowManagerService extends IWindowManager.Stub
+                 Settings.Secure.getUriFor(LIQUID_GLASS_STYLE_SETTING);
+         private final Uri mLiquidGlassRefractionUri =
+                 Settings.Secure.getUriFor(LIQUID_GLASS_REFRACTION_SETTING);
++        private final Uri mLuminousUri = Settings.Secure.getUriFor(LUMINOUS_SETTING);
+         private final Uri mMirrorBuiltInDisplayUri =
+                 Settings.Secure.getUriFor(Settings.Secure.MIRROR_BUILT_IN_DISPLAY);
+         private final Uri mDevelopmentOverrideDesktopExperienceUri = Settings.Global.getUriFor(
+@@ -937,6 +938,7 @@ public class WindowManagerService extends IWindowManager.Stub
+                     UserHandle.USER_ALL);
+             resolver.registerContentObserver(mLiquidGlassRefractionUri, false, this,
+                     UserHandle.USER_ALL);
++            resolver.registerContentObserver(mLuminousUri, false, this, UserHandle.USER_ALL);
+         }
+ 
+         @Override
+@@ -956,6 +958,11 @@ public class WindowManagerService extends IWindowManager.Stub
+                 return;
+             }
+ 
++            if (mLuminousUri.equals(uri)) {
++                syncLuminous(mContext.getContentResolver());
++                return;
++            }
++
+             if (mMirrorBuiltInDisplayUri.equals(uri)) {
+                 mDexEnabled = readDexEnabled(mContext.getContentResolver());
+                 updateDexGlassDisplays();
+@@ -1592,6 +1599,7 @@ public class WindowManagerService extends IWindowManager.Stub
+                 DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS, 0) != 0;
+         mDexEnabled = readDexEnabled(resolver);
+         syncLiquidGlass(resolver);
++        syncLuminous(resolver);
+ 
+         final String displaySettingsPath = Settings.Global.getString(resolver,
+                 DEVELOPMENT_WM_DISPLAY_SETTINGS_PATH);
+@@ -7954,6 +7962,16 @@ public class WindowManagerService extends IWindowManager.Stub
+                 Integer.toString(Math.max(0, Math.min(100, refraction))));
+     }
+ 
++    // Apps read the property: 1 moves view animations to the RenderThread in system apps, 2 in all.
++    private static final String LUMINOUS_SETTING = "penguin_luminous_all_apps";
++    private static final String LUMINOUS_PROPERTY = "persist.sys.penguin.luminous";
++
++    private static void syncLuminous(ContentResolver resolver) {
++        final boolean allApps = Settings.Secure.getIntForUser(resolver, LUMINOUS_SETTING, 0,
++                UserHandle.USER_CURRENT) == 1;
++        SystemProperties.set(LUMINOUS_PROPERTY, allApps ? "2" : "1");
++    }
++
+     private static final String DEX_GLASS_PROPERTY = "sys.penguin.liquid_glass.dex";
+     private String mDexGlassDisplays;
+ 
