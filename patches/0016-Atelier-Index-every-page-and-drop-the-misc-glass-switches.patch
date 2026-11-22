@@ -1,0 +1,501 @@
+diff --git a/res/values/cr_strings.xml b/res/values/cr_strings.xml
+index 09c75671..47ef6906 100644
+--- a/res/values/cr_strings.xml
++++ b/res/values/cr_strings.xml
+@@ -1920,10 +1920,4 @@ To setup Depth Wallpaper Feature:
+     <string name="qs_panel_style_motorola" translatable="false">Motorola HelloUI</string>
+     <string name="descartes_laboratory_title">Descartes Laboratory</string>
+     <string name="descartes_laboratory_summary">DeX, Liquid Glass, styles, experiments and more</string>
+-    <string name="liquid_glass_title">Liquid Glass</string>
+-    <string name="liquid_glass_summary">Turn frosted surfaces into glass that bends the light at its rim</string>
+-    <string name="liquid_glass_refraction_title">Glass refraction</string>
+-    <string name="liquid_glass_refraction_summary">How far the rim of the glass bends what is behind it</string>
+-    <string name="ax_glass_title">Lighter Quick Settings glass</string>
+-    <string name="ax_glass_summary">Blur tiles with AxionBlur, which is lighter on mid-range devices</string>
+ </resources>
+diff --git a/res/xml/crdroid_settings_misc.xml b/res/xml/crdroid_settings_misc.xml
+index c3a9fee9..910306fd 100644
+--- a/res/xml/crdroid_settings_misc.xml
++++ b/res/xml/crdroid_settings_misc.xml
+@@ -116,36 +116,8 @@
+         android:icon="@drawable/ic_blur"
+         android:title="@string/penguin_glass_tab_bars_title"
+         android:summary="@string/penguin_glass_tab_bars_summary"
+-        android:defaultValue="true" />
+-
+-    <!-- Liquid Glass: Laboratory has the style and the per-app lists -->
+-    <com.crdroid.settings.preferences.SecureSettingSwitchPreference
+-        android:key="penguin_liquid_glass"
+-        android:icon="@drawable/ic_blur"
+-        android:title="@string/liquid_glass_title"
+-        android:summary="@string/liquid_glass_summary"
+         android:defaultValue="false" />
+ 
+-    <com.crdroid.settings.preferences.SecureSettingSeekBarPreference
+-        android:key="penguin_liquid_glass_refraction"
+-        android:icon="@drawable/ic_blur"
+-        android:title="@string/liquid_glass_refraction_title"
+-        android:summary="@string/liquid_glass_refraction_summary"
+-        android:dependency="penguin_liquid_glass"
+-        android:defaultValue="60"
+-        android:max="100"
+-        settings:min="0"
+-        settings:interval="5"
+-        settings:units="%" />
+-
+-    <!-- AxionBlur for the Quick Settings glass -->
+-    <com.crdroid.settings.preferences.SecureSettingSwitchPreference
+-        android:key="descartes_ax_glass"
+-        android:icon="@drawable/ic_blur"
+-        android:title="@string/ax_glass_title"
+-        android:summary="@string/ax_glass_summary"
+-        android:defaultValue="true" />
+-
+     <!-- Rotation button -->
+     <com.crdroid.settings.preferences.SystemSettingSwitchPreference
+         android:key="enable_rotation_button"
+diff --git a/src/com/crdroid/settings/crDroidSettingsLayout.kt b/src/com/crdroid/settings/crDroidSettingsLayout.kt
+index e5a1f962..cafad15f 100644
+--- a/src/com/crdroid/settings/crDroidSettingsLayout.kt
++++ b/src/com/crdroid/settings/crDroidSettingsLayout.kt
+@@ -5,6 +5,8 @@
+ 
+ package com.crdroid.settings
+ 
++import com.android.settingslib.search.SearchIndexable
++import com.android.settings.search.BaseSearchIndexProvider
+ import android.app.AlertDialog
+ import android.content.Context
+ import android.content.Intent
+@@ -29,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.launch
+ import kotlinx.coroutines.withContext
+ 
++@SearchIndexable
+ class crDroidSettingsLayout : SettingsPreferenceFragment() {
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+@@ -112,6 +115,9 @@ class crDroidSettingsLayout : SettingsPreferenceFragment() {
+     override fun getMetricsCategory(): Int = MetricsProto.MetricsEvent.CRDROID_SETTINGS
+ 
+     companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = BaseSearchIndexProvider(R.xml.atelier_dashboard)
++
+         private const val MENU_RESET = Menu.FIRST
+         private const val KEY_QUICK_ACCESS = "atelier_quick_access"
+ 
+diff --git a/src/com/crdroid/settings/fragments/buttons/PowerMenuActions.java b/src/com/crdroid/settings/fragments/buttons/PowerMenuActions.java
+index c26cd0c5..989dd24f 100644
+--- a/src/com/crdroid/settings/fragments/buttons/PowerMenuActions.java
++++ b/src/com/crdroid/settings/fragments/buttons/PowerMenuActions.java
+@@ -16,6 +16,8 @@
+ 
+ package com.crdroid.settings.fragments.buttons;
+ 
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settings.search.BaseSearchIndexProvider;
+ import android.Manifest;
+ import android.content.ContentResolver;
+ import android.content.Context;
+@@ -49,6 +51,7 @@ import lineageos.providers.LineageSettings;
+ 
+ import static org.lineageos.internal.util.PowerMenuConstants.*;
+ 
++@SearchIndexable
+ public class PowerMenuActions extends SettingsPreferenceFragment {
+     final static String TAG = "PowerMenuActions";
+ 
+@@ -232,4 +235,7 @@ public class PowerMenuActions extends SettingsPreferenceFragment {
+     public int getMetricsCategory() {
+         return MetricsProto.MetricsEvent.CRDROID_SETTINGS;
+     }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.power_menu);
+ }
+diff --git a/src/com/crdroid/settings/fragments/lockscreen/CustomClockPreview.java b/src/com/crdroid/settings/fragments/lockscreen/CustomClockPreview.java
+index c678f11f..c1ef78c5 100644
+--- a/src/com/crdroid/settings/fragments/lockscreen/CustomClockPreview.java
++++ b/src/com/crdroid/settings/fragments/lockscreen/CustomClockPreview.java
+@@ -17,6 +17,8 @@
+  */
+ package com.crdroid.settings.fragments.lockscreen;
+ 
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settings.search.BaseSearchIndexProvider;
+ import android.content.Context;
+ import android.content.res.Configuration;
+ import android.os.Bundle;
+@@ -44,6 +46,7 @@ import com.crdroid.settings.utils.SystemUtils;
+ 
+ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+ 
++@SearchIndexable
+ public class CustomClockPreview extends SettingsPreferenceFragment {
+ 
+     private static final String TAG = "CustomClockPreview";
+@@ -224,4 +227,7 @@ public class CustomClockPreview extends SettingsPreferenceFragment {
+     public int getMetricsCategory() {
+         return MetricsProto.MetricsEvent.CRDROID_SETTINGS;
+     }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.lockscreen_clock_preview_settings);
+ }
+diff --git a/src/com/crdroid/settings/fragments/lockscreen/MediaArtSettings.java b/src/com/crdroid/settings/fragments/lockscreen/MediaArtSettings.java
+index 636e855e..9b167dca 100644
+--- a/src/com/crdroid/settings/fragments/lockscreen/MediaArtSettings.java
++++ b/src/com/crdroid/settings/fragments/lockscreen/MediaArtSettings.java
+@@ -15,6 +15,8 @@
+  */
+ package com.crdroid.settings.fragments.lockscreen;
+ 
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settings.search.BaseSearchIndexProvider;
+ import android.content.Context;
+ import android.content.ContentResolver;
+ import android.os.Bundle;
+@@ -31,6 +33,7 @@ import com.android.internal.logging.nano.MetricsProto;
+ import com.android.settings.R;
+ import com.android.settings.SettingsPreferenceFragment;
+ 
++@SearchIndexable
+ public class MediaArtSettings extends SettingsPreferenceFragment {
+ 
+     @Override
+@@ -64,4 +67,7 @@ public class MediaArtSettings extends SettingsPreferenceFragment {
+     public int getMetricsCategory() {
+         return MetricsProto.MetricsEvent.CRDROID_SETTINGS;
+     }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.media_art_settings);
+ }
+diff --git a/src/com/crdroid/settings/fragments/lockscreen/PulseSettings.java b/src/com/crdroid/settings/fragments/lockscreen/PulseSettings.java
+index 62644dd9..97013439 100644
+--- a/src/com/crdroid/settings/fragments/lockscreen/PulseSettings.java
++++ b/src/com/crdroid/settings/fragments/lockscreen/PulseSettings.java
+@@ -15,6 +15,8 @@
+  */
+ package com.crdroid.settings.fragments.lockscreen;
+ 
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settings.search.BaseSearchIndexProvider;
+ import android.content.Context;
+ import android.content.ContentResolver;
+ import android.graphics.Color;
+@@ -33,6 +35,7 @@ import com.android.settings.R;
+ import com.android.settings.SettingsPreferenceFragment;
+ import com.crdroid.settings.utils.DeviceUtils;
+ 
++@SearchIndexable
+ public class PulseSettings extends SettingsPreferenceFragment {
+ 
+     private static final String KEY_PULSE_BASS_HAPTICS = "pulse_bass_haptics";
+@@ -76,4 +79,7 @@ public class PulseSettings extends SettingsPreferenceFragment {
+     public int getMetricsCategory() {
+         return MetricsProto.MetricsEvent.CRDROID_SETTINGS;
+     }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.pulse_settings);
+ }
+diff --git a/src/com/crdroid/settings/fragments/misc/SensorBlock.java b/src/com/crdroid/settings/fragments/misc/SensorBlock.java
+index cf67aea5..368e5b07 100644
+--- a/src/com/crdroid/settings/fragments/misc/SensorBlock.java
++++ b/src/com/crdroid/settings/fragments/misc/SensorBlock.java
+@@ -16,6 +16,8 @@
+ 
+ package com.crdroid.settings.fragments.misc;
+ 
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settings.search.BaseSearchIndexProvider;
+ import android.app.Dialog;
+ import android.content.ContentResolver;
+ import android.content.Context;
+@@ -55,6 +57,7 @@ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+ 
++@SearchIndexable
+ public class SensorBlock extends SettingsPreferenceFragment
+         implements Preference.OnPreferenceClickListener {
+ 
+@@ -309,4 +312,7 @@ public class SensorBlock extends SettingsPreferenceFragment
+         Settings.Global.putString(getContentResolver(),
+                 Settings.Global.SENSOR_BLOCKED_APP, value);
+     }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.sensor_block_settings);
+ }
+diff --git a/src/com/crdroid/settings/fragments/statusbar/BatteryBar.java b/src/com/crdroid/settings/fragments/statusbar/BatteryBar.java
+index 6df73803..ea1bf546 100644
+--- a/src/com/crdroid/settings/fragments/statusbar/BatteryBar.java
++++ b/src/com/crdroid/settings/fragments/statusbar/BatteryBar.java
+@@ -15,6 +15,8 @@
+  */
+ package com.crdroid.settings.fragments.statusbar;
+ 
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settings.search.BaseSearchIndexProvider;
+ import android.content.ContentResolver;
+ import android.content.Context;
+ import android.os.Bundle;
+@@ -25,6 +27,7 @@ import com.android.internal.logging.nano.MetricsProto;
+ import com.android.settings.R;
+ import com.android.settings.SettingsPreferenceFragment;
+ 
++@SearchIndexable
+ public class BatteryBar extends SettingsPreferenceFragment {
+ 
+     @Override
+@@ -61,4 +64,7 @@ public class BatteryBar extends SettingsPreferenceFragment {
+     public int getMetricsCategory() {
+         return MetricsProto.MetricsEvent.CRDROID_SETTINGS;
+     }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.battery_bar);
+ }
+diff --git a/src/com/crdroid/settings/fragments/statusbar/Clock.java b/src/com/crdroid/settings/fragments/statusbar/Clock.java
+index e8bc4714..1f209626 100644
+--- a/src/com/crdroid/settings/fragments/statusbar/Clock.java
++++ b/src/com/crdroid/settings/fragments/statusbar/Clock.java
+@@ -15,6 +15,8 @@
+  */
+ package com.crdroid.settings.fragments.statusbar;
+ 
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settings.search.BaseSearchIndexProvider;
+ import android.app.AlertDialog;
+ import android.content.ContentResolver;
+ import android.content.Context;
+@@ -44,6 +46,7 @@ import java.util.Date;
+ import lineageos.preference.LineageSystemSettingListPreference;
+ import lineageos.providers.LineageSettings;
+ 
++@SearchIndexable
+ public class Clock extends SettingsPreferenceFragment
+             implements Preference.OnPreferenceChangeListener  {
+ 
+@@ -234,4 +237,7 @@ public class Clock extends SettingsPreferenceFragment
+     public int getMetricsCategory() {
+         return MetricsProto.MetricsEvent.CRDROID_SETTINGS;
+     }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.status_bar_clock);
+ }
+diff --git a/src/com/crdroid/settings/fragments/statusbar/DynamicBar.kt b/src/com/crdroid/settings/fragments/statusbar/DynamicBar.kt
+index 932b2838..b157d725 100644
+--- a/src/com/crdroid/settings/fragments/statusbar/DynamicBar.kt
++++ b/src/com/crdroid/settings/fragments/statusbar/DynamicBar.kt
+@@ -5,6 +5,8 @@
+ 
+ package com.crdroid.settings.fragments.statusbar
+ 
++import com.android.settingslib.search.SearchIndexable
++import com.android.settings.search.BaseSearchIndexProvider
+ import android.content.ContentResolver
+ import android.content.Context
+ import android.database.ContentObserver
+@@ -21,6 +23,7 @@ import com.android.settings.R
+ import com.android.settings.SettingsPreferenceFragment
+ import org.json.JSONArray
+ 
++@SearchIndexable
+ class DynamicBar : SettingsPreferenceFragment() {
+ 
+     private val resolver: ContentResolver
+@@ -169,6 +172,9 @@ class DynamicBar : SettingsPreferenceFragment() {
+     }
+ 
+     companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = BaseSearchIndexProvider(R.xml.dynamic_bar)
++
+         private const val SETTINGS_KEY_ENABLED = "ax_dynamic_bar_enabled"
+         private const val SETTINGS_KEY_KEYGUARD_ENABLED = "ax_dynamic_bar_keyguard_enabled"
+         private const val SETTINGS_KEY_EVENTS = "ax_dynamic_bar_events"
+diff --git a/src/com/crdroid/settings/fragments/statusbar/NetworkTrafficSettings.java b/src/com/crdroid/settings/fragments/statusbar/NetworkTrafficSettings.java
+index 98ec3e2c..7fb40a6d 100644
+--- a/src/com/crdroid/settings/fragments/statusbar/NetworkTrafficSettings.java
++++ b/src/com/crdroid/settings/fragments/statusbar/NetworkTrafficSettings.java
+@@ -16,6 +16,8 @@
+ 
+ package com.crdroid.settings.fragments.statusbar;
+ 
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settings.search.BaseSearchIndexProvider;
+ import android.content.ContentResolver;
+ import android.content.Context;
+ import android.os.Bundle;
+@@ -26,6 +28,7 @@ import com.android.settings.R;
+ import com.android.settings.SettingsPreferenceFragment;
+ import com.android.internal.logging.nano.MetricsProto;
+ 
++@SearchIndexable
+ public class NetworkTrafficSettings extends SettingsPreferenceFragment {
+ 
+     private static final String TAG = "NetworkTrafficSettings";
+@@ -58,4 +61,7 @@ public class NetworkTrafficSettings extends SettingsPreferenceFragment {
+     public int getMetricsCategory() {
+         return MetricsProto.MetricsEvent.CRDROID_SETTINGS;
+     }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.network_traffic_settings);
+ }
+diff --git a/src/com/crdroid/settings/fragments/ui/EdgeLightSettings.kt b/src/com/crdroid/settings/fragments/ui/EdgeLightSettings.kt
+index 09303c6a..ba1c8c53 100644
+--- a/src/com/crdroid/settings/fragments/ui/EdgeLightSettings.kt
++++ b/src/com/crdroid/settings/fragments/ui/EdgeLightSettings.kt
+@@ -5,6 +5,8 @@
+ 
+ package com.crdroid.settings.fragments.ui
+ 
++import com.android.settingslib.search.SearchIndexable
++import com.android.settings.search.BaseSearchIndexProvider
+ import android.content.Context
+ import android.graphics.Color
+ import android.os.Bundle
+@@ -15,6 +17,7 @@ import com.android.internal.logging.nano.MetricsProto
+ import com.android.settings.R
+ import com.android.settings.SettingsPreferenceFragment
+ 
++@SearchIndexable
+ class EdgeLightSettings : SettingsPreferenceFragment() {
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+@@ -25,6 +28,9 @@ class EdgeLightSettings : SettingsPreferenceFragment() {
+     override fun getMetricsCategory(): Int = MetricsProto.MetricsEvent.CRDROID_SETTINGS
+ 
+     companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = BaseSearchIndexProvider(R.xml.edge_light_settings)
++
+         @JvmStatic
+         fun reset(context: Context) {
+             val resolver = context.contentResolver
+diff --git a/src/com/crdroid/settings/fragments/ui/GradientSettings.kt b/src/com/crdroid/settings/fragments/ui/GradientSettings.kt
+index 2f268a2f..6c0ce593 100644
+--- a/src/com/crdroid/settings/fragments/ui/GradientSettings.kt
++++ b/src/com/crdroid/settings/fragments/ui/GradientSettings.kt
+@@ -5,6 +5,8 @@
+ 
+ package com.crdroid.settings.fragments.ui
+ 
++import com.android.settingslib.search.SearchIndexable
++import com.android.settings.search.BaseSearchIndexProvider
+ import android.content.ContentResolver
+ import android.content.Context
+ import android.os.Bundle
+@@ -17,6 +19,7 @@ import com.android.settings.R
+ import com.android.settings.SettingsPreferenceFragment
+ import com.crdroid.settings.preferences.SystemSettingListPreference
+ 
++@SearchIndexable
+ class GradientSettings : SettingsPreferenceFragment() {
+ 
+     private lateinit var colorModePref: SystemSettingListPreference
+@@ -66,6 +69,9 @@ class GradientSettings : SettingsPreferenceFragment() {
+     }
+ 
+     companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = BaseSearchIndexProvider(R.xml.gradient_settings)
++
+         private const val KEY_CUSTOM_GRADIENT_COLOR_MODE = "custom_gradient_color_mode"
+         private const val KEY_CUSTOM_GRADIENT_START_COLOR = "custom_gradient_start_color"
+         private const val KEY_CUSTOM_GRADIENT_END_COLOR = "custom_gradient_end_color"
+diff --git a/src/com/crdroid/settings/fragments/ui/SettingsIcon.kt b/src/com/crdroid/settings/fragments/ui/SettingsIcon.kt
+index 181516c6..03dadc34 100644
+--- a/src/com/crdroid/settings/fragments/ui/SettingsIcon.kt
++++ b/src/com/crdroid/settings/fragments/ui/SettingsIcon.kt
+@@ -5,6 +5,8 @@
+ 
+ package com.crdroid.settings.fragments.ui
+ 
++import com.android.settingslib.search.SearchIndexable
++import com.android.settings.search.BaseSearchIndexProvider
+ import android.content.Context
+ import android.graphics.Color
+ import android.os.Bundle
+@@ -15,6 +17,7 @@ import com.android.internal.logging.nano.MetricsProto
+ import com.android.settings.R
+ import com.android.settings.SettingsPreferenceFragment
+ 
++@SearchIndexable
+ class SettingsIcon : SettingsPreferenceFragment() {
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+@@ -25,6 +28,9 @@ class SettingsIcon : SettingsPreferenceFragment() {
+     override fun getMetricsCategory(): Int = MetricsProto.MetricsEvent.CRDROID_SETTINGS
+ 
+     companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = BaseSearchIndexProvider(R.xml.settings_icons)
++
+         @JvmStatic
+         fun reset(context: Context) {
+             val resolver = context.contentResolver
+diff --git a/src/com/crdroid/settings/fragments/ui/SmartPixels.java b/src/com/crdroid/settings/fragments/ui/SmartPixels.java
+index c977804f..e707e2b7 100644
+--- a/src/com/crdroid/settings/fragments/ui/SmartPixels.java
++++ b/src/com/crdroid/settings/fragments/ui/SmartPixels.java
+@@ -16,6 +16,8 @@
+ 
+ package com.crdroid.settings.fragments.ui;
+ 
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settings.search.BaseSearchIndexProvider;
+ import android.content.Context;
+ import android.content.ContentResolver;
+ import android.content.res.Resources;
+@@ -35,6 +37,7 @@ import com.android.internal.logging.nano.MetricsProto;
+ import com.android.settings.R;
+ import com.android.settings.SettingsPreferenceFragment;
+ 
++@SearchIndexable
+ public class SmartPixels extends SettingsPreferenceFragment {
+ 
+     private static final String TAG = "SmartPixels";
+@@ -58,4 +61,7 @@ public class SmartPixels extends SettingsPreferenceFragment {
+     public int getMetricsCategory() {
+         return MetricsProto.MetricsEvent.CRDROID_SETTINGS;
+     }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.smart_pixels);
+ }
+diff --git a/src/com/crdroid/settings/fragments/ui/doze/AODSchedule.java b/src/com/crdroid/settings/fragments/ui/doze/AODSchedule.java
+index 9d1b8e24..e82af1bc 100644
+--- a/src/com/crdroid/settings/fragments/ui/doze/AODSchedule.java
++++ b/src/com/crdroid/settings/fragments/ui/doze/AODSchedule.java
+@@ -15,6 +15,8 @@
+  */
+ package com.crdroid.settings.fragments.ui.doze;
+ 
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settings.search.BaseSearchIndexProvider;
+ import android.app.TimePickerDialog;
+ import android.content.ContentResolver;
+ import android.content.Context;
+@@ -37,6 +39,7 @@ import com.crdroid.settings.preferences.SecureSettingListPreference;
+ import java.time.format.DateTimeFormatter;
+ import java.time.LocalTime;
+ 
++@SearchIndexable
+ public class AODSchedule extends SettingsPreferenceFragment implements
+         Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
+ 
+@@ -180,4 +183,7 @@ public class AODSchedule extends SettingsPreferenceFragment implements
+     public int getMetricsCategory() {
+         return MetricsProto.MetricsEvent.CRDROID_SETTINGS;
+     }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.always_on_display_schedule);
+ }
