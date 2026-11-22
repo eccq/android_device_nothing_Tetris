@@ -1,0 +1,39 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java b/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java
+index fd0cb6b54650..29a245db5724 100644
+--- a/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java
++++ b/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java
+@@ -572,7 +572,9 @@ public class WallpaperDepthUtils {
+             return;
+         }
+ 
++        // Without our own background the subject would drift off the wallpaper beneath.
+         boolean active = mSpatialEffectEnabled && canShowDepthWallpaper()
++                && mLockScreenBackground != null && mLockScreenBackground.getBackground() != null
+                 && mLockScreenSubject.isAttachedToWindow()
+                 && mLockScreenSubject.getVisibility() == View.VISIBLE;
+         mSpatialEffectController.setActive(active);
+@@ -753,6 +755,14 @@ public class WallpaperDepthUtils {
+             return null;
+         }
+ 
++        // A live wallpaper already draws under the keyguard; the fallbacks below would cover it
++        // with the home or default image.
++        if (wm.getWallpaperInfo(WallpaperManager.FLAG_LOCK) != null
++                || (wm.getWallpaperFile(WallpaperManager.FLAG_LOCK) == null
++                        && wm.getWallpaperInfo(WallpaperManager.FLAG_SYSTEM) != null)) {
++            return null;
++        }
++
+         try {
+             ParcelFileDescriptor pfd =
+                     wm.getWallpaperFile(WallpaperManager.FLAG_LOCK);
+@@ -956,8 +966,7 @@ public class WallpaperDepthUtils {
+                 return;
+             }
+ 
+-            if (mLockScreenBackground != null
+-                    && layers.background != null) {
++            if (mLockScreenBackground != null) {
+                 mLockScreenBackground.setBackground(
+                         layers.background);
+             }
