@@ -1,0 +1,29 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/WifiStandardImageView.kt b/packages/SystemUI/src/com/android/systemui/statusbar/WifiStandardImageView.kt
+index b6668823468b..35e87cd1d83e 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/WifiStandardImageView.kt
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/WifiStandardImageView.kt
+@@ -19,7 +19,6 @@ package com.android.systemui.statusbar
+ import android.content.Context
+ import android.net.wifi.ScanResult
+ import android.util.AttributeSet
+-import android.view.ViewGroup.MarginLayoutParams
+ import android.widget.ImageView
+ import androidx.lifecycle.Lifecycle
+ import androidx.lifecycle.repeatOnLifecycle
+@@ -48,15 +47,12 @@ class WifiStandardImageView @JvmOverloads constructor(
+             else -> 0
+         }
+ 
++        // Shares wifi_combo with the signal icon; an end margin opens a gap before the battery.
+         if (drawableId == 0) {
+             visibility = GONE
+-            layoutParams = (layoutParams as MarginLayoutParams).apply { marginEnd = 0 }
+         } else {
+             setImageResource(drawableId)
+             visibility = VISIBLE
+-            layoutParams = (layoutParams as MarginLayoutParams).apply {
+-                marginEnd = resources.getDimensionPixelSize(R.dimen.status_bar_airplane_spacer_width)
+-            }
+         }
+     }
+ }
