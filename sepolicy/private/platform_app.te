@@ -1,0 +1,2 @@
+# SystemUI reads the ro.descartes.* device switches; denied, it gets the defaults.
+get_prop(platform_app, custom_version_prop)
