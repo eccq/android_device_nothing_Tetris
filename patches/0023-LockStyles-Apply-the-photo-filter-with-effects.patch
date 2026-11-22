@@ -1,0 +1,230 @@
+diff --git a/res/values/strings.xml b/res/values/strings.xml
+index f0b3e10..8a4871a 100644
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -10,7 +10,8 @@
+     <string name="gallery_applied">Lock screen applied</string>
+     <string name="clock_style_in_gallery">Clock style</string>
+     <string name="clock_style_in_gallery_summary">Style, colour and size, set for each lock screen in Customise</string>
+-    <string name="depth_in_gallery">The depth effect is turned on for each photo lock screen in Customise. These tune how it looks.</string>
++    <string name="depth_in_gallery">Turn on the depth effect, pick the subject and set spatial and opacity in each photo lock screen, under Customise. These settings tune the fade for all of them.</string>
++    <string name="depth_tuning_summary">Fade and position of the subject. Turn it on in Customise</string>
+     <string name="credits_title">Credits</string>
+     <string name="credits_wallwidgy">Wallpapers, from WallWidgy</string>
+     <string name="credits_gallery">The iOS style lock screen gallery, from PenguinOS</string>
+diff --git a/src/org/lunaris/lockstyles/GalleryEffectService.kt b/src/org/lunaris/lockstyles/GalleryEffectService.kt
+index 454dd52..e9bcd72 100644
+--- a/src/org/lunaris/lockstyles/GalleryEffectService.kt
++++ b/src/org/lunaris/lockstyles/GalleryEffectService.kt
+@@ -137,7 +137,9 @@ class GalleryEffectService : WallpaperService() {
+             val subject = if (wallpaper.depth) {
+                 Settings.System.getString(contentResolver, GalleryApplier.DEPTH_SUBJECT)
+             } else null
+-            wallpaper.photos.firstOrNull()?.let { renderer.load(it, effect, subject) }
++            wallpaper.photos.firstOrNull()?.let {
++                renderer.load(it, effect, subject, wallpaper.variant)
++            }
+         }
+ 
+         private fun showLocked() {
+diff --git a/src/org/lunaris/lockstyles/GalleryEffects.kt b/src/org/lunaris/lockstyles/GalleryEffects.kt
+index 503c648..1f5103a 100644
+--- a/src/org/lunaris/lockstyles/GalleryEffects.kt
++++ b/src/org/lunaris/lockstyles/GalleryEffects.kt
+@@ -75,6 +75,7 @@ class GalleryEffectRenderer(private val context: Context) {
+     private var effect = GalleryEffect.NONE
+     private var photo: String? = null
+     private var subject: String? = null
++    private var filter = GalleryWallpaper.FILTER_NATURAL
+     private var program = 0
+     private val textures = IntArray(4)
+     private var hasTextures = false
+@@ -124,7 +125,7 @@ class GalleryEffectRenderer(private val context: Context) {
+         width = w
+         height = h
+         // The photo is cropped to the surface, so a new size needs new textures.
+-        photo?.let { load(it, effect, subject, force = true) }
++        photo?.let { load(it, effect, subject, filter, force = true) }
+     }
+ 
+     /**
+@@ -132,10 +133,11 @@ class GalleryEffectRenderer(private val context: Context) {
+      * depth wallpaper's cut-out of the photo, which keeps the subject out of the effect.
+      */
+     fun load(path: String, effect: GalleryEffect, subject: String? = null,
+-            force: Boolean = false) {
++            filter: Int = GalleryWallpaper.FILTER_NATURAL, force: Boolean = false) {
+         if (eglSurface == EGL14.EGL_NO_SURFACE || width == 0) {
+             photo = path
+             this.subject = subject
++            this.filter = filter
+             this.effect = effect
+             return
+         }
+@@ -144,9 +146,11 @@ class GalleryEffectRenderer(private val context: Context) {
+             program = if (effect == GalleryEffect.NONE) 0 else build(effect.shader)
+             this.effect = effect
+         }
+-        if (force || path != photo || subject != this.subject || !hasTextures) {
++        if (force || path != photo || subject != this.subject || filter != this.filter ||
++                !hasTextures) {
+             photo = path
+             this.subject = subject
++            this.filter = filter
+             uploadTextures(path)
+         }
+     }
+@@ -298,7 +302,7 @@ class GalleryEffectRenderer(private val context: Context) {
+         // Cropped to the screen as the static wallpaper would be.
+         val sharp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+         GalleryRenderer.drawCentreCrop(Canvas(sharp), source, width.toFloat(), height.toFloat(),
+-            Paint(Paint.FILTER_BITMAP_FLAG))
++            Paint(Paint.FILTER_BITMAP_FLAG).apply { colorFilter = GalleryRenderer.filter(filter) })
+         // Blurred at a quarter size; the shaders only ever sample it softly.
+         val small = Bitmap.createScaledBitmap(sharp, max(1, width / 4), max(1, height / 4), true)
+         val blur = GalleryApplier.blur(small, 24f)
+diff --git a/src/org/lunaris/lockstyles/settings/ui/LockSettingsScreens.kt b/src/org/lunaris/lockstyles/settings/ui/LockSettingsScreens.kt
+index 0c9e486..b1276a6 100644
+--- a/src/org/lunaris/lockstyles/settings/ui/LockSettingsScreens.kt
++++ b/src/org/lunaris/lockstyles/settings/ui/LockSettingsScreens.kt
+@@ -274,7 +274,7 @@ private fun ClockPage(open: (Page) -> Unit, back: () -> Unit) {
+                 open(Page.WIDGETS)
+             },
+             navRow(s(R.string.depthwall_wallpaper_enabled_title),
+-                s(R.string.depthwall_wallpaper_enabled_summary), Icons.Rounded.Layers) {
++                s(R.string.depth_tuning_summary), Icons.Rounded.Layers) {
+                 open(Page.DEPTH)
+             },
+             switchRow(s(R.string.lockscreen_custom_image_enabled_title),
+@@ -314,49 +314,11 @@ private fun WidgetsPage(back: () -> Unit) {
+ @Composable
+ private fun DepthPage(back: () -> Unit) {
+     val s = strings()
+-    val context = LocalContext.current
+-    val depth by Keys.DEPTH.state()
+-    var subject by Keys.DEPTH_SUBJECT.state()
+-    val automatic by Keys.DEPTH_AUTO_SUBJECT.state()
+-    androidx.compose.runtime.LaunchedEffect(depth, automatic) {
+-        if (depth && automatic) DepthExtractor.extractNow(context)
+-    }
+-    val pickSubject = rememberLauncherForActivityResult(
+-        ActivityResultContracts.PickVisualMedia()) { uri ->
+-        uri ?: return@rememberLauncherForActivityResult
+-        LunarisImages.save(context, uri, "depthwallpaper", "DEPTH_WALLPAPER_SUBJECT")
+-            ?.let { subject = it }
+-    }
+-    var confirmClear by remember { mutableStateOf(false) }
++    // Subject, spatial and opacity belong to each lock screen and are set in its Customise
++    // screen; applying one overwrites them, so only the shared tuning lives here.
+     SettingsPage(s(R.string.depthwall_wallpaper_enabled_title), back) {
+         group(null, listOf(
+             footer(s(R.string.depth_in_gallery)),
+-            actionRow(s(R.string.depthwall_extract_now_title),
+-                s(R.string.depthwall_extract_now_summary), enabled = depth) {
+-                if (!DepthExtractor.extractNow(context)) {
+-                    Toast.makeText(context, R.string.depthwall_extract_unavailable,
+-                        Toast.LENGTH_LONG).show()
+-                }
+-            },
+-            switchRow(s(R.string.depthwall_auto_subject_title),
+-                s(R.string.depthwall_auto_subject_summary), Keys.DEPTH_AUTO_SUBJECT,
+-                enabled = depth),
+-            actionRow(s(R.string.depthwall_file_header_select_title),
+-                subject ?: s(R.string.depthwall_file_header_select_summary), enabled = depth) {
+-                pickSubject.launch(PickVisualMediaRequest(
+-                    ActivityResultContracts.PickVisualMedia.ImageOnly))
+-            },
+-            actionRow(s(R.string.depthwall_clear_subject_title),
+-                s(R.string.depthwall_clear_subject_summary),
+-                enabled = depth && subject != null) { confirmClear = true },
+-        ))
+-        group(null, listOf(
+-            switchRow(s(R.string.gallery_spatial), s(R.string.gallery_spatial_summary),
+-                Keys.DEPTH_SPATIAL, enabled = depth),
+-            sliderRow(s(R.string.gallery_spatial_strength), null, Keys.DEPTH_SPATIAL_SENSITIVITY,
+-                0..100, unit = "%"),
+-            sliderRow(s(R.string.depthwall_wallpaper_opacity_title), null, Keys.DEPTH_OPACITY,
+-                1..100, unit = "%"),
+             sliderRow(s(R.string.depth_wallpaper_bottom_fade_title),
+                 s(R.string.depth_wallpaper_bottom_fade_summary), Keys.DEPTH_BOTTOM_FADE, 0..600),
+             sliderRow(s(R.string.depth_wallpaper_fade_curve_title),
+@@ -365,18 +327,8 @@ private fun DepthPage(back: () -> Unit) {
+             sliderRow(s(R.string.depth_wallpaper_bottom_inset_title),
+                 s(R.string.depth_wallpaper_bottom_inset_summary), Keys.DEPTH_BOTTOM_INSET,
+                 0..400, unit = " dp"),
+-            footer(s(R.string.depthwall_footer_text)),
+         ))
+     }
+-    if (confirmClear) {
+-        ModernConfirmDialog(
+-            title = s(R.string.depthwall_clear_subject_title),
+-            message = s(R.string.depthwall_clear_subject_confirm_message),
+-            icon = Icons.Rounded.Delete,
+-            onConfirm = { confirmClear = false; subject = null },
+-            onDismiss = { confirmClear = false },
+-        )
+-    }
+ }
+ 
+ @Composable
+diff --git a/src/org/lunaris/lockstyles/ui/CustomiseScreen.kt b/src/org/lunaris/lockstyles/ui/CustomiseScreen.kt
+index 437e1d8..1f01e6e 100644
+--- a/src/org/lunaris/lockstyles/ui/CustomiseScreen.kt
++++ b/src/org/lunaris/lockstyles/ui/CustomiseScreen.kt
+@@ -150,7 +150,7 @@ fun CustomiseScreen(
+         val effect = GalleryEffect.of(wallpaper.effect)
+         val photo = wallpaper.photos.firstOrNull()
+         if (wallpaper.kind == Kind.PHOTO && effect != GalleryEffect.NONE && photo != null) {
+-            EffectPreview(photo, effect, Modifier.fillMaxSize())
++            EffectPreview(photo, effect, wallpaper.variant, Modifier.fillMaxSize())
+         }
+         val onLight = rememberTopLight(wallpaper)
+         if (clock.face > 0) {
+diff --git a/src/org/lunaris/lockstyles/ui/EffectPreview.kt b/src/org/lunaris/lockstyles/ui/EffectPreview.kt
+index 06d00a0..90461b7 100644
+--- a/src/org/lunaris/lockstyles/ui/EffectPreview.kt
++++ b/src/org/lunaris/lockstyles/ui/EffectPreview.kt
+@@ -15,14 +15,16 @@ import androidx.compose.ui.platform.LocalContext
+ import androidx.compose.ui.viewinterop.AndroidView
+ import org.lunaris.lockstyles.GalleryEffect
+ import org.lunaris.lockstyles.GalleryEffectRenderer
++import org.lunaris.lockstyles.GalleryWallpaper
+ 
+ /** Plays [effect] over [photo] from locked to unlocked and back, as a preview of unlocking. */
+ @Composable
+-fun EffectPreview(photo: String, effect: GalleryEffect, modifier: Modifier = Modifier) {
++fun EffectPreview(photo: String, effect: GalleryEffect, filter: Int,
++        modifier: Modifier = Modifier) {
+     val context = LocalContext.current
+     val player = remember { EffectPlayer(context) }
+     DisposableEffect(Unit) { onDispose { player.release() } }
+-    player.set(photo, effect)
++    player.set(photo, effect, filter)
+     AndroidView(
+         factory = { TextureView(it).apply { surfaceTextureListener = player } },
+         modifier = modifier,
+@@ -37,6 +39,7 @@ private class EffectPlayer(context: android.content.Context) : TextureView.Surfa
+     private var surface: Surface? = null
+     private var photo: String? = null
+     private var effect = GalleryEffect.NONE
++    private var filter = GalleryWallpaper.FILTER_NATURAL
+     private var start = 0L
+ 
+     private val frame = object : Runnable {
+@@ -57,12 +60,13 @@ private class EffectPlayer(context: android.content.Context) : TextureView.Surfa
+         }
+     }
+ 
+-    fun set(photo: String, effect: GalleryEffect) = handler.post {
+-        if (photo == this.photo && effect == this.effect) return@post
++    fun set(photo: String, effect: GalleryEffect, filter: Int) = handler.post {
++        if (photo == this.photo && effect == this.effect && filter == this.filter) return@post
+         this.photo = photo
+         this.effect = effect
++        this.filter = filter
+         start = SystemClock.uptimeMillis()
+-        renderer.load(photo, effect)
++        renderer.load(photo, effect, filter = filter)
+     }
+ 
+     fun release() {
