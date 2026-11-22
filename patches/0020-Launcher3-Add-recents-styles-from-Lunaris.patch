@@ -1,0 +1,758 @@
+diff --git a/quickstep/src/com/android/quickstep/AbsSwipeUpHandler.java b/quickstep/src/com/android/quickstep/AbsSwipeUpHandler.java
+index e9aba57b98..e37e899834 100644
+--- a/quickstep/src/com/android/quickstep/AbsSwipeUpHandler.java
++++ b/quickstep/src/com/android/quickstep/AbsSwipeUpHandler.java
+@@ -3399,6 +3399,9 @@ public abstract class AbsSwipeUpHandler<
+                 if (setRecentsScroll) {
+                     taskViewSimulator.setScroll(scrollOffset);
+                 }
++                if (mRecentsView != null) {
++                    mRecentsView.updateRecentsStyle(remoteHandle);
++                }
+                 TransformParams transformParams = remoteHandle.getTransformParams();
+                 if (shouldFadeOutTargetsForKeyboardQuickSwitch(
+                         transformParams, taskViewSimulator, progress)) {
+diff --git a/quickstep/src/com/android/quickstep/util/TaskViewSimulator.java b/quickstep/src/com/android/quickstep/util/TaskViewSimulator.java
+index cf8fc6bb83..1b5bc513a9 100644
+--- a/quickstep/src/com/android/quickstep/util/TaskViewSimulator.java
++++ b/quickstep/src/com/android/quickstep/util/TaskViewSimulator.java
+@@ -103,6 +103,14 @@ public class TaskViewSimulator implements TransformParams.BuilderProxy {
+     public final AnimatedFloat taskGridTranslationX = new AnimatedFloat();
+     public final AnimatedFloat taskGridTranslationY = new AnimatedFloat();
+ 
++    private float mRecentsStyleScale = 1f;
++    private float mRecentsStyleTranslation;
++
++    public void setRecentsStyleTransform(float scale, float translation) {
++        mRecentsStyleScale = scale;
++        mRecentsStyleTranslation = translation;
++    }
++
+     // Carousel properties
+     public final AnimatedFloat carouselScale = new AnimatedFloat();
+ 
+@@ -462,7 +470,7 @@ public class TaskViewSimulator implements TransformParams.BuilderProxy {
+ 
+         float fullScreenProgress = Utilities.boundToRange(this.fullScreenProgress.value, 0, 1);
+         mCurrentFullscreenParams.setProgress(fullScreenProgress, recentsViewScale.value,
+-                carouselScale.value);
++                carouselScale.value * mRecentsStyleScale);
+ 
+         // Apply thumbnail matrix
+         float taskWidth = mTaskRect.width();
+@@ -484,8 +492,10 @@ public class TaskViewSimulator implements TransformParams.BuilderProxy {
+             }
+         }
+ 
++        mMatrix.postScale(mRecentsStyleScale, mRecentsStyleScale,
++                mFullTaskSize.exactCenterX(), mFullTaskSize.exactCenterY());
+         mOrientationState.getOrientationHandler().setPrimary(mMatrix, MATRIX_POST_TRANSLATE,
+-                taskPrimaryTranslation.value);
++                taskPrimaryTranslation.value + mRecentsStyleTranslation);
+         mOrientationState.getOrientationHandler().setSecondary(mMatrix, MATRIX_POST_TRANSLATE,
+                 taskSecondaryTranslation.value);
+         mMatrix.postTranslate(taskGridTranslationX.value, taskGridTranslationY.value);
+diff --git a/quickstep/src/com/android/quickstep/views/RecentsDismissUtils.kt b/quickstep/src/com/android/quickstep/views/RecentsDismissUtils.kt
+index 09c6c5e867..9f446bbb7f 100644
+--- a/quickstep/src/com/android/quickstep/views/RecentsDismissUtils.kt
++++ b/quickstep/src/com/android/quickstep/views/RecentsDismissUtils.kt
+@@ -711,7 +711,8 @@ constructor(
+         var lastColumnOffset = taskViewOffsetPairs.first().second
+         taskViewOffsetPairs
+             .filter { (taskView, _) ->
+-                willTaskBeVisibleAfterDismiss(taskView, dismissedTaskGap.roundToInt())
++                recentsView.isStackRecentsStyleActive ||
++                    willTaskBeVisibleAfterDismiss(taskView, dismissedTaskGap.roundToInt())
+             }
+             .forEach { (taskView, column) ->
+                 val startValue =
+@@ -750,7 +751,8 @@ constructor(
+                     previousColumnDriverSpring = lastTaskViewSpring
+                     lastColumnOffset = column
+                 }
+-                previousColumnDriverSpring.addUpdateListener { _, value, _ ->
++                val driverSpringForTask = previousColumnDriverSpring
++                driverSpringForTask.addUpdateListener { _, value, _ ->
+                     taskViewSpringAnimation.animateToFinalPosition(value)
+                 }
+                 lastTaskViewSpring = taskViewSpringAnimation
+@@ -1283,7 +1285,11 @@ constructor(
+         val resourceProvider = DynamicResource.provider(recentsView.mContainer)
+         return SpringForce(finalPosition)
+             .setDampingRatio(
+-                resourceProvider.getFloat(R.dimen.expressive_dismiss_task_trans_x_damping_ratio)
++                if (recentsView.isStackRecentsStyleActive) {
++                    STACK_STYLE_REFLOW_DAMPING_RATIO
++                } else {
++                    resourceProvider.getFloat(R.dimen.expressive_dismiss_task_trans_x_damping_ratio)
++                }
+             )
+             .setStiffness(
+                 resourceProvider.getFloat(R.dimen.expressive_dismiss_task_trans_x_stiffness)
+@@ -1492,6 +1498,7 @@ constructor(
+     private companion object {
+         // The additional damping to apply to tasks further from the dismissed task.
+         private const val ADDITIONAL_DISMISS_DAMPING_RATIO = 0.15f
++        private const val STACK_STYLE_REFLOW_DAMPING_RATIO = 1f
+         private const val RECENTS_SCALE_SPRING_MULTIPLIER = 1000f
+         private const val DEFAULT_DISMISS_THRESHOLD_FRACTION = 0.5f
+         private const val SPEED_UP_STIFFNESS = 100_000f
+diff --git a/quickstep/src/com/android/quickstep/views/RecentsStyle.java b/quickstep/src/com/android/quickstep/views/RecentsStyle.java
+new file mode 100644
+index 0000000000..3d05e53a8d
+--- /dev/null
++++ b/quickstep/src/com/android/quickstep/views/RecentsStyle.java
+@@ -0,0 +1,68 @@
++/*
++ * Copyright (C) 2024-2026 Lunaris AOSP
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.android.quickstep.views;
++
++final class RecentsStyle {
++    float scale = 1f;
++    float translation;
++    float elevation;
++    float dim;
++
++    void update(String style, float distance, float taskSize, float pageSpacing,
++            float progress, boolean recentsRtl) {
++        scale = 1f;
++        translation = 0f;
++        elevation = 0f;
++        dim = 0f;
++        if (taskSize <= 0f || progress <= 0f || "default".equals(style)) {
++            return;
++        }
++        progress = Math.min(1f, progress);
++        float dist = recentsRtl ? distance : -distance;
++        float absDist = Math.abs(dist);
++        float minScale = "oxygen".equals(style) ? 0.92f : 0.85f;
++        float scaleProgress = Math.min(1f, absDist / Math.max(1f, taskSize + pageSpacing));
++        float targetScale = 1f - (1f - minScale) * scaleProgress;
++
++        if ("staple".equals(style)) {
++            float excess = Math.max(0f, absDist - taskSize * 0.60f);
++            float squish = Math.min(excess, (float) (Math.log10(1f + excess) * 12f));
++            translation = -Math.signum(dist) * (excess - squish);
++            elevation = -(excess / taskSize) * 20f;
++            targetScale *= Math.max(0.75f, 1f - excess / (taskSize * 2.5f) * 0.15f);
++        } else if ("ios".equals(style) && dist < 0f) {
++            float excess = Math.max(0f, absDist - taskSize * 0.1f);
++            float squish = Math.min(excess, (float) (Math.log10(1f + excess) * 45f));
++            translation = excess - squish;
++            elevation = -(excess / taskSize) * 24f;
++            float depth = Math.min(1f, excess / (taskSize * 1.5f));
++            dim = 0.3f * depth;
++            targetScale *= 1f - depth * 0.15f;
++        } else if ("oxygen".equals(style) && dist < 0f) {
++            float bend = taskSize * 0.02f;
++            float visualDistance = 2f * absDist
++                    / ((float) Math.sqrt(1f + absDist / bend) + 1f);
++            translation = absDist - visualDistance;
++            elevation = -(absDist / taskSize) * 12f;
++            targetScale *= Math.max(0.85f, 1f - absDist / (taskSize * 3f) * 0.1f);
++        }
++
++        scale = 1f + (targetScale - 1f) * progress;
++        translation *= (recentsRtl ? 1f : -1f) * progress;
++        elevation *= progress;
++        dim *= progress;
++    }
++}
+diff --git a/quickstep/src/com/android/quickstep/views/RecentsView.java b/quickstep/src/com/android/quickstep/views/RecentsView.java
+index 8413bb1f33..d67d2e2d9b 100644
+--- a/quickstep/src/com/android/quickstep/views/RecentsView.java
++++ b/quickstep/src/com/android/quickstep/views/RecentsView.java
+@@ -27,6 +27,7 @@ import static com.android.app.animation.Interpolators.ACCELERATE_0_75;
+ import static com.android.app.animation.Interpolators.ACCELERATE_DECELERATE;
+ import static com.android.app.animation.Interpolators.DECELERATE_2;
+ import static com.android.app.animation.Interpolators.EMPHASIZED_DECELERATE;
++import static com.android.app.animation.Interpolators.FAST_OUT_SLOW_IN;
+ import static com.android.app.animation.Interpolators.LINEAR;
+ import static com.android.app.animation.Interpolators.clampToProgress;
+ import static com.android.internal.jank.Cuj.CUJ_LAUNCHER_RECENTS_TO_HOME;
+@@ -82,6 +83,7 @@ import android.app.ActivityManager;
+ import android.content.Context;
+ import android.content.Intent;
+ import android.content.LocusId;
++import android.content.SharedPreferences;
+ import android.content.res.Configuration;
+ import android.graphics.Bitmap;
+ import android.graphics.BlendMode;
+@@ -267,6 +269,7 @@ public abstract class RecentsView<
+         TaskVisualsChangeListener {
+ 
+     protected static final String TAG = "RecentsView";
++    private static final float STACK_STYLE_FULLSCREEN_PROGRESS = 0.35f;
+     private static final String PAGE_SCROLL_TAG = "RecentsPageScroll";
+ 
+     public static final FloatProperty<RecentsView<?, ?>> CONTENT_ALPHA =
+@@ -580,6 +583,9 @@ public abstract class RecentsView<
+     private float mTaskThumbnailSplashAlpha = 0;
+     private boolean mBorderEnabled = false;
+     private boolean mShowAsGridLastOnLayout = false;
++    private boolean mEnableOverlap = false;
++    private String mRecentsStyle = "default";
++    private final RecentsStyle mTaskStyle = new RecentsStyle();
+     protected final IntSet mTopRowIdSet = new IntSet();
+     private int mClearAllShortTotalWidthTranslation = 0;
+ 
+@@ -1044,6 +1050,21 @@ public abstract class RecentsView<
+         }
+     }
+ 
++    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefListener =
++            (prefs, key) -> {
++                if (LauncherPrefs.RECENTS_STYLE.getSharedPrefKey().equals(key)) {
++                    updateOverlapState();
++                    resetTaskVisuals();
++                    updatePageOffsets();
++                    requestLayout();
++                }
++            };
++
++    public void updateOverlapState() {
++        mRecentsStyle = LauncherPrefs.RECENTS_STYLE.get(getContext());
++        mEnableOverlap = !mRecentsStyle.equals("default");
++    }
++
+     public void init(OverviewActionsView actionsView, SplitSelectStateController splitController,
+             @Nullable DesktopRecentsTransitionController desktopRecentsTransitionController,
+             SurfaceTransactionApplier surfaceTransactionApplier,
+@@ -1111,6 +1132,7 @@ public abstract class RecentsView<
+     @Override
+     protected void onAttachedToWindow() {
+         super.onAttachedToWindow();
++        updateOverlapState();
+         updateTaskStackListenerState();
+         if (!enableLowResThumbnailPreloading()) {
+             mRecentsModel.getThumbnailCache().getHighResLoadingState().addCallback(this);
+@@ -1131,6 +1153,7 @@ public abstract class RecentsView<
+         if (mIsMultipleDesktopFrontendEnabled) {
+             mDesktopVisibilityController.registerDesktopVisibilityListener(mUtils);
+         }
++        LauncherPrefs.getPrefs(getContext()).registerOnSharedPreferenceChangeListener(mPrefListener);
+     }
+ 
+     @Override
+@@ -1157,6 +1180,8 @@ public abstract class RecentsView<
+         if (mIsMultipleDesktopFrontendEnabled) {
+             mDesktopVisibilityController.unregisterDesktopVisibilityListener(mUtils);
+         }
++        LauncherPrefs.getPrefs(getContext())
++                .unregisterOnSharedPreferenceChangeListener(mPrefListener);
+         mTaskLaunchListener = null;
+         mOnTaskLaunchCancelledRunnable = null;
+         reset();
+@@ -1392,6 +1417,9 @@ public abstract class RecentsView<
+     }
+ 
+     public boolean isTaskViewVisible(TaskView tv) {
++        if (isStackRecentsStyleActive()) {
++            return isStackTaskWithinBounds(tv);
++        }
+         if (showAsGrid()) {
+             int screenStart = getPagedOrientationHandler().getPrimaryScroll(this);
+             int screenEnd = screenStart + getPagedOrientationHandler().getMeasuredSize(this);
+@@ -1402,6 +1430,15 @@ public abstract class RecentsView<
+         }
+     }
+ 
++    /** Whether the task, as drawn with its stack style transform, is on screen. */
++    public boolean isStackTaskWithinBounds(TaskView taskView) {
++        mTempRectF.set(0f, 0f, taskView.getWidth(), taskView.getHeight());
++        taskView.getMatrix().mapRect(mTempRectF);
++        mTempRectF.offset(taskView.getLeft() - getScrollX(), taskView.getTop() - getScrollY());
++        return mTempRectF.right > 0f && mTempRectF.left < getWidth()
++                && mTempRectF.bottom > 0f && mTempRectF.top < getHeight();
++    }
++
+     public boolean isTaskViewFullyVisible(TaskView tv) {
+         if (showAsGrid()) {
+             int screenStart = getPagedOrientationHandler().getPrimaryScroll(this);
+@@ -2122,7 +2159,8 @@ public abstract class RecentsView<
+             simulator.taskPrimaryTranslation.value = 0;
+             simulator.taskSecondaryTranslation.value = 0;
+             simulator.fullScreenProgress.value = 0;
+-            simulator.recentsViewScale.value = 1;
++            simulator.recentsViewScale.value = getScaleX();
++            simulator.setRecentsStyleTransform(1f, 0f);
+         });
+         // Reapply runningTask related attributes as they might have been reset by
+         // resetViewTransforms().
+@@ -2130,6 +2168,7 @@ public abstract class RecentsView<
+         applyAttachAlpha();
+ 
+         updateCurveProperties();
++        doScrollScale();
+         // Update the set of visible task's data
+         loadVisibleTaskData();
+         setTaskModalness(0);
+@@ -2148,6 +2187,13 @@ public abstract class RecentsView<
+                 mapToRange(fullscreenProgress, 0, 0.1f, 1f, 0f, LINEAR));
+         mMemInfoView.setAlpha(MemInfoView.ALPHA_FS_PROGRESS,
+                 mapToRange(fullscreenProgress, 0, 0.1f, 1f, 0f, LINEAR));
++
++        if (mEnableOverlap) {
++            updatePageOffsets();
++            if (fullscreenProgress == 0f) {
++                loadVisibleTaskData();
++            }
++        }
+     }
+ 
+     private void updateTaskStackListenerState() {
+@@ -2820,6 +2866,12 @@ public abstract class RecentsView<
+         }
+ 
+         mCurrentGestureEndTarget = null;
++
++        if (mEnableOverlap && mEnableDrawingLiveTile) {
++            switchToScreenshot(
++                    () -> finishRecentsAnimation(true /* toRecents */, false /* shouldPip */,
++                            null));
++        }
+     }
+ 
+     /**
+@@ -3895,6 +3947,9 @@ public abstract class RecentsView<
+         mLastComputedTaskStartPushOutDistance = null;
+         mLastComputedTaskEndPushOutDistance = null;
+         updatePageOffsets();
++        if (isStackRecentsStyleActive()) {
++            loadVisibleTaskData();
++        }
+         runActionOnRemoteHandles(
+                 remoteTargetHandle -> remoteTargetHandle.getTaskViewSimulator()
+                         .setScroll(getScrollOffset()));
+@@ -4037,6 +4092,30 @@ public abstract class RecentsView<
+             }
+         }
+         updateCurveProperties();
++        doScrollScale();
++        if (mEnableOverlap && mEnableDrawingLiveTile && mRemoteTargetHandles != null) {
++            redrawLiveTile();
++        }
++    }
++
++    private boolean isCustomRecentsStyleActive() {
++        return mEnableOverlap && !showAsGrid()
++                && !mContainer.getDeviceProfile().getDeviceProperties().isLargeScreen();
++    }
++
++    public boolean isStackRecentsStyleActive() {
++        return isCustomRecentsStyleActive() && (mRecentsStyle.equals("staple")
++                || mRecentsStyle.equals("ios") || mRecentsStyle.equals("oxygen"));
++    }
++
++    private float getStackStyleOverlapFactor() {
++        if (!isCustomRecentsStyleActive()
++                || mFullscreenProgress >= STACK_STYLE_FULLSCREEN_PROGRESS) {
++            return 0f;
++        }
++        float stackProgress = Utilities.boundToRange(
++                1f - (mFullscreenProgress / STACK_STYLE_FULLSCREEN_PROGRESS), 0f, 1f);
++        return FAST_OUT_SLOW_IN.getInterpolation(stackProgress);
+     }
+ 
+     /**
+@@ -5783,6 +5862,87 @@ public abstract class RecentsView<
+     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+         super.onScrollChanged(l, t, oldl, oldt);
+         dispatchScrollChanged();
++        updatePageOffsets();
++    }
++
++    private void doScrollScale() {
++        if (!mEnableOverlap) {
++            return;
++        }
++        for (int i = 0; i < getChildCount(); i++) {
++            if (getChildAt(i) instanceof TaskView taskView) {
++                updateTaskRecentsStyle(taskView, i);
++            }
++        }
++    }
++
++    void updateTaskRecentsStyle(TaskView taskView) {
++        if (mEnableOverlap) {
++            updateTaskRecentsStyle(taskView, indexOfChild(taskView));
++        }
++    }
++
++    private void updateTaskRecentsStyle(TaskView taskView, int index) {
++        if (!isCustomRecentsStyleActive() && taskView.getRecentsScale() == 1f
++                && taskView.getRecentsPrimaryTranslation() == 0f) {
++            return;
++        }
++        RecentsPagedOrientationHandler orientation = getPagedOrientationHandler();
++        float progress = getStackStyleOverlapFactor();
++        boolean hasScroll = isPageScrollsInitialized()
++                && index >= 0 && index < mPageScrolls.length;
++        float distance = hasScroll
++                ? mPageScrolls[index] - orientation.getPrimaryScroll(this)
++                        + taskView.getPrimaryDismissTranslationProperty().get(taskView)
++                : 0f;
++        mTaskStyle.update(mRecentsStyle, distance, orientation.getPrimarySize(taskView),
++                mPageSpacing, hasScroll ? progress : 0f, mIsRtl);
++        taskView.setRecentsScale(mTaskStyle.scale);
++        taskView.setRecentsTranslation(mTaskStyle.translation);
++        taskView.setTranslationZ(mTaskStyle.elevation);
++        taskView.setRecentsDim(mTaskStyle.dim);
++        updateLiveTileRecentsStyle(taskView);
++    }
++
++    public void updateRecentsStyle(RemoteTargetHandle handle) {
++        TaskViewSimulator simulator = handle.getTaskViewSimulator();
++        simulator.setRecentsStyleTransform(1f, 0f);
++        if (!isCustomRecentsStyleActive()) {
++            return;
++        }
++        RemoteAnimationTargets targets = handle.getTransformParams().getTargetSet();
++        if (targets == null) {
++            return;
++        }
++        for (TaskView taskView : getTaskViews()) {
++            for (int taskId : taskView.getTaskIds()) {
++                if (targets.findTask(taskId) != null) {
++                    updateTaskRecentsStyle(taskView);
++                    simulator.setRecentsStyleTransform(
++                            taskView.getRecentsScale(), taskView.getRecentsPrimaryTranslation());
++                    return;
++                }
++            }
++        }
++    }
++
++    private void updateLiveTileRecentsStyle(TaskView taskView) {
++        if (mRemoteTargetHandles == null) {
++            return;
++        }
++        for (RemoteTargetHandle handle : mRemoteTargetHandles) {
++            RemoteAnimationTargets targets = handle.getTransformParams().getTargetSet();
++            if (targets == null) {
++                continue;
++            }
++            for (int taskId : taskView.getTaskIds()) {
++                if (targets.findTask(taskId) != null) {
++                    handle.getTaskViewSimulator().setRecentsStyleTransform(
++                            taskView.getRecentsScale(), taskView.getRecentsPrimaryTranslation());
++                    break;
++                }
++            }
++        }
+     }
+ 
+     /**
+diff --git a/quickstep/src/com/android/quickstep/views/RecentsViewUtils.kt b/quickstep/src/com/android/quickstep/views/RecentsViewUtils.kt
+index a9ade6a827..b8a3e030cb 100644
+--- a/quickstep/src/com/android/quickstep/views/RecentsViewUtils.kt
++++ b/quickstep/src/com/android/quickstep/views/RecentsViewUtils.kt
+@@ -221,9 +221,14 @@ constructor(
+                 val lowerIndex = max(0, centerPageIndex - 2)
+                 val upperIndex = centerPageIndex + 2
+ 
++                // Stacked cards can be drawn further than two pages from the centre.
+                 recentsView.children
+-                    .drop(lowerIndex)
+-                    .take(upperIndex - lowerIndex + 1)
++                    .filterIndexed { index, child ->
++                        index in lowerIndex..upperIndex ||
++                            (child is TaskView &&
++                                recentsView.isStackRecentsStyleActive &&
++                                recentsView.isStackTaskWithinBounds(child))
++                    }
+                     .filterIsInstance<TaskView>()
+                     .toList()
+             }
+diff --git a/quickstep/src/com/android/quickstep/views/TaskView.kt b/quickstep/src/com/android/quickstep/views/TaskView.kt
+index 81c0e17684..b311066381 100644
+--- a/quickstep/src/com/android/quickstep/views/TaskView.kt
++++ b/quickstep/src/com/android/quickstep/views/TaskView.kt
+@@ -26,6 +26,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+ import android.content.Context
+ import android.content.res.Configuration
+ import android.graphics.Canvas
++import android.graphics.Color
+ import android.graphics.PointF
+ import android.graphics.Rect
+ import android.graphics.drawable.Drawable
+@@ -388,6 +389,38 @@ constructor(
+             applyScale()
+         }
+ 
++    var recentsScale = 1f
++        set(value) {
++            if (field == value) return
++            field = value
++            applyScale()
++        }
++
++    private var recentsTranslationX = 0f
++    private var recentsTranslationY = 0f
++    private var recentsDimAmount = 0f
++    private var colorTintAmount = 0f
++    private var colorTintColor = 0
++
++    val recentsPrimaryTranslation: Float
++        get() = pagedOrientationHandler.getPrimaryValue(recentsTranslationX, recentsTranslationY)
++
++    fun setRecentsTranslation(translation: Float) {
++        val x = pagedOrientationHandler.getPrimaryValue(translation, 0f)
++        val y = pagedOrientationHandler.getPrimaryValue(0f, translation)
++        if (recentsTranslationX == x && recentsTranslationY == y) return
++        recentsTranslationX = x
++        recentsTranslationY = y
++        applyTranslationX()
++        applyTranslationY()
++    }
++
++    fun setRecentsDim(amount: Float) {
++        if (recentsDimAmount == amount) return
++        recentsDimAmount = amount
++        applyColorTint()
++    }
++
+     var modalScale = 1f
+         set(value) {
+             field = value
+@@ -404,12 +437,14 @@ constructor(
+         set(value) {
+             field = value
+             applyTranslationX()
++            recentsView?.updateTaskRecentsStyle(this)
+         }
+ 
+     private var dismissTranslationY = 0f
+         set(value) {
+             field = value
+             applyTranslationY()
++            recentsView?.updateTaskRecentsStyle(this)
+         }
+ 
+     private var taskOffsetTranslationX = 0f
+@@ -1325,10 +1360,34 @@ constructor(
+                 setDrawable(icon)
+                 setOnClickListener {
+                     if (!confirmSecondSplitSelectApp()) {
++                        val recents = recentsView
++                        if (recents != null && recents.isStackRecentsStyleActive) {
++                            val pageIndex = recents.indexOfChild(this@TaskView)
++                            if (
++                                pageIndex >= 0 &&
++                                    (this@TaskView != recents.currentPageTaskView ||
++                                        !recents.isTaskInExpectedScrollPosition(this@TaskView))
++                            ) {
++                                recents.snapToPage(pageIndex)
++                                return@setOnClickListener
++                            }
++                        }
+                         showTaskMenu(this)
+                     }
+                 }
+                 setOnLongClickListener {
++                    val recents = recentsView
++                    if (recents != null && recents.isStackRecentsStyleActive) {
++                        val pageIndex = recents.indexOfChild(this@TaskView)
++                        if (
++                            pageIndex >= 0 &&
++                                (this@TaskView != recents.currentPageTaskView ||
++                                    !recents.isTaskInExpectedScrollPosition(this@TaskView))
++                        ) {
++                            recents.snapToPage(pageIndex)
++                            return@setOnLongClickListener true
++                        }
++                    }
+                     requestDisallowInterceptTouchEvent(true)
+                     showTaskMenu(this)
+                 }
+@@ -1357,6 +1416,18 @@ constructor(
+             )
+             return
+         }
++        val recents = recentsView
++        if (recents != null && recents.isStackRecentsStyleActive) {
++            val pageIndex = recents.indexOfChild(this)
++            if (
++                pageIndex >= 0 &&
++                    (this != recents.currentPageTaskView ||
++                        !recents.isTaskInExpectedScrollPosition(this))
++            ) {
++                recents.snapToPage(pageIndex)
++                return
++            }
++        }
+         launchWithAnimation()
+         container.statsLogManager
+             .logger()
+@@ -1790,8 +1861,17 @@ constructor(
+ 
+     /** Set a color tint on the snapshot and supporting views. */
+     open fun setColorTint(amount: Float, tintColor: Int) {
++        colorTintAmount = amount
++        colorTintColor = tintColor
++        applyColorTint()
++    }
++
++    private fun applyColorTint() {
++        val amount = maxOf(colorTintAmount, recentsDimAmount)
++        val tintColor = if (colorTintAmount >= recentsDimAmount) colorTintColor else Color.BLACK
+         // RecentsView's COLOR_TINT animates between 0 and 0.5f, we want to hide the app chip menu.
+-        val colorTintAlpha = Utilities.mapToRange(amount, 0f, 0.5f, 1f, 0f, Interpolators.LINEAR)
++        val colorTintAlpha =
++            Utilities.mapToRange(colorTintAmount, 0f, 0.5f, 1f, 0f, Interpolators.LINEAR)
+         getTaskIcons().forEach { (icon, _) -> icon.colorTintAlpha = colorTintAlpha }
+         taskContainers.forEach {
+             it.updateTintAmount(amount)
+@@ -1838,6 +1918,7 @@ constructor(
+             persistentScale *
+                 dismissScale *
+                 animateToIconScale *
++                recentsScale *
+                 Utilities.mapRange(modalness, 1f, modalScale)
+         scaleX = scale
+         scaleY = scale
+@@ -1847,6 +1928,7 @@ constructor(
+     private fun applyTranslationX() {
+         translationX =
+             dismissTranslationX +
++                recentsTranslationX +
+                 taskOffsetTranslationX +
+                 taskResistanceTranslationX +
+                 splitSelectTranslationX +
+@@ -1858,6 +1940,7 @@ constructor(
+     private fun applyTranslationY() {
+         translationY =
+             dismissTranslationY +
++                recentsTranslationY +
+                 taskOffsetTranslationY +
+                 taskResistanceTranslationY +
+                 splitSelectTranslationY +
+@@ -1938,6 +2021,9 @@ constructor(
+             splitSelectTranslationY = 0f
+         }
+         dismissScale = 1f
++        recentsScale = 1f
++        setRecentsTranslation(0f)
++        setRecentsDim(0f)
+         translationZ = 0f
+         setIconVisibleForGesture(true)
+         settledProgressDismiss = 1f
+diff --git a/res/values-it-rIT/cr_strings.xml b/res/values-it-rIT/cr_strings.xml
+index d2dcb9f8ec..fb5f744785 100644
+--- a/res/values-it-rIT/cr_strings.xml
++++ b/res/values-it-rIT/cr_strings.xml
+@@ -421,4 +421,5 @@
+     <string name="action_lock">Lock/Unlock app</string>
+     <string name="unlock_app">Unlocked app in recents</string>
+     <string name="lock_app">Locked app in recents</string>
++    <string name="recents_style_title">Stile layout Recenti</string>
+ </resources>
+diff --git a/res/values/cr_arrays.xml b/res/values/cr_arrays.xml
+index 5463711d24..e0982b095f 100644
+--- a/res/values/cr_arrays.xml
++++ b/res/values/cr_arrays.xml
+@@ -68,4 +68,20 @@
+         <item>install_date</item>
+         <item>usage</item>
+     </string-array>
++
++    <string-array name="recents_styles_entries">
++        <item>@string/recents_style_default</item>
++        <item>@string/recents_style_stock</item>
++        <item>@string/recents_style_staple</item>
++        <item>@string/recents_style_ios</item>
++        <item>@string/recents_style_oxygen</item>
++    </string-array>
++
++    <string-array name="recents_styles_values" translatable="false">
++        <item>default</item>
++        <item>stock</item>
++        <item>staple</item>
++        <item>ios</item>
++        <item>oxygen</item>
++    </string-array>
+ </resources>
+diff --git a/res/values/cr_strings.xml b/res/values/cr_strings.xml
+index be28d765bf..28fb27f30a 100644
+--- a/res/values/cr_strings.xml
++++ b/res/values/cr_strings.xml
+@@ -478,6 +478,12 @@
+ 
+     <!-- Recents style -->
+     <string name="recents_scroll_vibrate_title">Scroll vibration</string>
++    <string name="recents_style_title">Recents layout style</string>
++    <string name="recents_style_default">Default</string>
++    <string name="recents_style_stock">Scale effect</string>
++    <string name="recents_style_staple">Kami style</string>
++    <string name="recents_style_ios">iOS style</string>
++    <string name="recents_style_oxygen">OxygenOS style</string>
+ 
+     <!-- Lock -->
+     <string name="action_lock">Lock/Unlock app</string>
+diff --git a/res/xml/launcher_recents_preferences.xml b/res/xml/launcher_recents_preferences.xml
+index 47f8b36537..217ff20ba6 100644
+--- a/res/xml/launcher_recents_preferences.xml
++++ b/res/xml/launcher_recents_preferences.xml
+@@ -29,6 +29,15 @@
+             android:defaultValue="true"
+             android:persistent="true"
+             launcher:iconSpaceReserved="false" />
++        <ListPreference
++            android:key="pref_recents_style"
++            android:title="@string/recents_style_title"
++            android:entries="@array/recents_styles_entries"
++            android:entryValues="@array/recents_styles_values"
++            android:defaultValue="default"
++            android:persistent="true"
++            android:summary="%s"
++            launcher:iconSpaceReserved="false" />
+ 
+         <com.android.launcher3.settings.preferences.CustomSeekBarPreference
+             android:key="pref_recents_opacity"
+diff --git a/src/com/android/launcher3/LauncherPrefs.kt b/src/com/android/launcher3/LauncherPrefs.kt
+index 54a9899dbe..c3bf147ffe 100644
+--- a/src/com/android/launcher3/LauncherPrefs.kt
++++ b/src/com/android/launcher3/LauncherPrefs.kt
+@@ -322,6 +322,7 @@ constructor(@ApplicationContext private val encryptedContext: Context) {
+         @JvmField val RECENTS_LENS = backedUpItem("pref_recents_lens", false)
+         @JvmField val RECENTS_MEMINFO = backedUpItem("pref_recents_meminfo", false)
+         @JvmField val RECENTS_MEMINFO_ZRAM = backedUpItem("pref_recents_meminfo_zram", false)
++        @JvmField val RECENTS_STYLE = backedUpItem("pref_recents_style", "default")
+         @JvmField val RECENTS_OPACITY = backedUpItem("pref_recents_opacity", 40)
+         @JvmField val RECENTS_SCREENSHOT = backedUpItem("pref_recents_screenshot", true)
+         @JvmField val RECENTS_SCROLL_VIBRATE = backedUpItem("pref_recents_scroll_vibrate", true)
+diff --git a/src/com/android/launcher3/settings/SettingsRecents.java b/src/com/android/launcher3/settings/SettingsRecents.java
+index 635cf970fb..afb6ce1672 100644
+--- a/src/com/android/launcher3/settings/SettingsRecents.java
++++ b/src/com/android/launcher3/settings/SettingsRecents.java
+@@ -70,6 +70,7 @@ public class SettingsRecents extends CollapsingToolbarBaseActivity
+     public static final String SAVE_HIGHLIGHTED_KEY = "android:preference_highlighted";
+ 
+     private static final String RECENTS_CATEGORY_ACTION = "recents_category_actions";
++    private static final String RECENTS_STYLE_PREF = "pref_recents_style";
+     private static final String RECENTS_SCROLL_VIBRATE_PREF = "pref_recents_scroll_vibrate";
+ 
+     @Override
+@@ -289,7 +290,8 @@ public class SettingsRecents extends CollapsingToolbarBaseActivity
+             }
+ 
+             LauncherDisplayInfo info = DisplayController.INSTANCE.get(getContext()).getInfo();
+-            if (key.equals(RECENTS_CATEGORY_ACTION) || key.equals(RECENTS_SCROLL_VIBRATE_PREF)) {
++            if (key.equals(RECENTS_CATEGORY_ACTION) || key.equals(RECENTS_SCROLL_VIBRATE_PREF)
++                    || key.equals(RECENTS_STYLE_PREF)) {
+                 return !info.isLargeScreen(info.realBounds);
+             }
+ 
