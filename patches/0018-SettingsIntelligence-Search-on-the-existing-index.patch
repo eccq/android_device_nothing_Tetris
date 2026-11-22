@@ -1,0 +1,34 @@
+diff --git a/src/com/android/settings/intelligence/search/indexing/DatabaseIndexingManager.java b/src/com/android/settings/intelligence/search/indexing/DatabaseIndexingManager.java
+index afb67c1..6601e18 100644
+--- a/src/com/android/settings/intelligence/search/indexing/DatabaseIndexingManager.java
++++ b/src/com/android/settings/intelligence/search/indexing/DatabaseIndexingManager.java
+@@ -365,7 +365,9 @@ public class DatabaseIndexingManager {
+         @Override
+         protected void onPreExecute() {
+             mIndexStartTime = System.currentTimeMillis();
+-            mIsIndexingComplete.set(false);
++            // Only a full rebuild leaves the database empty; the incremental pass refreshes
++            // non-indexable keys and onIndexingFinished requeries once it is done.
++            mIsIndexingComplete.set(IndexDatabaseHelper.hasUsableIndex(mContext));
+         }
+ 
+         @Override
+diff --git a/src/com/android/settings/intelligence/search/indexing/IndexDatabaseHelper.java b/src/com/android/settings/intelligence/search/indexing/IndexDatabaseHelper.java
+index f38fc55..e369bcc 100644
+--- a/src/com/android/settings/intelligence/search/indexing/IndexDatabaseHelper.java
++++ b/src/com/android/settings/intelligence/search/indexing/IndexDatabaseHelper.java
+@@ -312,6 +312,14 @@ public class IndexDatabaseHelper extends SQLiteOpenHelper {
+                 .apply();
+     }
+ 
++    /** The database was built for this build and locale, so it can answer queries right away. */
++    static boolean hasUsableIndex(Context context) {
++        final SharedPreferences prefs = context
++                .getSharedPreferences(SHARED_PREFS_TAG, Context.MODE_PRIVATE);
++        return prefs.getBoolean(Build.VERSION.INCREMENTAL, false)
++                && prefs.getBoolean(Locale.getDefault().toString(), false);
++    }
++
+     /**
+      * Checks if the indexed data requires full index. The index data is out of date when:
+      * - Device language has changed
