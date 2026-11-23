@@ -32,6 +32,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0025-*.patch
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0026-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0027-*.patch && cd -
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0028-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0029-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -64,3 +65,4 @@ cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/002
 | `0026-SystemUI-End-the-lock-screen-clock-at-its-glyphs.patch` | The lock screen clock now ends where its glyphs end, so the media card and notifications sit a fixed 16dp below what is drawn, for every clock style. Font line spacing left up to 110dp of empty space under large digits, and rotated or shifted parts (Block clock) were not counted. Text is measured line by line with shadow and outline; images and views with a background count in full. Replaces the overflow padding of 0010. |
 | `0027-services-Read-volume-steps-from-settings.patch` | AudioService takes the media, call, ring, notification and alarm volume steps from the volume_steps_* system settings (5 to 60) at boot. |
 | `0028-Atelier-Add-volume-steps.patch` | Atelier > Sound > Volume steps: one slider per stream, with a reboot prompt. Reset restores the stock 15/15/7/7/7. |
+| `0029-SystemUI-Fade-the-lock-screen-media-blur-with-the-keyguard.patch` | The iOS-style lock screen media card blur follows the alpha of its parent views, so it no longer stays on the home screen after unlocking. |

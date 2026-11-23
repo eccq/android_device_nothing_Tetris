@@ -1,0 +1,67 @@
+diff --git a/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/WallpaperBlur.kt b/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/WallpaperBlur.kt
+index bc4de96df7ba..b1b49bdbab63 100644
+--- a/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/WallpaperBlur.kt
++++ b/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/WallpaperBlur.kt
+@@ -18,6 +18,7 @@ package com.android.systemui.keyguard.ui.composable.media
+ 
+ import android.content.Context
+ import android.view.View
++import android.view.ViewTreeObserver
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.LaunchedEffect
+ import androidx.compose.runtime.remember
+@@ -56,6 +57,28 @@ private class BlurHost(context: Context) : View(context) {
+     private var cornerPx = 0f
+     private var radiusPx = 0
+     private var blurAlpha = 1f
++    private var appliedAlpha = -1
++    // The blur is drawn by SurfaceFlinger, so it ignores the alpha of the views above it; follow
++    // it by hand or the blur stays on the home screen while the keyguard fades out.
++    private val followParents = ViewTreeObserver.OnPreDrawListener {
++        applyAlpha()
++        true
++    }
++
++    private fun applyAlpha() {
++        var a = blurAlpha
++        var v: View? = this
++        while (v != null) {
++            if (v.visibility != VISIBLE) a = 0f
++            a *= v.alpha
++            v = v.parent as? View
++        }
++        val value = (255 * a.coerceIn(0f, 1f)).roundToInt()
++        if (value != appliedAlpha) {
++            appliedAlpha = value
++            blur?.alpha = value
++        }
++    }
+ 
+     fun configure(corner: Float, radius: Int) {
+         cornerPx = corner
+@@ -66,7 +89,7 @@ private class BlurHost(context: Context) : View(context) {
+ 
+     fun setBlurAlpha(value: Float) {
+         blurAlpha = value
+-        blur?.alpha = (255 * value).roundToInt()
++        applyAlpha()
+     }
+ 
+     override fun onAttachedToWindow() {
+@@ -76,12 +99,15 @@ private class BlurHost(context: Context) : View(context) {
+             root.createBackgroundBlurDrawable().apply {
+                 setCornerRadius(cornerPx)
+                 setBlurRadius(radiusPx)
+-                alpha = (255 * blurAlpha).roundToInt()
+             }
++        appliedAlpha = -1
++        applyAlpha()
+         background = blur
++        viewTreeObserver.addOnPreDrawListener(followParents)
+     }
+ 
+     override fun onDetachedFromWindow() {
++        viewTreeObserver.removeOnPreDrawListener(followParents)
+         background = null
+         blur = null
+         super.onDetachedFromWindow()
