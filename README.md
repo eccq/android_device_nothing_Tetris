@@ -1,5 +1,7 @@
 # Device configuration for CMF Phone 1
 
+Based on [CMF-Phone-1/android_device_nothing_Tetris](https://github.com/CMF-Phone-1/android_device_nothing_Tetris) and [LineageOS](https://github.com/LineageOS).
+
 The CMF Phone 1 ("Tetris") is a mid-range smartphone from CMF by
 Nothing, released in July 2024.
 
