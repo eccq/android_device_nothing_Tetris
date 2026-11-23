@@ -18,6 +18,8 @@
    * Lock screen
 - The depth wallpaper subject stays off the media card.
 - The Pulse visualizer shows again with the depth wallpaper on.
+- The fluid clock flies into the home screen widget on unlock. It never did
+  before, because the launcher was not told where the clock was.
 - The water unlock effects are skipped while the fluid clock is on.
 - Descartes Laboratory says what the fluid clock needs to fly.
 
@@ -25,6 +27,7 @@
 - New Island style setting: Stock, PenguinOS or Lunaris. PenguinOS and Lunaris
   are the full islands of those ROMs, with their own music, events and cards.
 - The Lunaris island has its own settings pages.
+- Lunaris: no blur trail while a card closes.
 - A running timer no longer shows as an alarm.
 - The Settings search finds the Lunaris pages too, and lists only the options
   of the chosen style.

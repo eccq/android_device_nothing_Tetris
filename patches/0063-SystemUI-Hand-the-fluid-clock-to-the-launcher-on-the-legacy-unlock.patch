@@ -1,0 +1,170 @@
+diff --git a/packages/SystemUI/multivalentTests/src/com/android/systemui/keyguard/KeyguardUnlockAnimationControllerTest.kt b/packages/SystemUI/multivalentTests/src/com/android/systemui/keyguard/KeyguardUnlockAnimationControllerTest.kt
+index dbd5caaac09d..69eb9391e08f 100644
+--- a/packages/SystemUI/multivalentTests/src/com/android/systemui/keyguard/KeyguardUnlockAnimationControllerTest.kt
++++ b/packages/SystemUI/multivalentTests/src/com/android/systemui/keyguard/KeyguardUnlockAnimationControllerTest.kt
+@@ -22,6 +22,7 @@ import com.android.systemui.Flags
+ import com.android.systemui.SysuiTestCase
+ import com.android.systemui.flags.DisableSceneContainer
+ import com.android.systemui.flags.FeatureFlags
++import com.android.systemui.keyguard.ui.view.InWindowLauncherUnlockAnimationManager
+ import com.android.systemui.shared.system.smartspace.ILauncherUnlockAnimationController
+ import com.android.systemui.statusbar.NotificationShadeWindowController
+ import com.android.systemui.statusbar.SysuiStatusBarStateController
+@@ -71,6 +72,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
+     @Mock private lateinit var notificationShadeWindowController: NotificationShadeWindowController
+     @Mock private lateinit var powerManager: PowerManager
+     @Mock private lateinit var wallpaperManager: WallpaperManager
++    @Mock private lateinit var clockLauncherManager: InWindowLauncherUnlockAnimationManager
+     private val kosmos = testKosmos()
+ 
+     @Mock
+@@ -109,6 +111,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
+                     notificationShadeWindowController,
+                     powerManager,
+                     wallpaperManager,
++                    { clockLauncherManager },
+                 ) {
+                 override fun shouldPerformSmartspaceTransition(): Boolean =
+                     shouldPerformSmartspaceTransition
+diff --git a/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardUnlockAnimationController.kt b/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardUnlockAnimationController.kt
+index 0bc80e89bd38..a414016f4878 100644
+--- a/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardUnlockAnimationController.kt
++++ b/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardUnlockAnimationController.kt
+@@ -42,6 +42,7 @@ import com.android.systemui.dagger.SysUISingleton
+ import com.android.systemui.dagger.qualifiers.Main
+ import com.android.systemui.flags.FeatureFlags
+ import com.android.systemui.flags.Flags
++import com.android.systemui.keyguard.ui.view.InWindowLauncherUnlockAnimationManager
+ import com.android.systemui.penguin.LockscreenClockFace
+ import com.android.systemui.plugins.BcSmartspaceDataPlugin
+ import com.android.systemui.shared.recents.utilities.Utilities
+@@ -139,6 +140,8 @@ const val SURFACE_BEHIND_SWIPE_FADE_DURATION_MS = 175L
+  */
+ const val UNLOCK_ANIMATION_SURFACE_BEHIND_START_DELAY_MS = 67L
+ 
++private const val CLOCK_RESTORE_DELAY_MS = 1000L
++
+ /**
+  * Initiates, controls, and ends the keyguard unlock animation.
+  *
+@@ -166,12 +169,15 @@ constructor(
+     private val notificationShadeWindowController: NotificationShadeWindowController,
+     private val powerManager: PowerManager,
+     private val wallpaperManager: WallpaperManager,
++    private val clockLauncherManager: Lazy<InWindowLauncherUnlockAnimationManager>,
+     clockFace: Optional<LockscreenClockFace> = Optional.empty(),
+ ) : KeyguardStateController.Callback, ISysuiUnlockAnimationController.Stub() {
+     private val clockFace = clockFace.orElse(null)
+ 
+     private var handingOffClock = false
+ 
++    private val restoreClock = Runnable { clockLauncherManager.get().restoreClock() }
++
+     interface KeyguardUnlockAnimationListener {
+         /**
+          * Called when the remote unlock animation, controlled by
+@@ -261,6 +267,7 @@ constructor(
+      */
+     override fun onLauncherSmartspaceStateUpdated(state: SmartspaceState?) {
+         launcherSmartspaceState = state
++        clockLauncherManager.get().onLauncherSmartspaceStateUpdated(state)
+     }
+ 
+     /**
+@@ -532,7 +539,8 @@ constructor(
+ 
+         // There are additional conditions under which we should not perform the smartspace
+         // transition specifically, so check those.
+-        willUnlockWithSmartspaceTransition = shouldPerformSmartspaceTransition()
++        val handOffClock = clockFace?.cosUnlock == true
++        willUnlockWithSmartspaceTransition = !handOffClock && shouldPerformSmartspaceTransition()
+ 
+         var lockscreenSmartspaceBounds = Rect()
+ 
+@@ -567,11 +575,15 @@ constructor(
+ 
+         try {
+             // Let the launcher know to prepare for this animation.
+-            launcherUnlockController?.prepareForUnlock(
+-                willUnlockWithSmartspaceTransition, /* willAnimateSmartspace */
+-                lockscreenSmartspaceBounds, /* lockscreenSmartspaceBounds */
+-                selectedPage, /* selectedPage */
+-            )
++            if (handOffClock) {
++                launcherUnlockController?.let { clockLauncherManager.get().prepareLauncher(it) }
++            } else {
++                launcherUnlockController?.prepareForUnlock(
++                    willUnlockWithSmartspaceTransition, /* willAnimateSmartspace */
++                    lockscreenSmartspaceBounds, /* lockscreenSmartspaceBounds */
++                    selectedPage, /* selectedPage */
++                )
++            }
+ 
+             launcherPreparedForUnlock = true
+         } catch (e: RemoteException) {
+@@ -635,6 +647,7 @@ constructor(
+                 setSurfaceBehindAppearAmount(1f)
+ 
+                 try {
++                    handOffClock()
+                     launcherUnlockController?.playUnlockAnimation(
+                         true,
+                         UNLOCK_ANIMATION_DURATION_MS + CANNED_UNLOCK_START_DELAY_MS,
+@@ -746,6 +759,7 @@ constructor(
+         setSurfaceBehindAppearAmount(1f, wallpapers = false)
+ 
+         try {
++            handOffClock()
+             // Begin the animation, waiting for the shade to animate out.
+             launcherUnlockController?.playUnlockAnimation(
+                 true, /* unlocked */
+@@ -1116,6 +1130,20 @@ constructor(
+         dismissAmountThresholdsReached = false
+         willUnlockWithInWindowLauncherAnimations = false
+         willUnlockWithSmartspaceTransition = false
++
++        // The lockscreen fades after this, so the clock must not come back with it.
++        handler.postDelayed(restoreClock, if (showKeyguard) 0L else CLOCK_RESTORE_DELAY_MS)
++    }
++
++    override fun onKeyguardShowingChanged() {
++        if (keyguardStateController.isShowing) {
++            handler.removeCallbacks(restoreClock)
++            restoreClock.run()
++        }
++    }
++
++    private fun handOffClock() {
++        launcherUnlockController?.let { clockLauncherManager.get().handOffTo(it) }
+     }
+ 
+     /**
+diff --git a/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/InWindowLauncherUnlockAnimationManager.kt b/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/InWindowLauncherUnlockAnimationManager.kt
+index e9231d7a7bf1..643a457e39f8 100644
+--- a/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/InWindowLauncherUnlockAnimationManager.kt
++++ b/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/InWindowLauncherUnlockAnimationManager.kt
+@@ -137,7 +137,14 @@ constructor(
+         }
+     }
+ 
+-    private fun prepareLauncher(launcher: ILauncherUnlockAnimationController) {
++    /** For the legacy unlock path, which holds the launcher controller itself. */
++    fun handOffTo(launcher: ILauncherUnlockAnimationController) {
++        if (handoff() == null) return
++        prepareLauncher(launcher)
++        handOff()
++    }
++
++    fun prepareLauncher(launcher: ILauncherUnlockAnimationController) {
+         val handoff = handoff()
+         launcher.prepareForUnlock(
+             handoff != null,
+@@ -205,7 +212,7 @@ constructor(
+         handedOffClock = view
+     }
+ 
+-    private fun restoreClock() {
++    fun restoreClock() {
+         handedOffClock?.alpha = handedOffAlpha
+         // Opacity/doze state may have changed while the launcher owned the clock.
+         handedOffCustomClock?.restoreAfterHandoff()
