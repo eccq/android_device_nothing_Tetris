@@ -1,0 +1,12 @@
+diff --git a/config/descartes.mk b/config/descartes.mk
+index 50fee2e2..2dff5082 100644
+--- a/config/descartes.mk
++++ b/config/descartes.mk
+@@ -44,7 +44,6 @@ PRODUCT_SYSTEM_EXT_PROPERTIES += \
+ PRODUCT_PACKAGES += \
+     AxSandbox \
+     AxThemeStore \
+-    BatteryStatsViewer \
+     GameSpace \
+     DescartesFreeform \
+     DescartesFreeformSidebar \

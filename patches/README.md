@@ -58,6 +58,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0051-*.patch
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0052-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0053-*.patch && cd -
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0054-*.patch && cd -
+cd vendor/lineage && git apply ../../device/nothing/Tetris/patches/0055-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -116,3 +117,4 @@ cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/005
 | `0052-SystemUI-Add-the-PenguinOS-island-look.patch` | The stock Dynamic island can wear the PenguinOS pill: size, outline, text colour and side crescents. |
 | `0053-services-Give-the-DeX-PC-client-a-desktop.patch` | Displays made from the shell, as the PC client does, are DeX desktops whatever the mirror switch says. |
 | `0054-Atelier-Add-the-island-style-setting.patch` | Stock, PenguinOS look or Lunaris in the Dynamic island page, with search keywords. |
+| `0055-lineage-Drop-the-battery-stats-viewer.patch` | Drops the battery stats debug app. |
