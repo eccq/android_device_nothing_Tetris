@@ -1,0 +1,12 @@
+diff --git a/gms_full.mk b/gms_full.mk
+index e4b4d39..cc47d93 100644
+--- a/gms_full.mk
++++ b/gms_full.mk
+@@ -115,7 +115,6 @@ PRODUCT_PACKAGES += \
+     CustomizationBundlePrebuiltFullVersion \
+     DeviceIntelligenceNetworkPrebuiltAstrea \
+     DevicePersonalizationAiAiPrebuiltPixel2026 \
+-    FamilySpacePrebuilt-v2026 \
+     FilesPrebuilt \
+     GeminiShell_227 \
+     GoogleDialer \
