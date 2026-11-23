@@ -65,6 +65,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0058-*.patch
 cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0059-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0060-*.patch && cd -
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0061-*.patch && cd -
+cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0062-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -130,3 +131,4 @@ cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/006
 | `0059-Launcher3-Keep-the-dock-on-the-DeX-display.patch` | Turning the taskbar off on the phone no longer removes the dock from an external display. |
 | `0060-SystemUI-Add-the-PenguinOS-and-Lunaris-islands.patch` | The whole PenguinOS and Lunaris Dynamic islands, next to the stock one: music, calls, events, cards and lights. The stock island stays off while one of them is on. Replaces the look of 0052. A running timer no longer shows as an alarm. |
 | `0061-Atelier-Add-the-PenguinOS-and-Lunaris-island-settings.patch` | Island style picks the stock, PenguinOS or Lunaris island. Adds the PenguinOS events and the Lunaris settings pages. Needs 0060. |
+| `0062-Atelier-List-the-island-pages-in-the-settings-search.patch` | The Settings search lists the Lunaris island pages, and only the options of the chosen island style. Needs 0061. |

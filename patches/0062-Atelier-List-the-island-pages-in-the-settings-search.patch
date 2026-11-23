@@ -1,0 +1,317 @@
+diff --git a/res/xml/lunaris_bar_features.xml b/res/xml/lunaris_bar_features.xml
+index e399e3f6..a88ef209 100644
+--- a/res/xml/lunaris_bar_features.xml
++++ b/res/xml/lunaris_bar_features.xml
+@@ -109,7 +109,7 @@
+     <Preference
+         android:key="feature_appearance"
+         android:title="@string/lunaris_bar_feature_appearance"
+-        android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings">
++        android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandFeatureStyle">
+ 
+         <extra
+             android:name="page"
+diff --git a/res/xml/lunaris_island_settings.xml b/res/xml/lunaris_island_settings.xml
+index e1c38f53..db5a0ff6 100644
+--- a/res/xml/lunaris_island_settings.xml
++++ b/res/xml/lunaris_island_settings.xml
+@@ -18,7 +18,7 @@
+         <Preference
+             android:key="appearance"
+             android:title="@string/lunaris_bar_appearance"
+-            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandAppearance"
+             android:summary="@string/lunaris_bar_appearance_description">
+ 
+             <extra
+@@ -30,7 +30,7 @@
+         <Preference
+             android:key="colors"
+             android:title="@string/lunaris_bar_colors"
+-            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandColors"
+             android:summary="@string/lunaris_bar_colors_description">
+ 
+             <extra
+@@ -42,7 +42,7 @@
+         <Preference
+             android:key="motion"
+             android:title="@string/lunaris_bar_motion"
+-            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandMotion"
+             android:summary="@string/lunaris_bar_motion_description">
+ 
+             <extra
+@@ -54,7 +54,7 @@
+         <Preference
+             android:key="media"
+             android:title="@string/lunaris_bar_media"
+-            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandMedia"
+             android:summary="@string/lunaris_bar_media_description">
+ 
+             <extra
+@@ -66,7 +66,7 @@
+         <Preference
+             android:key="gestures"
+             android:title="@string/lunaris_bar_gestures"
+-            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandGestures"
+             android:summary="@string/lunaris_bar_gestures_description">
+ 
+             <extra
+@@ -90,7 +90,7 @@
+         <Preference
+             android:key="features"
+             android:title="@string/lunaris_bar_features"
+-            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandFeatures"
+             android:summary="@string/lunaris_bar_features_description">
+ 
+             <extra
+diff --git a/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt b/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt
+index abf29459..5b25e699 100644
+--- a/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt
++++ b/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt
+@@ -96,10 +96,18 @@ class DynamicIslandSettings : SettingsPreferenceFragment() {
+         private val PENGUIN_ON =
+             listOf("live_updates", "battery", "bluetooth", "calls", "ringer", "hotspot")
+         private val PENGUIN_OFF = listOf("unlock", "vpn", "clipboard", "lockscreen")
++        val PENGUIN_KEYS =
++            (PENGUIN_ON + PENGUIN_OFF).map { "status_bar_dynamic_island_$it" }.toSet()
+         private const val STYLE_STOCK = "stock"
+         private const val STYLE_PENGUIN = "penguin"
+         private const val STYLE_LUNARIS = "lunaris"
+ 
++        private fun isOn(context: Context, key: String) =
++            Settings.System.getIntForUser(
++                context.contentResolver, key, 0, UserHandle.USER_CURRENT) == 1
++
++        fun isLunaris(context: Context) = isOn(context, KEY_LUNARIS)
++
+         @JvmStatic
+         fun reset(context: Context) {
+             val resolver = context.contentResolver
+@@ -145,6 +153,14 @@ class DynamicIslandSettings : SettingsPreferenceFragment() {
+         }
+ 
+         @JvmField
+-        val SEARCH_INDEX_DATA_PROVIDER = BaseSearchIndexProvider(R.xml.dynamic_island_settings)
++        val SEARCH_INDEX_DATA_PROVIDER =
++            object : BaseSearchIndexProvider(R.xml.dynamic_island_settings) {
++                override fun getNonIndexableKeys(context: Context): List<String> {
++                    val keys = super.getNonIndexableKeys(context).toMutableList()
++                    if (!isLunaris(context)) keys += KEY_LUNARIS_PAGE
++                    if (!isOn(context, KEY_PENGUIN)) keys += PENGUIN_KEYS
++                    return keys
++                }
++            }
+     }
+ }
+diff --git a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarCardsSettings.kt b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarCardsSettings.kt
+index 07bb835e..1bd76ad7 100644
+--- a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarCardsSettings.kt
++++ b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarCardsSettings.kt
+@@ -14,7 +14,9 @@ import androidx.preference.PreferenceGroup
+ import com.android.internal.util.lunaris.LunarisBarSettings
+ import com.android.settings.R
+ import com.android.settings.core.SubSettingLauncher
++import com.android.settingslib.search.SearchIndexable
+ 
++@SearchIndexable
+ class LunarisBarCardsSettings : LunarisBarPreferenceFragment() {
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+@@ -70,4 +72,9 @@ class LunarisBarCardsSettings : LunarisBarPreferenceFragment() {
+             }
+         }
+     }
++
++    companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = LunarisBarSearchProvider(R.xml.lunaris_bar_cards)
++    }
+ }
+diff --git a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarPreferenceFragment.kt b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarPreferenceFragment.kt
+index d107b245..4b693505 100644
+--- a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarPreferenceFragment.kt
++++ b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarPreferenceFragment.kt
+@@ -13,6 +13,7 @@ import android.content.Intent
+ import android.content.IntentFilter
+ import android.database.ContentObserver
+ import android.graphics.Color
++import android.os.Bundle
+ import android.os.Handler
+ import android.os.Looper
+ import android.os.UserHandle
+@@ -33,6 +34,7 @@ import androidx.preference.SwitchPreferenceCompat
+ import com.android.internal.logging.nano.MetricsProto
+ import com.android.internal.util.lunaris.LunarisBarSettings
+ import com.android.settings.R
++import com.android.settings.SettingsActivity
+ import com.android.settings.SettingsPreferenceFragment
+ import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.Job
+@@ -44,6 +46,16 @@ import com.crdroid.settings.preferences.colorpicker.LunarisBarColorPickerPrefere
+ 
+ /** Shared binding for the XML screens. All values belong to LunarisBarSettings, not SharedPreferences. */
+ abstract class LunarisBarPreferenceFragment : SettingsPreferenceFragment() {
++    override fun onCreate(savedInstanceState: Bundle?) {
++        arguments?.apply {
++            getString(SettingsActivity.EXTRA_FRAGMENT_ARG_KEY)?.let {
++                putString(SettingsActivity.EXTRA_FRAGMENT_ARG_KEY,
++                    it.removePrefix(LunarisBarSearchProvider.KEY_PREFIX))
++            }
++        }
++        super.onCreate(savedInstanceState)
++    }
++
+     internal val editor by lazy { LunarisBarEditor(requireContext()) }
+     private val handler = Handler(Looper.getMainLooper())
+     private val refresh = Runnable {
+diff --git a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarSearchProvider.kt b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarSearchProvider.kt
+new file mode 100644
+index 00000000..3809f82d
+--- /dev/null
++++ b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarSearchProvider.kt
+@@ -0,0 +1,49 @@
++/*
++ * Copyright (C) 2026 DescartesOS
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.crdroid.settings.fragments.statusbar.lunaris
++
++import android.content.Context
++import com.android.settings.R
++import com.android.settings.core.PreferenceXmlParserUtils
++import com.android.settings.core.PreferenceXmlParserUtils.MetadataFlag
++import com.android.settings.search.BaseSearchIndexProvider
++import com.android.settingslib.search.SearchIndexableRaw
++import com.crdroid.settings.fragments.statusbar.DynamicIslandSettings
++
++/** Lists a Lunaris page in the search, only while the Lunaris island is on. */
++class LunarisBarSearchProvider(private val pageRes: Int) : BaseSearchIndexProvider() {
++    override fun isPageSearchEnabled(context: Context) = DynamicIslandSettings.isLunaris(context)
++
++    // Search turns keys on and off for the whole Settings app, so these get a prefix of their own.
++    override fun getRawDataToIndex(context: Context, enabled: Boolean): List<SearchIndexableRaw> {
++        val listed = metadata(context, R.xml.dynamic_island_settings)
++            .mapNotNull { it.getString(PreferenceXmlParserUtils.METADATA_KEY) }
++            .minus(DynamicIslandSettings.PENGUIN_KEYS)
++        val page = metadata(context, pageRes)
++        val pageTitle = page.first().getString(PreferenceXmlParserUtils.METADATA_TITLE)
++        return page.drop(1).mapNotNull {
++            val key = it.getString(PreferenceXmlParserUtils.METADATA_KEY)
++            val title = it.getString(PreferenceXmlParserUtils.METADATA_TITLE)
++            val type = it.getString(PreferenceXmlParserUtils.METADATA_PREF_TYPE)
++            if (key == null || title == null || key in listed || key == "cards_empty" ||
++                type == "PreferenceCategory") return@mapNotNull null
++            SearchIndexableRaw(context).apply {
++                this.key = KEY_PREFIX + key
++                this.title = title
++                screenTitle = pageTitle
++            }
++        }
++    }
++
++    private fun metadata(context: Context, xmlRes: Int) =
++        PreferenceXmlParserUtils.extractMetadata(context, xmlRes,
++            MetadataFlag.FLAG_INCLUDE_PREF_SCREEN or MetadataFlag.FLAG_NEED_KEY or
++                MetadataFlag.FLAG_NEED_PREF_TYPE or MetadataFlag.FLAG_NEED_PREF_TITLE)
++
++    companion object {
++        const val KEY_PREFIX = "lunaris_search_"
++    }
++}
+diff --git a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisIslandSettings.kt b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisIslandSettings.kt
+index a2b0304a..3594eb1d 100644
+--- a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisIslandSettings.kt
++++ b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisIslandSettings.kt
+@@ -15,14 +15,18 @@ import androidx.preference.PreferenceGroup
+ import androidx.preference.SwitchPreferenceCompat
+ import com.android.internal.util.lunaris.LunarisBarSettings
+ import com.android.settings.R
++import com.android.settingslib.search.SearchIndexable
++
++@SearchIndexable
++open class LunarisIslandSettings(private val defaultPage: String) : LunarisBarPreferenceFragment() {
++    constructor() : this("main")
+ 
+-class LunarisIslandSettings : LunarisBarPreferenceFragment() {
+     private var page = "main"
+     private var selectedFeature = "notification"
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+-        page = arguments?.getString("page") ?: "main"
++        page = arguments?.getString("page") ?: defaultPage
+         selectedFeature = savedInstanceState?.getString("selected_feature") ?: "notification"
+         addPreferencesFromResource(when (page) {
+             "appearance" -> R.xml.lunaris_bar_appearance
+@@ -231,4 +235,65 @@ class LunarisIslandSettings : LunarisBarPreferenceFragment() {
+             }
+         }
+     }
++
++    companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = LunarisBarSearchProvider(R.xml.lunaris_island_settings)
++    }
++}
++
++@SearchIndexable
++class LunarisIslandAppearance : LunarisIslandSettings("appearance") {
++    companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = LunarisBarSearchProvider(R.xml.lunaris_bar_appearance)
++    }
++}
++
++@SearchIndexable
++class LunarisIslandColors : LunarisIslandSettings("colors") {
++    companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = LunarisBarSearchProvider(R.xml.lunaris_bar_colors)
++    }
++}
++
++@SearchIndexable
++class LunarisIslandMotion : LunarisIslandSettings("motion") {
++    companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = LunarisBarSearchProvider(R.xml.lunaris_bar_motion)
++    }
++}
++
++@SearchIndexable
++class LunarisIslandMedia : LunarisIslandSettings("media") {
++    companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = LunarisBarSearchProvider(R.xml.lunaris_bar_media)
++    }
++}
++
++@SearchIndexable
++class LunarisIslandGestures : LunarisIslandSettings("gestures") {
++    companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = LunarisBarSearchProvider(R.xml.lunaris_bar_gestures)
++    }
++}
++
++@SearchIndexable
++class LunarisIslandFeatureStyle : LunarisIslandSettings("feature_style") {
++    companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = LunarisBarSearchProvider(R.xml.lunaris_bar_feature_style)
++    }
++}
++
++@SearchIndexable
++class LunarisIslandFeatures : LunarisIslandSettings("features") {
++    companion object {
++        @JvmField
++        val SEARCH_INDEX_DATA_PROVIDER = LunarisBarSearchProvider(R.xml.lunaris_bar_features)
++    }
+ }

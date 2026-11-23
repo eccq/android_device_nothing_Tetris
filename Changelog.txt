@@ -26,7 +26,8 @@
   are the full islands of those ROMs, with their own music, events and cards.
 - The Lunaris island has its own settings pages.
 - A running timer no longer shows as an alarm.
-- The setting shows up in the Settings search.
+- The Settings search finds the Lunaris pages too, and lists only the options
+  of the chosen style.
 
    * DeX
 - The PenguinOS DeX app for Windows always gets a desktop. It used to show only
