@@ -1,0 +1,259 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSMotion.kt b/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSMotion.kt
+index b9b90362679a..67a381b50efe 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSMotion.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSMotion.kt
+@@ -5,56 +5,6 @@
+ 
+ package com.android.systemui.qs.composefragment
+ 
+-import androidx.compose.animation.core.Animatable
+-import androidx.compose.animation.core.spring
+-import androidx.compose.runtime.Composable
+-import androidx.compose.runtime.LaunchedEffect
+-import androidx.compose.runtime.State
+-import androidx.compose.runtime.getValue
+-import androidx.compose.runtime.mutableStateOf
+-import androidx.compose.runtime.remember
+-import androidx.compose.runtime.rememberUpdatedState
+-import androidx.compose.runtime.snapshotFlow
+-import androidx.compose.runtime.snapshots.Snapshot
+-import androidx.compose.ui.Modifier
+-import androidx.compose.ui.graphics.graphicsLayer
+-import com.android.systemui.qs.panels.ui.compose.infinitegrid.colorOSSpring
+-import kotlinx.coroutines.delay
+-import kotlinx.coroutines.launch
+-
+-/** How far the shown fraction of the panel has to move before it counts as a direction. */
+-private const val ColorOSLeavingSlop = 0.004f
+-
+-/** A panel that is on its way out is not on its way in again below this shown fraction. */
+-private const val ColorOSReopenFloor = 0.03f
+-
+-/** The modules of the panel start 16ms after each other, and slower the further down they are. */
+-private const val ColorOSRevealStaggerMs = 16L
+-private const val ColorOSRevealFrom = 0.8f
+-private const val ColorOSRevealResponse = 0.2f
+-private const val ColorOSRevealResponseStep = 0.01f
+-private const val ColorOSHideResponse = 0.1f
+-
+-/** The panel starts to show at this fraction of its expansion, glass and modules together. */
+-private const val ColorOSExpandRevealStart = 0.25f
+-
+-/** The panel is fully shown at this fraction of its expansion. */
+-private const val ColorOSExpandRevealEnd = 0.85f
+-
+-/**
+- * How much of the panel is shown for the given [expansion], 0 when closed and 1 when open. The
+- * modules and the glass fade in with the expansion, so they follow the drag from the quick
+- * settings to the panel and are never out of step: the glass is drawn by SurfaceFlinger and has no
+- * other way to know how far the panel has come.
+- */
+-internal fun colorOSExpansionReveal(expansion: Float): Float {
+-    val t =
+-        ((expansion - ColorOSExpandRevealStart) /
+-                (ColorOSExpandRevealEnd - ColorOSExpandRevealStart))
+-            .coerceIn(0f, 1f)
+-    return t * t * (3f - 2f * t)
+-}
+-
+ /** The launch of an activity from the shade has run this far before the glass starts to go out. */
+ private const val ColorOSLaunchGlassFadeStart = 0.7f
+ 
+@@ -74,105 +24,3 @@ internal fun colorOSLaunchGlassFade(progress: Float): Float =
+         ((progress - ColorOSLaunchGlassFadeStart) /
+                 (ColorOSLaunchGlassFadeEnd - ColorOSLaunchGlassFadeStart))
+             .coerceIn(0f, 1f)
+-
+-/** The glass comes back like the modules in the middle of the panel do. */
+-private const val ColorOSGlassRevealIndex = 2
+-
+-/** Critically damped, which is a response of about 0.1s. */
+-private const val ColorOSGlassFadeStiffness = 3948f
+-
+-/**
+- * Whether the panel is on its way out: the shown fraction of it ([expansion], 0 when closed and 1
+- * when open) is going down, or it is closed. It is true at rest while closed, so the modules wait
+- * hidden and are revealed when the shade starts to open.
+- */
+-@Composable
+-internal fun rememberColorOSLeaving(expansion: () -> Float): State<Boolean> {
+-    val currentExpansion by rememberUpdatedState(expansion)
+-    val leaving = remember { mutableStateOf(Snapshot.withoutReadObservation { expansion() } <= 0f) }
+-    LaunchedEffect(Unit) {
+-        // From 0, so a panel flung open before this starts still counts as opening.
+-        var last = 0f
+-        snapshotFlow { currentExpansion() }
+-            .collect { value ->
+-                when {
+-                    // An open panel is never leaving: after a dip while settling from a fast fling
+-                    // the fraction cannot rise past `last` again to bring the modules back.
+-                    value >= 1f - ColorOSLeavingSlop -> {
+-                        leaving.value = false
+-                        last = value
+-                    }
+-                    value <= 0f || value < last - ColorOSLeavingSlop -> {
+-                        leaving.value = true
+-                        last = value
+-                    }
+-                    // A small bump of the fraction at the floor of a closed panel does not make
+-                    // it come back.
+-                    value > last + ColorOSLeavingSlop &&
+-                        (!leaving.value || value > ColorOSReopenFloor) -> {
+-                        leaving.value = false
+-                        last = value
+-                    }
+-                }
+-            }
+-    }
+-    return leaving
+-}
+-
+-/**
+- * The glass of the panel is drawn by SurfaceFlinger and does not follow the modules as they fade,
+- * so it goes out with a stiff spring as soon as the panel is [leaving]. It comes back with the
+- * modules, after the same delay and with the same spring as the ones in the middle of the panel,
+- * so it never shows before the content does.
+- */
+-@Composable
+-internal fun rememberColorOSGlassFade(leaving: State<Boolean>): State<Float> {
+-    val isLeaving = leaving.value
+-    val fade = remember { Animatable(if (isLeaving) 0f else 1f) }
+-    LaunchedEffect(isLeaving) {
+-        if (isLeaving) {
+-            fade.animateTo(0f, spring(dampingRatio = 1f, stiffness = ColorOSGlassFadeStiffness))
+-        } else {
+-            delay(ColorOSGlassRevealIndex * ColorOSRevealStaggerMs)
+-            fade.animateTo(
+-                1f,
+-                colorOSSpring(
+-                    0f,
+-                    ColorOSRevealResponse + ColorOSGlassRevealIndex * ColorOSRevealResponseStep,
+-                ),
+-            )
+-        }
+-    }
+-    return fade.asState()
+-}
+-
+-/**
+- * Scales a module of the panel from 0.8 to 1 while it fades in, [index] places down the panel, and
+- * back out quickly when the panel is [leaving].
+- */
+-@Composable
+-internal fun Modifier.colorOSModuleReveal(
+-    index: Int,
+-    leaving: State<Boolean>,
+-    reveal: () -> Float,
+-): Modifier {
+-    val isLeaving = leaving.value
+-    val scale = remember { Animatable(if (isLeaving) ColorOSRevealFrom else 1f) }
+-    val alpha = remember { Animatable(if (isLeaving) 0f else 1f) }
+-    LaunchedEffect(isLeaving) {
+-        if (isLeaving) {
+-            launch { scale.animateTo(ColorOSRevealFrom, colorOSSpring(0f, ColorOSHideResponse)) }
+-            alpha.animateTo(0f, colorOSSpring(0f, ColorOSHideResponse))
+-        } else {
+-            delay(index * ColorOSRevealStaggerMs)
+-            val response = ColorOSRevealResponse + index * ColorOSRevealResponseStep
+-            launch { scale.animateTo(1f, colorOSSpring(0f, response)) }
+-            alpha.animateTo(1f, colorOSSpring(0f, response))
+-        }
+-    }
+-    return graphicsLayer {
+-        scaleX = scale.value
+-        scaleY = scale.value
+-        this.alpha = alpha.value * reveal()
+-    }
+-}
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSQuickSettings.kt b/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSQuickSettings.kt
+index 530abea089e1..d0c44c62a6c9 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSQuickSettings.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSQuickSettings.kt
+@@ -290,7 +290,6 @@ internal fun ContentScope.ColorOSQuickSettingsLayout(
+     availableHeight: Dp = Dp.Unspecified,
+     onFitChanged: (Boolean) -> Unit = {},
+     glassAlpha: () -> Float = { 1f },
+-    expansion: () -> Float = { 1f },
+     headerHeight: Dp = 0.dp,
+     header: @Composable () -> Unit = {},
+     onOpenDevices: () -> Unit = {},
+@@ -312,18 +311,11 @@ internal fun ContentScope.ColorOSQuickSettingsLayout(
+     TileListener(fixed + listOfNotNull(pillTile), listening)
+ 
+     // Null where SurfaceFlinger cannot blur behind the shade, the flat fills stay then.
+-    // The modules are revealed when the shade opens and hidden when it closes, and the glass goes
+-    // out quickly with it.
+-    val leaving = rememberColorOSLeaving(expansion)
+-    val glassFade = rememberColorOSGlassFade(leaving)
+-    val reveal: () -> Float = { colorOSExpansionReveal(expansion()) }
+     // The glass is a blur region of the window, so it does not follow the alpha the scene
+-    // transition gives the content. The content fades in later than the panel is revealed, and
+-    // without its alpha the glass would show up before the tiles do.
++    // transition gives the content.
+     val glassBlur =
+         rememberColorOSGlassBlur {
+-            glassAlpha() * glassFade.value * reveal() *
+-                (QuickSettings.Elements.QuickSettingsContent.currentAlpha() ?: 1f)
++            glassAlpha() * (QuickSettings.Elements.QuickSettingsContent.currentAlpha() ?: 1f)
+         }
+     val glass = colorOSGlass(blurred = glassBlur != null)
+ 
+@@ -358,10 +350,7 @@ internal fun ContentScope.ColorOSQuickSettingsLayout(
+ 
+                 // Row 1: Wi-Fi + Bluetooth, or what stands in for the one that is missing
+                 if (fixed.isNotEmpty()) {
+-                    Row(
+-                        horizontalArrangement = spacedBy(ColorOSGap),
+-                        modifier = Modifier.colorOSModuleReveal(1, leaving, reveal),
+-                    ) {
++                    Row(horizontalArrangement = spacedBy(ColorOSGap)) {
+                         fixed.forEach { tile ->
+                             with(infiniteGridLayout) {
+                                 ColorOSWideTile(tile, listening, Modifier.weight(1f))
+@@ -378,8 +367,7 @@ internal fun ContentScope.ColorOSQuickSettingsLayout(
+             Row(
+                 horizontalArrangement = spacedBy(ColorOSGap),
+                 modifier =
+-                    Modifier.colorOSModuleReveal(2, leaving, reveal)
+-                        .fillMaxWidth()
++                    Modifier.fillMaxWidth()
+                         .height(moduleHeight),
+             ) {
+                 Box(
+@@ -416,10 +404,7 @@ internal fun ContentScope.ColorOSQuickSettingsLayout(
+ 
+             // Row 3: My Devices + ringer switch, as ColorOS 17 has them. The mobile data tile is
+                 // one of the round tiles below.
+-                if (!hyper) Row(
+-                    horizontalArrangement = spacedBy(ColorOSGap),
+-                    modifier = Modifier.colorOSModuleReveal(3, leaving, reveal),
+-                ) {
++                if (!hyper) Row(horizontalArrangement = spacedBy(ColorOSGap)) {
+                     if (pillTile != null) {
+                         with(infiniteGridLayout) {
+                             ColorOSWideTile(pillTile, listening, Modifier.weight(1f))
+@@ -446,8 +431,7 @@ internal fun ContentScope.ColorOSQuickSettingsLayout(
+                         TileGrid(
+                             tiles = rest,
+                             modifier =
+-                                Modifier.colorOSModuleReveal(4, leaving, reveal)
+-                                    .fillMaxWidth()
++                                Modifier.fillMaxWidth()
+                                     .padding(top = ColorOSGridTopPadding),
+                             listening = listening,
+                             enableRevealEffect = false,
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/composefragment/QSFragmentCompose.kt b/packages/SystemUI/src/com/android/systemui/qs/composefragment/QSFragmentCompose.kt
+index 8ba1545df356..0dbad88f4e73 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/composefragment/QSFragmentCompose.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/composefragment/QSFragmentCompose.kt
+@@ -1379,10 +1379,6 @@ constructor(
+                                                 /* delay= */ 0,
+                                             )
+                                         },
+-                                        expansion = {
+-                                            viewModel.expansionState.progress *
+-                                                viewModel.panelExpansionFraction
+-                                        },
+                                         // The glass is drawn by SurfaceFlinger and does not
+                                         // follow the alpha of this layer, so it follows the same
+                                         // alpha and is hidden whenever the panel is.

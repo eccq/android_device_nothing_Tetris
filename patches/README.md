@@ -60,6 +60,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0053-*.patch
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0054-*.patch && cd -
 cd vendor/lineage && git apply ../../device/nothing/Tetris/patches/0055-*.patch && cd -
 cd vendor/gms && git apply ../../device/nothing/Tetris/patches/0056-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0057-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -120,3 +121,4 @@ cd vendor/gms && git apply ../../device/nothing/Tetris/patches/0056-*.patch && c
 | `0054-Atelier-Add-the-island-style-setting.patch` | Stock, PenguinOS look or Lunaris in the Dynamic island page, with search keywords. |
 | `0055-lineage-Drop-the-battery-stats-viewer.patch` | Drops the battery stats debug app. |
 | `0056-gms-Drop-Family-Space.patch` | Drops Family Space. |
+| `0057-SystemUI-Keep-the-ColorOS-panel-drawn-while-it-opens.patch` | The ColorOS quick settings rows no longer fade in with the pull, which left the panel blank on a quick swipe. The panel opens at once. |
