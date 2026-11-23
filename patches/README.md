@@ -63,6 +63,7 @@ cd vendor/gms && git apply ../../device/nothing/Tetris/patches/0056-*.patch && c
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0057-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0058-*.patch && cd -
 cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0059-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0060-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -126,3 +127,4 @@ cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0
 | `0057-SystemUI-Keep-the-ColorOS-panel-drawn-while-it-opens.patch` | The ColorOS quick settings rows no longer fade in with the pull, which left the panel blank on a quick swipe. The panel opens at once. |
 | `0058-SystemUI-Fly-the-fluid-clock-after-every-unlock.patch` | Undoes 0043: the COS fluid clock flies to the home screen widget after any unlock, as on PenguinOS. |
 | `0059-Launcher3-Keep-the-dock-on-the-DeX-display.patch` | Turning the taskbar off on the phone no longer removes the dock from an external display. |
+| `0060-SystemUI-Add-the-PenguinOS-and-Lunaris-islands.patch` | The whole PenguinOS and Lunaris Dynamic islands, next to the stock one: music, calls, events, cards and lights. The stock island stays off while one of them is on. Replaces the look of 0052. A running timer no longer shows as an alarm. |
