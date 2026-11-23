@@ -1,0 +1,146 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/ColorOsPopupMotion.kt b/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/ColorOsPopupMotion.kt
+index 2dffc6232efe..e74bfc6dec25 100644
+--- a/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/ColorOsPopupMotion.kt
++++ b/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/ColorOsPopupMotion.kt
+@@ -238,22 +238,24 @@ internal fun ColorOsPopupMotion(
+                     .then(if (canInteract) Modifier else Modifier.clearAndSetSemantics {}),
+                 propagateMinConstraints = true,
+             ) {
+-                LunarisBarSurface(
+-                    shape = popupShape,
+-                    background =
+-                        if (useRedesignedMediaBackground) {
+-                            {
+-                                Box(Modifier.matchParentSize()) {
+-                                    RedesignedMediaPopupBackground(popupShape)
++                CompositionLocalProvider(LocalPopupBlurAlpha provides { alpha.value }) {
++                    LunarisBarSurface(
++                        shape = popupShape,
++                        background =
++                            if (useRedesignedMediaBackground) {
++                                {
++                                    Box(Modifier.matchParentSize()) {
++                                        RedesignedMediaPopupBackground(popupShape)
++                                    }
+                                 }
+-                            }
+-                        } else null,
+-                ) {
+-                    CompositionLocalProvider(
+-                        LocalIslandPopupContentOnly provides true,
+-                        LocalIslandPopupRevealMillis provides Float.POSITIVE_INFINITY,
++                            } else null,
+                     ) {
+-                        content()
++                        CompositionLocalProvider(
++                            LocalIslandPopupContentOnly provides true,
++                            LocalIslandPopupRevealMillis provides Float.POSITIVE_INFINITY,
++                        ) {
++                            content()
++                        }
+                     }
+                 }
+             }
+diff --git a/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/IslandPopupMorph.kt b/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/IslandPopupMorph.kt
+index 4dc00cb181a2..74e4663f1af7 100644
+--- a/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/IslandPopupMorph.kt
++++ b/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/IslandPopupMorph.kt
+@@ -495,13 +495,15 @@ internal fun IslandPopupMorph(
+             ) {
+                 if (geometry != null) {
+                     CompositionLocalProvider(LocalIslandPopupRevealMillis provides 260f) {
+-                        LunarisBarSurface(
+-                            shape = popupShape,
+-                            background =
+-                                if (useRedesignedMediaBackground) {
+-                                    { RedesignedMediaPopupBackground(popupShape) }
+-                                } else null,
+-                        ) {}
++                        CompositionLocalProvider(LocalPopupBlurAlpha provides { surfaceFade.value }) {
++                            LunarisBarSurface(
++                                shape = popupShape,
++                                background =
++                                    if (useRedesignedMediaBackground) {
++                                        { RedesignedMediaPopupBackground(popupShape) }
++                                    } else null,
++                            ) {}
++                        }
+                     }
+                 }
+             }
+diff --git a/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/LunarisBarPopupMotion.kt b/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/LunarisBarPopupMotion.kt
+index fcca4b649f24..f359f06f0fd2 100644
+--- a/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/LunarisBarPopupMotion.kt
++++ b/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/LunarisBarPopupMotion.kt
+@@ -284,13 +284,15 @@ internal fun LunarisBarPopupMotion(
+                     }
+                 },
+         content = {
+-            LunarisBarSurface(
+-                shape = shape,
+-                background =
+-                    if (useRedesignedMediaBackground) {
+-                        { RedesignedMediaPopupBackground(shape) }
+-                    } else null,
+-            ) {}
++            CompositionLocalProvider(LocalPopupBlurAlpha provides { alpha.value }) {
++                LunarisBarSurface(
++                    shape = shape,
++                    background =
++                        if (useRedesignedMediaBackground) {
++                            { RedesignedMediaPopupBackground(shape) }
++                        } else null,
++                ) {}
++            }
+             Box(if (alpha.value < 0.5f) Modifier.clearAndSetSemantics {} else Modifier) {
+                 CompositionLocalProvider(
+                     LocalIslandPopupContentOnly provides true,
+diff --git a/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/PopupSurface.kt b/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/PopupSurface.kt
+index 27c6acfaf525..fbb04dd07f35 100644
+--- a/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/PopupSurface.kt
++++ b/packages/SystemUI/src/com/android/systemui/lunaris/island/popups/ui/compose/PopupSurface.kt
+@@ -23,6 +23,10 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+ import androidx.compose.ui.graphics.Color
+ import androidx.compose.ui.draw.drawBehind
+ import androidx.compose.runtime.DisposableEffect
++import androidx.compose.runtime.compositionLocalOf
++import androidx.compose.ui.graphics.lerp
++import androidx.compose.ui.graphics.toArgb
++import kotlin.math.roundToInt
+ import android.view.WindowManager
+ import android.content.Context
+ import android.graphics.Canvas
+@@ -58,6 +62,9 @@ import androidx.compose.ui.viewinterop.AndroidView
+ import com.android.systemui.lunaris.island.popups.shared.DynamicIslandFeatureSettings.observeDynamicIslandPopupColorMode
+ import com.android.systemui.lunaris.island.popups.shared.DynamicIslandFeatureSettings.readDynamicIslandPopupColorMode
+ 
++/** A blur region ignores the alpha of its layer, so popups pass theirs here. */
++internal val LocalPopupBlurAlpha = compositionLocalOf<() -> Float> { { 1f } }
++
+ @Composable
+ internal fun PopupBlurBackground(
+     shape: Shape,
+@@ -67,6 +74,7 @@ internal fun PopupBlurBackground(
+ ) {
+     val view = LocalView.current
+     val context = LocalContext.current
++    val blurAlpha = LocalPopupBlurAlpha.current
+     val blurEnabled =
+         remember(context) {
+             context.getSystemService(WindowManager::class.java)?.isCrossWindowBlurEnabled == true
+@@ -84,7 +92,14 @@ internal fun PopupBlurBackground(
+                 holder[0] ?: root.createBackgroundBlurDrawable().also { holder[0] = it }
+             val outline = shape.createOutline(size, layoutDirection, this)
+             blur.setVisible(true, false)
+-            blur.setColor(overlayColor)
++            val alpha = blurAlpha().coerceIn(0f, 1f)
++            if (alpha == 0f) {
++                blur.setVisible(false, false)
++                drawRect(Color(fallbackColor))
++                return@drawBehind
++            }
++            blur.setAlpha((alpha * 255).roundToInt())
++            blur.setColor(lerp(Color(fallbackColor), Color(overlayColor), alpha).toArgb())
+             blur.setBlurRadius(PopupBlurRadius.toPx().toInt())
+             blur.setCornerRadius(
+                 (outline as? Outline.Rounded)?.roundRect?.topLeftCornerRadius?.x ?: 0f

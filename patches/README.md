@@ -67,6 +67,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0060-*.patch
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0061-*.patch && cd -
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0062-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0063-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0064-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -134,3 +135,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0063-*.patch
 | `0061-Atelier-Add-the-PenguinOS-and-Lunaris-island-settings.patch` | Island style picks the stock, PenguinOS or Lunaris island. Adds the PenguinOS events and the Lunaris settings pages. Needs 0060. |
 | `0062-Atelier-List-the-island-pages-in-the-settings-search.patch` | The Settings search lists the Lunaris island pages, and only the options of the chosen island style. Needs 0061. |
 | `0063-SystemUI-Hand-the-fluid-clock-to-the-launcher-on-the-legacy-unlock.patch` | The COS fluid clock handoff only lived in the refactored unlock code, which is off in this ROM. The legacy unlock now hands the clock to the launcher. |
+| `0064-SystemUI-Fade-the-Lunaris-card-blur-with-the-card.patch` | The blur behind a Lunaris island card kept full strength while the card closed and trailed behind it. Needs 0060. |
