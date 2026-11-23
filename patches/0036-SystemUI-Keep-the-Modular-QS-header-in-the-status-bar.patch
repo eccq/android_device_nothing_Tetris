@@ -1,0 +1,23 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/composefragment/QSFragmentCompose.kt b/packages/SystemUI/src/com/android/systemui/qs/composefragment/QSFragmentCompose.kt
+index d80c98c99ac4..8ba1545df356 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/composefragment/QSFragmentCompose.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/composefragment/QSFragmentCompose.kt
+@@ -1756,15 +1756,11 @@ constructor(
+         isTransitioning: Boolean,
+         modifier: Modifier = Modifier,
+     ) {
+-        val displayCutoutTopPadding =
+-            WindowInsets.displayCutout.asPaddingValues().calculateTopPadding()
+         val isLandscape =
+             LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+-        val topPadding =
+-            when {
+-                isLandscape -> 4.dp
+-                else -> displayCutoutTopPadding
+-            }
++        // The portrait header already sizes itself around the cutout; padding it again pushed it
++        // onto the date and action row on phones with a tall punch hole.
++        val topPadding = if (isLandscape) 4.dp else 0.dp
+         AxQuickSettingsHeader(
+             viewModel = headerViewModel,
+             isTransitioning = isTransitioning,
