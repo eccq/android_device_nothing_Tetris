@@ -36,6 +36,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0029-*.patch
 cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0030-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0031-*.patch && cd -
 cd packages/apps/LockStyles && git apply ../../../device/nothing/Tetris/patches/0032-*.patch && cd -
+cd packages/apps/Settings && git apply ../../../device/nothing/Tetris/patches/0033-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -72,3 +73,4 @@ cd packages/apps/LockStyles && git apply ../../../device/nothing/Tetris/patches/
 | `0030-Launcher3-Make-the-cos-recents-and-fluid-clock-parts-work.patch` | COS Recents also springs the task launch from recents (it only changed the swipe settle before). The Fluid Clock widget is placed again whenever it is missing instead of only once, and a full home screen is logged. |
 | `0031-SystemUI-Find-motion-art-for-uploaded-tracks.patch` | Motion art lookup drops a file extension from the title (SoundCloud and local uploads) and logs when a track has no Apple Music match or no motion artwork. |
 | `0032-LockStyles-Adopt-the-wallpaper-set-outside-the-app.patch` | LockStyles adopted the built-in default wallpaper whenever the lock screen shared the home wallpaper, then put it back on every apply, clock changes included. It now falls back to the home wallpaper, adopts again when the wallpaper was changed outside the app, and opens on the current lock screen. |
+| `0033-Settings-Register-the-search-index-refresh.patch` | Registers Atelier's search index refresh receiver for BOOT_COMPLETED (see 0034). |

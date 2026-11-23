@@ -1,0 +1,19 @@
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 1f00d100caa..98e1e581867 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -254,6 +254,14 @@
+             </intent-filter>
+         </receiver>
+ 
++        <receiver
++            android:name="com.crdroid.settings.SearchIndexRefreshReceiver"
++            android:exported="true">
++            <intent-filter>
++                <action android:name="android.intent.action.BOOT_COMPLETED" />
++            </intent-filter>
++        </receiver>
++
+         <receiver
+             android:name=".development.Enable16KBootReceiver"
+             android:enabled="true"
