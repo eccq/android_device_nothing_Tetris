@@ -40,6 +40,7 @@ cd packages/apps/Settings && git apply ../../../device/nothing/Tetris/patches/00
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0034-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0035-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0036-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0037-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -80,3 +81,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0036-*.patch
 | `0034-Atelier-Refresh-the-search-index-on-a-new-build.patch` | Settings search found nothing in Atelier: the search app only rebuilds its index when the fingerprint or the providers' version codes change, and the spoofed fingerprint and Settings' version code never do. On the first boot of each build the index of the search app is cleared, so every page and sub-page is indexed again on the next search. |
 | `0035-SystemUI-Centre-the-COS-volume-panel-on-the-landscape-cutout.patch` | In landscape the COS volume panel sat too low. Its column (ringer, slider, expand button and app sliders) is now centred on the side punch hole, or on the screen without one, and kept inside the window. |
 | `0036-SystemUI-Keep-the-Modular-QS-header-in-the-status-bar.patch` | With the Modular (Axion) QS style, the header's clock and status icons overlapped the date and the edit, settings and menu buttons, on the lock screen too. The portrait header already sizes itself around the cutout and was padded by the cutout again. |
+| `0037-SystemUI-Show-the-ColorOS-QS-modules-after-a-fast-open.patch` | Opening the ColorOS QS quickly left it empty (only the edit and settings buttons): a dip of the fraction while the fling settled hid the modules for good. A fully open panel now always shows them. |

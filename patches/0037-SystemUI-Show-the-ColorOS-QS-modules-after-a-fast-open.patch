@@ -1,0 +1,23 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSMotion.kt b/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSMotion.kt
+index 4d959977abcd..b9b90362679a 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSMotion.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/composefragment/ColorOSMotion.kt
+@@ -91,10 +91,17 @@ internal fun rememberColorOSLeaving(expansion: () -> Float): State<Boolean> {
+     val currentExpansion by rememberUpdatedState(expansion)
+     val leaving = remember { mutableStateOf(Snapshot.withoutReadObservation { expansion() } <= 0f) }
+     LaunchedEffect(Unit) {
+-        var last = currentExpansion()
++        // From 0, so a panel flung open before this starts still counts as opening.
++        var last = 0f
+         snapshotFlow { currentExpansion() }
+             .collect { value ->
+                 when {
++                    // An open panel is never leaving: after a dip while settling from a fast fling
++                    // the fraction cannot rise past `last` again to bring the modules back.
++                    value >= 1f - ColorOSLeavingSlop -> {
++                        leaving.value = false
++                        last = value
++                    }
+                     value <= 0f || value < last - ColorOSLeavingSlop -> {
+                         leaving.value = true
+                         last = value
