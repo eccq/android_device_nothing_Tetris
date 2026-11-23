@@ -1,0 +1,229 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/popups/shared/DynamicIslandFeatureSettings.kt b/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/popups/shared/DynamicIslandFeatureSettings.kt
+index 0a4388d3e215..02437adcbb6d 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/popups/shared/DynamicIslandFeatureSettings.kt
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/popups/shared/DynamicIslandFeatureSettings.kt
+@@ -40,6 +40,7 @@ object DynamicIslandFeatureSettings {
+     const val POPUP_COLOR_MODE = "status_bar_dynamic_island_popup_color_mode"
+     const val OFFSET_X_DP10 = "status_bar_dynamic_island_offset_x_dp10"
+     const val OFFSET_Y_DP10 = "status_bar_dynamic_island_offset_y_dp10"
++    const val PENGUIN_LOOK = "status_bar_dynamic_island_penguin_look"
+     private const val OFFSET_DP10_LIMIT = 200
+ 
+     const val SCALE_MIN = 0.7f
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/ui/compose/PenguinIsland.kt b/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/ui/compose/PenguinIsland.kt
+new file mode 100644
+index 000000000000..0c7b6eb1dfca
+--- /dev/null
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/ui/compose/PenguinIsland.kt
+@@ -0,0 +1,64 @@
++/*
++ * Copyright (C) 2026 The PenguinOS Project
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.android.systemui.statusbar.quickactions.ui.compose
++
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.collectAsState
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.remember
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.draw.drawBehind
++import androidx.compose.ui.geometry.Offset
++import androidx.compose.ui.geometry.Rect
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.graphics.Path
++import androidx.compose.ui.graphics.PathOperation
++import androidx.compose.ui.platform.LocalContext
++import androidx.compose.ui.unit.dp
++import com.android.systemui.statusbar.quickactions.popups.shared.DynamicIslandFeatureSettings
++
++/** PenguinOS' pill, drawn on the stock island. */
++internal object PenguinIsland {
++    val MinHeight = 30.dp
++    val TextColor = Color(0xE6FFFFFF)
++    val StrokeWidth = 1.3.dp
++    val StrokeColor = Color(0x40959595)
++    val MoonWidth = 4.dp
++    val MoonGap = 2.dp
++    val MoonColor = Color(0xE64A4A4A)
++}
++
++@Composable
++internal fun rememberPenguinLook(): Boolean {
++    val context = LocalContext.current
++    val on by
++        remember {
++                DynamicIslandFeatureSettings.observeDynamicIslandFeatureEnabled(
++                    context,
++                    DynamicIslandFeatureSettings.PENGUIN_LOOK,
++                    defaultValue = false,
++                )
++            }
++            .collectAsState(initial = false)
++    return on
++}
++
++/** A crescent on each side of the pill: there are more chips to swipe to. */
++internal fun Modifier.penguinMoons(visible: Boolean): Modifier =
++    if (!visible) this
++    else
++        drawBehind {
++            val r = size.height / 2f
++            val gap = PenguinIsland.MoonGap.toPx()
++            val reach = gap + PenguinIsland.MoonWidth.toPx()
++            for (side in listOf(-1f, 1f)) {
++                val edge = if (side < 0) r else size.width - r
++                val inner = Path().apply { addOval(Rect(Offset(edge + side * gap, r), r)) }
++                val outer = Path().apply { addOval(Rect(Offset(edge + side * reach, r), r)) }
++                val moon = Path().apply { op(outer, inner, PathOperation.Difference) }
++                drawPath(moon, PenguinIsland.MoonColor)
++            }
++        }
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/ui/compose/StatusBarDynamicIslandChip.kt b/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/ui/compose/StatusBarDynamicIslandChip.kt
+index 2eca6a3476a7..45c459c60b5b 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/ui/compose/StatusBarDynamicIslandChip.kt
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/quickactions/ui/compose/StatusBarDynamicIslandChip.kt
+@@ -101,16 +101,21 @@ fun StatusBarDynamicIslandChip(
+     val chipShape = RoundedCornerShape(50)
+     val colors = viewModel.colors
+     val (widthScale, heightScale) = rememberDynamicIslandSizeScale()
++    val penguinLook = rememberPenguinLook()
+     val chipContentColor =
+-        colors.chipContent(
+-            isSelected = viewModel.isPopupShown,
+-            colorScheme = MaterialTheme.colorScheme,
+-        )
++        if (penguinLook) PenguinIsland.TextColor
++        else
++            colors.chipContent(
++                isSelected = viewModel.isPopupShown,
++                colorScheme = MaterialTheme.colorScheme,
++            )
+     val chipOutline =
+-        colors.chipOutline(
+-            isSelected = viewModel.isPopupShown,
+-            colorScheme = MaterialTheme.colorScheme,
+-        )
++        if (penguinLook) PenguinIsland.StrokeColor
++        else
++            colors.chipOutline(
++                isSelected = viewModel.isPopupShown,
++                colorScheme = MaterialTheme.colorScheme,
++            )
+     val view = LocalView.current
+     val boundsModifier =
+         Modifier.onGloballyPositioned { coordinates ->
+@@ -138,6 +143,8 @@ fun StatusBarDynamicIslandChip(
+             heightScale = heightScale,
+             chipContentColor = chipContentColor,
+             chipOutline = chipOutline,
++            penguinLook = penguinLook,
++            pageCount = pageCount,
+             modifier = modifier.then(boundsModifier),
+         )
+         return
+@@ -177,7 +184,12 @@ fun StatusBarDynamicIslandChip(
+         modifier =
+             modifier
+                 .then(boundsModifier)
+-                .defaultMinSize(minHeight = (if (isMediaChip) 22.dp else 32.dp) * heightScale)
++                .defaultMinSize(
++                    minHeight =
++                        (if (penguinLook) PenguinIsland.MinHeight
++                        else if (isMediaChip) 22.dp
++                        else 32.dp) * heightScale
++                )
+                 .widthIn(
+                     min = if (isStartAnchored) startGap else (compactWidth ?: 0.dp),
+                     max = (compactWidth ?: (CompactIslandMaxWidth * widthScale)) + startGap,
+@@ -186,9 +198,14 @@ fun StatusBarDynamicIslandChip(
+                     scaleX = collapseState.scale
+                     if (isStartAnchored) transformOrigin = TransformOrigin(0f, 0.5f)
+                 }
++                .penguinMoons(penguinLook && pageCount > 1)
+                 .clip(chipShape)
+-                .background(if (isMediaChip) Color(0x99545A5C) else Color.Black)
+-                .border(width = 1.dp, color = chipOutline, shape = chipShape)
++                .background(if (isMediaChip && !penguinLook) Color(0x99545A5C) else Color.Black)
++                .border(
++                    width = if (penguinLook) PenguinIsland.StrokeWidth else 1.dp,
++                    color = chipOutline,
++                    shape = chipShape,
++                )
+                 .combinedClickable(
+                     onClick = hapticOnTap,
+                     onLongClick = mediaOpenApp?.let { { hapticOnLongPress() } },
+@@ -249,9 +266,10 @@ fun StatusBarDynamicIslandChip(
+                 )
+             }
+ 
++        val showDots = pageCount > 1 && !penguinLook
+         when (val popupContent = viewModel.popupContent) {
+             is PopupContentModel.Media -> {
+-                if (pageCount > 1 && !popupContent.model.isPlaying) {
++                if (showDots && !popupContent.model.isPlaying) {
+                     SwipeHint(color = chipContentColor.copy(alpha = 0.72f))
+                 }
+             }
+@@ -261,13 +279,13 @@ fun StatusBarDynamicIslandChip(
+                         StatusContent(
+                             text = viewModel.chipText.orEmpty(),
+                             color = chipContentColor,
+-                            showSwipeHint = pageCount > 1,
++                            showSwipeHint = showDots,
+                         )
+                     is ScreenRecordPopupModel.Recording ->
+                         StatusContent(
+                             text = viewModel.chipText.orEmpty(),
+                             color = chipContentColor,
+-                            showSwipeHint = pageCount > 1,
++                            showSwipeHint = showDots,
+                         )
+                 }
+             is PopupContentModel.Stopwatch ->
+@@ -278,10 +296,10 @@ fun StatusBarDynamicIslandChip(
+                                 popupContent.model.baseElapsedRealtimeMs
+                             ),
+                     color = chipContentColor,
+-                    showSwipeHint = pageCount > 1,
++                    showSwipeHint = showDots,
+                 )
+             else -> {
+-                if (pageCount > 1) {
++                if (showDots) {
+                     SwipeHint(color = chipContentColor.copy(alpha = 0.72f))
+                 }
+             }
+@@ -298,6 +316,8 @@ private fun UtilityStatusIslandChip(
+     heightScale: Float = 1f,
+     chipContentColor: Color,
+     chipOutline: Color,
++    penguinLook: Boolean,
++    pageCount: Int,
+     modifier: Modifier = Modifier,
+ ) {
+     val collapseState = rememberDynamicIslandCollapseState(viewModel.isPopupShown)
+@@ -339,13 +359,20 @@ private fun UtilityStatusIslandChip(
+                     scaleX = collapseState.scale
+                     if (isStartAnchored) transformOrigin = TransformOrigin(0f, 0.5f)
+                 }
+-                .defaultMinSize(minHeight = 32.dp * heightScale)
++                .defaultMinSize(
++                    minHeight = (if (penguinLook) PenguinIsland.MinHeight else 32.dp) * heightScale
++                )
+                 .then(
+                     if (isStartAnchored) Modifier else Modifier.width(connectedIslandWidth)
+                 )
++                .penguinMoons(penguinLook && pageCount > 1)
+                 .clip(RoundedCornerShape(50))
+                 .background(Color.Black)
+-                .border(width = 1.dp, color = chipOutline, shape = RoundedCornerShape(50))
++                .border(
++                    width = if (penguinLook) PenguinIsland.StrokeWidth else 1.dp,
++                    color = chipOutline,
++                    shape = RoundedCornerShape(50),
++                )
+                 .clickable(onClick = onTap)
+                 .graphicsLayer { alpha = collapseState.contentAlpha },
+         horizontalArrangement = Arrangement.spacedBy(0.dp),
