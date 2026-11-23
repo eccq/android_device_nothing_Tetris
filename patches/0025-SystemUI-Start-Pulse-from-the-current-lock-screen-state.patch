@@ -1,0 +1,96 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/pulse/PulseViewController.kt b/packages/SystemUI/src/com/android/systemui/pulse/PulseViewController.kt
+index a3b3c8393877..9d34a2c3876c 100644
+--- a/packages/SystemUI/src/com/android/systemui/pulse/PulseViewController.kt
++++ b/packages/SystemUI/src/com/android/systemui/pulse/PulseViewController.kt
+@@ -17,21 +17,27 @@
+ package com.android.systemui.pulse
+ 
+ import android.content.Context
++import android.os.PowerManager
+ import android.media.session.PlaybackState
++import com.android.systemui.Dumpable
+ import com.android.systemui.dagger.SysUISingleton
++import com.android.systemui.dump.DumpManager
+ import com.android.systemui.media.MediaSessionManager
+ import com.android.systemui.util.ScrimUtils
+ import kotlinx.coroutines.MainScope
+ import kotlinx.coroutines.cancel
+ import kotlinx.coroutines.launch
++import java.io.PrintWriter
+ import javax.inject.Inject
+ 
+ @SysUISingleton
+ class PulseViewController @Inject constructor(
+-    private val context: Context
++    private val context: Context,
++    dumpManager: DumpManager
+ ) : PulseAudioDataProcessor.DataListener,
+     MediaSessionManager.MediaDataListener,
+-    ScrimUtils.ScrimEventListener {
++    ScrimUtils.ScrimEventListener,
++    Dumpable {
+ 
+     private val mainScope = MainScope()
+     private var listenersRegistered = false
+@@ -56,6 +62,8 @@ class PulseViewController @Inject constructor(
+     private val bassHaptics: PulseBassHaptics =
+         PulseBassHaptics(context)
+ 
++    private val powerManager: PowerManager = context.getSystemService(PowerManager::class.java)!!
++
+     val pulseEnabled: Boolean
+         get() = settingsRepository.isPulseEnabled()
+ 
+@@ -77,6 +85,7 @@ class PulseViewController @Inject constructor(
+ 
+     init {
+         INSTANCE = this
++        dumpManager.registerNormalDumpable(TAG, this)
+ 
+         view.initialize(settingsRepository)
+         settingsRepository.setOnSettingsChangedListener { onSettingsChanged() }
+@@ -86,17 +95,25 @@ class PulseViewController @Inject constructor(
+ 
+     fun getPulseView(): PulseView = view
+ 
++    @Synchronized
+     private fun updateState() {
+         if (!pulseEnabled) {
+             pulseRunning = false
+             return
+         }
+-        pulseRunning = isMediaPlaying 
++        // Events reach this from several threads and can arrive out of order, so read the
++        // current screen, keyguard and media state instead of the last event seen.
++        val scrim = ScrimUtils.get()
++        isMediaPlaying = MediaSessionManager.get().isMediaPlaying
++        keyguardShowing = scrim.isKeyguardShowing()
++        isDozing = scrim.isDozing()
++        val interactive = powerManager.isInteractive
++        if (interactive) isScreenOff = false
++        pulseRunning = isMediaPlaying
+                 && !bouncerShowingOrKeyguardDismissing
+                 && isCollapsed
+-                && !isScreenOff
+-                && ((keyguardShowing && !isDozing)
+-                || (isDozing && ambientEnabled))
++                && ((keyguardShowing && !isDozing && interactive)
++                || (isDozing && ambientEnabled && !isScreenOff))
+     }
+ 
+     private fun onSettingsChanged() {
+@@ -205,6 +222,14 @@ class PulseViewController @Inject constructor(
+         updateState()
+     }
+ 
++    override fun dump(pw: PrintWriter, args: Array<out String>) {
++        pw.println("PulseViewController: enabled=$pulseEnabled running=$pulseRunning" +
++            " listeners=$listenersRegistered mediaPlaying=$isMediaPlaying" +
++            " keyguardShowing=$keyguardShowing dozing=$isDozing screenOff=$isScreenOff" +
++            " collapsed=$isCollapsed bouncerOrDismissing=$bouncerShowingOrKeyguardDismissing" +
++            " viewAttached=${view.isAttachedToWindow} viewVisibility=${view.visibility}")
++    }
++
+     fun destroy() {
+         pulseRunning = false
+         settingsRepository.stopObserving()
