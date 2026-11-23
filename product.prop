@@ -66,3 +66,6 @@ ro.descartes.ax_window_blur=false
 
 # Keep half-open colorOS/hyperOS shades solid enough to hide the lock screen behind them.
 ro.descartes.shade_min_alpha_pct=85
+
+# The lm3644 torch register ends at 192 mA; from level 8 the driver wraps around and goes dim.
+ro.descartes.torch_max_level=7

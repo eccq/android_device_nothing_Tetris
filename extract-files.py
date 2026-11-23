@@ -121,6 +121,9 @@ blob_fixups: blob_fixups_user_type = {
         .remove_needed('ov50d40ofilm_mipi_raw_IdxMgr.so')
         .remove_needed('gc02m1_mipi_raw_IdxMgr.so')
         .remove_needed('mtk000_mipi_raw_IdxMgr.so'),
+    # Torch level 7: 190 mA instead of 199, which overflows the 7-bit register.
+    'vendor/lib64/mt6878/libcameracustom.flashlight.so': blob_fixup()
+        .binary_regex_replace(b'\xc7\x00\x00\x00\xde\x00\x00\x00\xf0\x00\x00\x00', b'\xbe\x00\x00\x00\xde\x00\x00\x00\xf0\x00\x00\x00'),
     'vendor/lib64/mt6878/libmtkcam_thirdparty.customer.so': blob_fixup()
         .remove_needed('libarcsoft_watermark.so')
         .remove_needed('libarcsoft_portrait_super_night_raw.so')

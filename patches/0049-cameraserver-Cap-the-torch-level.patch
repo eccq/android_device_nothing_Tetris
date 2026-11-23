@@ -1,0 +1,65 @@
+diff --git a/services/camera/libcameraservice/common/aidl/AidlProviderInfo.cpp b/services/camera/libcameraservice/common/aidl/AidlProviderInfo.cpp
+index 4c19ccf20e..c03c7f6208 100644
+--- a/services/camera/libcameraservice/common/aidl/AidlProviderInfo.cpp
++++ b/services/camera/libcameraservice/common/aidl/AidlProviderInfo.cpp
+@@ -702,6 +702,7 @@ AidlProviderInfo::AidlDeviceInfo3::AidlDeviceInfo3(
+                     "ANDROID_FLASH_INFO_STRENGTH_MAXIMUM_LEVEL tags: %s (%d)", __FUNCTION__,
+                     strerror(-res), res);
+         }
++        capTorchStrengthTags();
+ 
+         // b/247038031: In case of system_server crash, camera_server is
+         // restarted as well. If flashlight is turned on before the crash, it
+@@ -826,7 +827,27 @@ AidlProviderInfo::AidlDeviceInfo3::AidlDeviceInfo3(
+     }
+ }
+ 
++void AidlProviderInfo::AidlDeviceInfo3::capTorchStrengthTags() {
++    // Some flash drivers wrap around above this level and turn almost dark.
++    const int32_t cap = property_get_int32("ro.descartes.torch_max_level", 0);
++    if (cap <= 0) return;
++    for (uint32_t tag : {ANDROID_FLASH_INFO_STRENGTH_DEFAULT_LEVEL,
++                         ANDROID_FLASH_INFO_STRENGTH_MAXIMUM_LEVEL}) {
++        camera_metadata_entry entry = mCameraCharacteristics.find(tag);
++        if (entry.count != 1 || entry.data.i32[0] <= cap) continue;
++        if (mCameraCharacteristics.update(tag, &cap, 1) != OK) {
++            ALOGE("%s: Unable to cap tag 0x%x at %d", __FUNCTION__, tag, cap);
++            continue;
++        }
++        mTorchStrengthCapped = true;
++    }
++}
++
+ status_t AidlProviderInfo::AidlDeviceInfo3::setTorchMode(bool enabled) {
++    // The HAL would start at its own default, above the cap.
++    if (enabled && mTorchStrengthCapped) {
++        return turnOnTorchWithStrengthLevel(mTorchDefaultStrengthLevel);
++    }
+     const std::shared_ptr<camera::device::ICameraDevice> interface = startDeviceInterface();
+     ::ndk::ScopedAStatus s = interface->setTorchMode(enabled);
+     if (!s.isOk()) {
+@@ -891,6 +912,9 @@ status_t AidlProviderInfo::AidlDeviceInfo3::getTorchStrengthLevel(int32_t *torch
+         ALOGE("%s: Couldn't get torch strength level: %s", __FUNCTION__, status.getMessage());
+         return mapToStatusT(status);
+     }
++    if (mTorchStrengthCapped) {
++        *torchStrength = std::min(*torchStrength, mTorchMaximumStrengthLevel);
++    }
+     return OK;
+ }
+ 
+diff --git a/services/camera/libcameraservice/common/aidl/AidlProviderInfo.h b/services/camera/libcameraservice/common/aidl/AidlProviderInfo.h
+index 71c4663a5d..2c419bbf68 100644
+--- a/services/camera/libcameraservice/common/aidl/AidlProviderInfo.h
++++ b/services/camera/libcameraservice/common/aidl/AidlProviderInfo.h
+@@ -144,6 +144,10 @@ struct AidlProviderInfo : public CameraProviderManager::ProviderInfo {
+         std::shared_ptr<aidl::android::hardware::camera::device::ICameraDevice>
+                 startDeviceInterface();
+         std::vector<int32_t> mAdditionalKeysForFeatureQuery;
++
++      private:
++        bool mTorchStrengthCapped = false;
++        void capTorchStrengthTags();
+     };
+ 
+  private:

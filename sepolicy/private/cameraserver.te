@@ -1,0 +1,2 @@
+# cameraserver reads ro.descartes.torch_max_level.
+get_prop(cameraserver, custom_version_prop)

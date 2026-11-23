@@ -52,6 +52,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0045-*.patch
 cd packages/apps/Settings && git apply ../../../device/nothing/Tetris/patches/0046-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0047-*.patch && cd -
 cd vendor/gms && git apply ../../device/nothing/Tetris/patches/0048-*.patch && cd -
+cd frameworks/av && git apply ../../device/nothing/Tetris/patches/0049-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -104,3 +105,4 @@ cd vendor/gms && git apply ../../device/nothing/Tetris/patches/0048-*.patch && c
 | `0046-Settings-Add-the-sleep-mode-and-idle-manager-pages.patch` | Sleep mode and Idle manager pages under Battery. |
 | `0047-SystemUI-Skip-the-water-unlock-effect-with-the-fluid-clock.patch` | The water unlock effects do not play when the COS fluid clock is on. |
 | `0048-gms-Drop-Google-apps-nobody-opens.patch` | Drops Feedback, Telemetry, Carrier Metrics, Partner Setup, the kids and glasses stubs and print recommendations. |
+| `0049-cameraserver-Cap-the-torch-level.patch` | Caps the torch strength levels at ro.descartes.torch_max_level, for flash drivers that wrap around above it. Unset, nothing changes. |
