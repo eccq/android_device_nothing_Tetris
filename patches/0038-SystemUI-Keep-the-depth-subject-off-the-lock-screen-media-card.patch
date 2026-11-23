@@ -1,0 +1,118 @@
+diff --git a/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/LockscreenMediaCard.kt b/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/LockscreenMediaCard.kt
+index 779d35850c73..45aebe626344 100644
+--- a/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/LockscreenMediaCard.kt
++++ b/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/LockscreenMediaCard.kt
+@@ -43,6 +43,7 @@ import androidx.compose.material3.Icon as M3Icon
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
++import androidx.compose.runtime.DisposableEffect
+ import androidx.compose.runtime.LaunchedEffect
+ import androidx.compose.runtime.getValue
+ import androidx.compose.runtime.rememberUpdatedState
+@@ -59,6 +60,7 @@ import androidx.compose.ui.graphics.lerp as lerpColor
+ import androidx.compose.ui.graphics.graphicsLayer
+ import androidx.compose.ui.input.pointer.pointerInput
+ import androidx.compose.ui.layout.ContentScale
++import androidx.compose.ui.layout.boundsInWindow
+ import androidx.compose.ui.layout.onGloballyPositioned
+ import androidx.compose.ui.layout.positionInWindow
+ import androidx.compose.ui.platform.LocalContext
+@@ -122,11 +124,15 @@ fun LockscreenMediaCard(
+     LaunchedEffect(selected.subtitle, selected.title) {
+         LockscreenMediaExpansion.track = selected.subtitle to selected.title
+     }
++    DisposableEffect(Unit) { onDispose { LockscreenMediaExpansion.setCardBounds(Rect.Zero) } }
+     HorizontalPager(
+         state = pagerState,
+         pageSpacing = 12.dp,
+         userScrollEnabled = !LockscreenMediaExpansion.expanded,
+-        modifier = modifier,
++        modifier =
++            modifier.onGloballyPositioned {
++                LockscreenMediaExpansion.setCardBounds(it.boundsInWindow())
++            },
+     ) { page ->
+         MediaCard(cards[page], isSelected = page == pagerState.currentPage)
+     }
+diff --git a/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/LockscreenMediaExpansion.kt b/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/LockscreenMediaExpansion.kt
+index 18dfda6c3c56..2ce2001a955b 100644
+--- a/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/LockscreenMediaExpansion.kt
++++ b/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/LockscreenMediaExpansion.kt
+@@ -69,6 +69,20 @@ object LockscreenMediaExpansion {
+ 
+     var thumbnailBounds by mutableStateOf(Rect.Zero)
+ 
++    /** Window bounds of the media card; the depth wallpaper subject is not drawn over them. */
++    var cardBounds = android.graphics.Rect()
++        private set
++
++    @JvmStatic var cardBoundsListener: Runnable? = null
++
++    fun setCardBounds(bounds: Rect) {
++        val r = android.graphics.Rect(
++            bounds.left.toInt(), bounds.top.toInt(), bounds.right.toInt(), bounds.bottom.toInt())
++        if (r == cardBounds) return
++        cardBounds = r
++        cardBoundsListener?.run()
++    }
++
+     internal var animateNextChange = false
+ 
+     private var resolver: ContentResolver? = null
+diff --git a/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java b/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java
+index 29a245db5724..966f534a8acf 100644
+--- a/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java
++++ b/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java
+@@ -28,7 +28,10 @@ import android.graphics.drawable.BitmapDrawable;
+ import android.graphics.drawable.Drawable;
+ import android.graphics.drawable.LayerDrawable;
+ import android.graphics.Point;
++import android.graphics.Canvas;
++import android.graphics.Matrix;
+ import android.graphics.Rect;
++import android.graphics.RectF;
+ import android.net.Uri;
+ import java.util.List;
+ import android.os.AsyncTask;
+@@ -47,6 +50,7 @@ import android.widget.FrameLayout;
+ 
+ import com.android.systemui.Dependency;
+ import com.android.systemui.statusbar.policy.KeyguardStateController;
++import com.android.systemui.keyguard.ui.composable.media.LockscreenMediaExpansion;
+ import com.android.systemui.media.MediaViewController;
+ import com.android.systemui.statusbar.phone.ScrimController;
+ import com.android.systemui.statusbar.phone.ScrimState;
+@@ -173,6 +177,24 @@ public class WallpaperDepthUtils {
+                 });
+             }
+ 
++            @Override
++            protected void dispatchDraw(Canvas canvas) {
++                Rect card = LockscreenMediaExpansion.INSTANCE.getCardBounds();
++                if (card.isEmpty()) {
++                    super.dispatchDraw(canvas);
++                    return;
++                }
++                // Leave the media card uncovered: the subject sits above the whole keyguard.
++                RectF local = new RectF(card);
++                local.offset(-getLeft(), -getTop());
++                Matrix inverse = new Matrix();
++                if (getMatrix().invert(inverse)) inverse.mapRect(local);
++                canvas.save();
++                canvas.clipOutRect(local);
++                super.dispatchDraw(canvas);
++                canvas.restore();
++            }
++
+             @Override
+             protected void onDetachedFromWindow() {
+                 super.onDetachedFromWindow();
+@@ -195,6 +217,7 @@ public class WallpaperDepthUtils {
+ 
+         mSpatialEffectController.attachBackgroundView(mLockScreenBackground);
+         mSpatialEffectController.attachSubjectView(mLockScreenSubject);
++        LockscreenMediaExpansion.setCardBoundsListener(mLockScreenSubject::invalidate);
+ 
+         mLockScreenSubject.addOnLayoutChangeListener((v, left, top, right, bottom,
+                 oldLeft, oldTop, oldRight, oldBottom) -> {
