@@ -1,0 +1,32 @@
+diff --git a/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/MotionArt.kt b/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/MotionArt.kt
+index 472dbd2de4d5..86560822bfbe 100644
+--- a/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/MotionArt.kt
++++ b/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/media/MotionArt.kt
+@@ -45,6 +45,9 @@ internal object MotionArt {
+ 
+     private val albums = ConcurrentHashMap<String, String>()
+     private const val NONE = ""
++    // Uploaded tracks (SoundCloud, local files) often keep the file name as their title.
++    private val FILE_EXTENSION =
++        Regex("\\.(mp3|m4a|aac|flac|wav|ogg|opus)$", RegexOption.IGNORE_CASE)
+ 
+     suspend fun find(context: Context, artist: String, title: String, kind: Kind): File? =
+         withContext(Dispatchers.IO) {
+@@ -58,14 +61,16 @@ internal object MotionArt {
+                     ?.takeIf { it.exists() }
+             }
+             try {
+-                val album = findAlbum(artist, title)
++                val album = findAlbum(artist, title.replace(FILE_EXTENSION, ""))
+                 if (album == null) {
++                    Log.i(TAG, "No Apple Music match for \"$title\"")
+                     albums[key] = NONE
+                     return@withContext null
+                 }
+                 val (id, page) = album
+                 val cached = File(dir, "$id${kind.suffix}.mp4")
+                 if (!cached.exists() && !download(page, kind, cached)) {
++                    Log.i(TAG, "No ${kind.name.lowercase()} motion art for \"$title\"")
+                     albums[key] = NONE
+                     return@withContext null
+                 }
