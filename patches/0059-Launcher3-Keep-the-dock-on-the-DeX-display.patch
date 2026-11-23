@@ -1,0 +1,65 @@
+diff --git a/quickstep/src/com/android/launcher3/taskbar/TaskbarActivityContext.java b/quickstep/src/com/android/launcher3/taskbar/TaskbarActivityContext.java
+index 6f3690d26f..a8e680bf1c 100644
+--- a/quickstep/src/com/android/launcher3/taskbar/TaskbarActivityContext.java
++++ b/quickstep/src/com/android/launcher3/taskbar/TaskbarActivityContext.java
+@@ -378,7 +378,9 @@ public class TaskbarActivityContext extends BaseTaskbarContext {
+         mIsNavBarKidsMode = settingsCache.getValue(URI_NAV_BAR_KIDS_MODE);
+         int rawTaskbarSetting = settingsCache.getIntValue(URI_ENABLE_TASKBAR,
+                 TASKBAR_SETTING_UNSET);
+-        mIsTaskbarEnabled = resolveTaskbarEnabled(rawTaskbarSetting,
++        // The setting is the phone's: a connected screen always has its taskbar.
++        mIsTaskbarEnabled = launcherDp.getDeviceProperties().getDeviceConfiguration()
++                .isExternalDisplay() ? 1 : resolveTaskbarEnabled(rawTaskbarSetting,
+                 launcherDp.getDeviceProperties().isLargeScreen());
+         mIsNavbarHintEnabled = settingsCache.getValue(URI_NAVIGATION_BAR_HINT);
+         mNavbarLayoutMode = settingsCache.getIntValue(URI_NAVBAR_LAYOUT_MODE);
+diff --git a/quickstep/src/com/android/launcher3/taskbar/TaskbarManagerImpl.java b/quickstep/src/com/android/launcher3/taskbar/TaskbarManagerImpl.java
+index 52c4fc5e2c..79f1e70b79 100644
+--- a/quickstep/src/com/android/launcher3/taskbar/TaskbarManagerImpl.java
++++ b/quickstep/src/com/android/launcher3/taskbar/TaskbarManagerImpl.java
+@@ -624,7 +624,7 @@ public class TaskbarManagerImpl {
+     private Unit onEnableTaskbarChanged(int newRawValue) {
+         mResources.forEach(resource -> {
+             var activity = resource.getTaskbar();
+-            if (activity == null) return;
++            if (activity == null || activity.isDexDesktop()) return;
+             int newValue = resolveTaskbarEnabled(newRawValue,
+                     activity.getDeviceProfile().getDeviceProperties().isLargeScreen());
+             if (activity.isTaskbarEnabled() != newValue) {
+diff --git a/src/com/android/launcher3/DeviceProfile.java b/src/com/android/launcher3/DeviceProfile.java
+index 1fd2b82584..b41e377de3 100644
+--- a/src/com/android/launcher3/DeviceProfile.java
++++ b/src/com/android/launcher3/DeviceProfile.java
+@@ -258,7 +258,8 @@ public class DeviceProfile {
+                     (float) inv.getLauncherPrefs().get(LauncherPrefs.ROW_HEIGHT) / 100F;
+         allAppsIconText = inv.getLauncherPrefs().get(LauncherPrefs.SHOW_DRAWER_LABELS);
+ 
+-        mEnableTaskbar = isTaskbarEnabledBySetting(context, mDeviceProperties.isLargeScreen());
++        mEnableTaskbar = mDeviceProperties.getDeviceConfiguration().isExternalDisplay()
++                || isTaskbarEnabledBySetting(context, mDeviceProperties.isLargeScreen());
+ 
+         mTaskbarProfile = TaskbarProfile.Factory.createTaskbarProfile(
+                 res,
+@@ -1774,7 +1775,7 @@ public class DeviceProfile {
+                 mDisplayOptionSpec = createDefaultDisplayOptionSpec(mInfo, mWindowBounds,
+                         mIsMultiDisplay, mInv);
+             }
+-            final boolean enableTaskbar = isTaskbarEnabledBySetting(
++            final boolean enableTaskbar = mIsExternalDisplay || isTaskbarEnabledBySetting(
+                     mInfo.context, mInfo.isLargeScreen(mWindowBounds));
+             return new DeviceProfile(
+                     mInv,
+diff --git a/src/com/android/launcher3/util/window/WindowManagerProxy.java b/src/com/android/launcher3/util/window/WindowManagerProxy.java
+index 83fb62c36a..6a97f633e0 100644
+--- a/src/com/android/launcher3/util/window/WindowManagerProxy.java
++++ b/src/com/android/launcher3/util/window/WindowManagerProxy.java
+@@ -427,7 +427,8 @@ public class WindowManagerProxy {
+ 
+     protected boolean isTaskbarEnabled(Context context) {
+         // Only called for large screens.
+-        return isTaskbarEnabledBySetting(context, /* isLargeScreen= */ true);
++        return isExternalDisplay(context)
++                || isTaskbarEnabledBySetting(context, /* isLargeScreen= */ true);
+     }
+ 
+     /**
