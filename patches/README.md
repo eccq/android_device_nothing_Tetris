@@ -54,6 +54,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0047-*.patch
 cd vendor/gms && git apply ../../device/nothing/Tetris/patches/0048-*.patch && cd -
 cd frameworks/av && git apply ../../device/nothing/Tetris/patches/0049-*.patch && cd -
 cd vendor/lineage && git apply ../../device/nothing/Tetris/patches/0050-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0051-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -108,3 +109,4 @@ cd vendor/lineage && git apply ../../device/nothing/Tetris/patches/0050-*.patch 
 | `0048-gms-Drop-Google-apps-nobody-opens.patch` | Drops Feedback, Telemetry, Carrier Metrics, Partner Setup, the kids and glasses stubs and print recommendations. |
 | `0049-cameraserver-Cap-the-torch-level.patch` | Caps the torch strength levels at ro.descartes.torch_max_level, for flash drivers that wrap around above it. Unset, nothing changes. |
 | `0050-changelog-Use-the-device-changelog.patch` | The build ships the device's Changelog.txt when there is one, instead of ten days of commits from every repository. |
+| `0051-SystemUI-Keep-the-depth-layers-off-the-media-card-and-Pulse.patch` | The depth subject is clipped off the media card for real, and the depth background no longer covers Pulse. |

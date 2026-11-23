@@ -1,0 +1,53 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java b/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java
+index 966f534a8acf..644f44a0dcd9 100644
+--- a/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java
++++ b/packages/SystemUI/src/com/android/systemui/util/WallpaperDepthUtils.java
+@@ -157,12 +157,17 @@ public class WallpaperDepthUtils {
+                 super.onAttachedToWindow();
+                 ViewGroup parent = (ViewGroup) getParent();
+                 if (parent != null && mLockScreenBackground.getParent() == null) {
+-                    View keyguardRootView = parent.findViewById(
+-                            com.android.systemui.res.R.id.keyguard_root_view);
+-                    if (keyguardRootView != null) {
+-                        int keyguardIndex = parent.indexOfChild(keyguardRootView);
+-                        if (keyguardIndex >= 0) {
+-                            parent.addView(mLockScreenBackground, keyguardIndex);
++                    // Below the overlays too: this layer is opaque and would cover Pulse.
++                    View anchor = parent.findViewById(
++                            com.android.systemui.res.R.id.custom_overlay_container);
++                    if (anchor == null) {
++                        anchor = parent.findViewById(
++                                com.android.systemui.res.R.id.keyguard_root_view);
++                    }
++                    if (anchor != null) {
++                        int anchorIndex = parent.indexOfChild(anchor);
++                        if (anchorIndex >= 0) {
++                            parent.addView(mLockScreenBackground, anchorIndex);
+                         } else {
+                             parent.addView(mLockScreenBackground, 0);
+                         }
+@@ -178,20 +183,21 @@ public class WallpaperDepthUtils {
+             }
+ 
+             @Override
+-            protected void dispatchDraw(Canvas canvas) {
++            public void draw(Canvas canvas) {
+                 Rect card = LockscreenMediaExpansion.INSTANCE.getCardBounds();
+                 if (card.isEmpty()) {
+-                    super.dispatchDraw(canvas);
++                    super.draw(canvas);
+                     return;
+                 }
+                 // Leave the media card uncovered: the subject sits above the whole keyguard.
++                // The subject is this view's background, so clip draw() and not dispatchDraw().
+                 RectF local = new RectF(card);
+                 local.offset(-getLeft(), -getTop());
+                 Matrix inverse = new Matrix();
+                 if (getMatrix().invert(inverse)) inverse.mapRect(local);
+                 canvas.save();
+                 canvas.clipOutRect(local);
+-                super.dispatchDraw(canvas);
++                super.draw(canvas);
+                 canvas.restore();
+             }
+ 
