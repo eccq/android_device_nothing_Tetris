@@ -51,6 +51,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0044-*.patch
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0045-*.patch && cd -
 cd packages/apps/Settings && git apply ../../../device/nothing/Tetris/patches/0046-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0047-*.patch && cd -
+cd vendor/gms && git apply ../../device/nothing/Tetris/patches/0048-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -102,3 +103,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0047-*.patch
 | `0045-SystemUI-Add-the-idle-manager-and-the-sleep-mode-tile.patch` | Idle manager from Lunaris, limited to user apps and never the keyboard, phone, messages or next alarm app, plus the sleep mode tile. |
 | `0046-Settings-Add-the-sleep-mode-and-idle-manager-pages.patch` | Sleep mode and Idle manager pages under Battery. |
 | `0047-SystemUI-Skip-the-water-unlock-effect-with-the-fluid-clock.patch` | The water unlock effects do not play when the COS fluid clock is on. |
+| `0048-gms-Drop-Google-apps-nobody-opens.patch` | Drops Feedback, Telemetry, Carrier Metrics, Partner Setup, the kids and glasses stubs and print recommendations. |

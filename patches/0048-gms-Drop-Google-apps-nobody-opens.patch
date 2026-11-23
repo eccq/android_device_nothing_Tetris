@@ -1,0 +1,50 @@
+diff --git a/gms_full.mk b/gms_full.mk
+index bc78ea6..e4b4d39 100644
+--- a/gms_full.mk
++++ b/gms_full.mk
+@@ -52,7 +52,6 @@ PRODUCT_PACKAGES += \
+     Gallery2 \
+     PixelThemesStub2026 \
+     PrebuiltGoogleAdservicesTvp \
+-    PrebuiltGoogleTelemetryTvp \
+     SoundAmplifierPrebuilt_v4.91.886631805 \
+     SoundPickerPrebuilt_3.4 \
+     SwitchAccessPrebuilt_1.17.0.877181440 \
+@@ -110,9 +109,7 @@ endif
+ PRODUCT_PACKAGES += \
+     AdaptiveVPNPrebuilt-111042 \
+     AndroidAutoStubPrebuilt \
+-    AndroidGlassesCoreStub \
+     CarrierLocation \
+-    CarrierMetrics \
+     CbrsNetworkMonitor \
+     ConfigUpdater \
+     CustomizationBundlePrebuiltFullVersion \
+@@ -123,9 +120,7 @@ PRODUCT_PACKAGES += \
+     GeminiShell_227 \
+     GoogleDialer \
+     GoogleRestorePrebuilt-v1054408 \
+-    KidsSupervisionStub \
+     OdadPrebuilt \
+-    PartnerSetupPrebuilt \
+     Phonesky \
+     PrebuiltPixelCoreServices \
+     PulsePrebuilt \
+@@ -144,8 +139,7 @@ PRODUCT_PACKAGES += \
+ 
+ # system/app
+ PRODUCT_PACKAGES += \
+-    GoogleExtShared \
+-    GooglePrintRecommendationService
++    GoogleExtShared
+ 
+ # system/priv-app
+ PRODUCT_PACKAGES += \
+@@ -168,7 +162,6 @@ endif
+ PRODUCT_PACKAGES += \
+     AvatarPickerGoogle \
+     DeviceConnectivityServicePrebuilt_26.01.00 \
+-    GoogleFeedback \
+     GoogleServicesFramework \
+     MoseyApp \
+     PixelSearchPrebuilt_26.02.00 \
