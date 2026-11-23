@@ -1,0 +1,175 @@
+diff --git a/res/values-it-rIT/cr_strings.xml b/res/values-it-rIT/cr_strings.xml
+index cbefddaa..54f71ee8 100644
+--- a/res/values-it-rIT/cr_strings.xml
++++ b/res/values-it-rIT/cr_strings.xml
+@@ -687,6 +687,12 @@
+     <!-- Volume panel -->
+     <string name="volume_panel_category">Pannello volume</string>
+     <string name="volume_dialog_timeout_title">Durata pannello volume</string>
++    <string name="volume_steps_category">Passi del volume</string>
++    <string name="volume_steps_music_title">Contenuti multimediali</string>
++    <string name="volume_steps_voice_call_title">Chiamate</string>
++    <string name="volume_steps_ring_title">Suoneria</string>
++    <string name="volume_steps_notification_title">Notifiche</string>
++    <string name="volume_steps_alarm_title">Sveglia</string>
+     <string name="volume_panel_on_left_title">Pannello volume a sinistra</string>
+     <string name="volume_dialog_haptic_feedback_title">Feedback aptico del pannello del volume</string>
+     <!-- UDFPS settings -->
+diff --git a/res/values/cr_strings.xml b/res/values/cr_strings.xml
+index 04208d9a..a39d2695 100644
+--- a/res/values/cr_strings.xml
++++ b/res/values/cr_strings.xml
+@@ -827,6 +827,12 @@
+     <string name="compose_volume_style_title">Compose volume style</string>
+     <string name="volume_panel_category">Volume panel</string>
+     <string name="volume_dialog_timeout_title">Volume panel timeout</string>
++    <string name="volume_steps_category">Volume steps</string>
++    <string name="volume_steps_music_title">Media</string>
++    <string name="volume_steps_voice_call_title">Calls</string>
++    <string name="volume_steps_ring_title">Ringtone</string>
++    <string name="volume_steps_notification_title">Notifications</string>
++    <string name="volume_steps_alarm_title">Alarm</string>
+     <string name="volume_panel_on_left_title">Volume panel on left</string>
+     <string name="volume_dialog_haptic_feedback_title">Volume panel haptics</string>
+ 
+diff --git a/res/xml/crdroid_settings_sound.xml b/res/xml/crdroid_settings_sound.xml
+index 36586f24..5ed7c1aa 100644
+--- a/res/xml/crdroid_settings_sound.xml
++++ b/res/xml/crdroid_settings_sound.xml
+@@ -88,6 +88,53 @@
+     </PreferenceCategory>
+ 
+     <!-- In-call feedback -->
++    <!-- Volume steps, read by AudioService at boot -->
++    <PreferenceCategory
++        android:key="volume_steps"
++        android:title="@string/volume_steps_category" >
++
++        <com.crdroid.settings.preferences.SystemSettingSeekBarPreference
++            android:key="volume_steps_music"
++            android:title="@string/volume_steps_music_title"
++            android:defaultValue="15"
++            android:max="30"
++            settings:min="1"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.SystemSettingSeekBarPreference
++            android:key="volume_steps_voice_call"
++            android:title="@string/volume_steps_voice_call_title"
++            android:defaultValue="15"
++            android:max="30"
++            settings:min="1"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.SystemSettingSeekBarPreference
++            android:key="volume_steps_ring"
++            android:title="@string/volume_steps_ring_title"
++            android:defaultValue="7"
++            android:max="30"
++            settings:min="1"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.SystemSettingSeekBarPreference
++            android:key="volume_steps_notification"
++            android:title="@string/volume_steps_notification_title"
++            android:defaultValue="7"
++            android:max="30"
++            settings:min="1"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.SystemSettingSeekBarPreference
++            android:key="volume_steps_alarm"
++            android:title="@string/volume_steps_alarm_title"
++            android:defaultValue="7"
++            android:max="30"
++            settings:min="1"
++            settings:interval="1" />
++
++    </PreferenceCategory>
++
+     <PreferenceCategory
+         android:key="incall_vib_options"
+         android:title="@string/incall_vibration_category" >
+diff --git a/src/com/crdroid/settings/fragments/Sound.java b/src/com/crdroid/settings/fragments/Sound.java
+index 6ed99197..b3b73bec 100644
+--- a/src/com/crdroid/settings/fragments/Sound.java
++++ b/src/com/crdroid/settings/fragments/Sound.java
+@@ -16,6 +16,7 @@
+ package com.crdroid.settings.fragments;
+ 
+ import android.app.Activity;
++import android.app.AlertDialog;
+ import android.content.ContentResolver;
+ import android.content.Context;
+ import android.content.Intent;
+@@ -38,6 +39,7 @@ import com.android.settings.SettingsPreferenceFragment;
+ import com.android.settings.search.BaseSearchIndexProvider;
+ import com.android.settingslib.search.SearchIndexable;
+ 
++import com.crdroid.settings.preferences.ExternalFontInstaller;
+ import com.crdroid.settings.utils.DeviceUtils;
+ import com.crdroid.settings.utils.SystemUtils;
+ import com.crdroid.settings.utils.TelephonyUtils;
+@@ -62,11 +64,14 @@ public class Sound extends SettingsPreferenceFragment implements
+     private static final String KEY_VOLUME_HAPTIC = "volume_dialog_haptic_feedback";
+     private static final String KEY_VOLUME_DIALOG_TYPE = "volume_dialog_type";
+     private static final String KEY_COMPOSE_VOLUME_STYLE = "compose_volume_style";
++    private static final String KEY_VOLUME_STEPS_CATEGORY = "volume_steps";
+ 
+     private SwitchPreferenceCompat mVolumePanelLeft;
+     private SwitchPreferenceCompat mVolumeHaptic;
+     private ListPreference mVolumeDialogType;
+     private ListPreference mComposeVolumeStyle;
++    private PreferenceCategory mVolumeSteps;
++    private boolean mRebootAsked;
+ 
+     private static volatile Boolean sAudioPanelOnLeft = null;
+ 
+@@ -95,6 +100,13 @@ public class Sound extends SettingsPreferenceFragment implements
+                     UserHandle.USER_CURRENT) == 0);
+         }
+ 
++        mVolumeSteps = prefScreen.findPreference(KEY_VOLUME_STEPS_CATEGORY);
++        if (mVolumeSteps != null) {
++            for (int i = 0; i < mVolumeSteps.getPreferenceCount(); i++) {
++                mVolumeSteps.getPreference(i).setOnPreferenceChangeListener(this);
++            }
++        }
++
+         mVolumePanelLeft = prefScreen.findPreference(KEY_VOLUME_PANEL_LEFT);
+         mVolumePanelLeft.setChecked(isAudioPanelOnLeft);
+ 
+@@ -121,6 +133,20 @@ public class Sound extends SettingsPreferenceFragment implements
+             SystemUtils.showSystemUiRestartDialog(getContext());
+             return true;
+         }
++        if (preference.getParent() == mVolumeSteps) {
++            // AudioService reads the steps at boot; ask once per visit, not on every slider move.
++            if (!mRebootAsked) {
++                mRebootAsked = true;
++                new AlertDialog.Builder(getContext())
++                        .setTitle(R.string.reboot_required_title)
++                        .setMessage(R.string.reboot_required_message)
++                        .setPositiveButton(R.string.action_reboot_now,
++                                (d, w) -> ExternalFontInstaller.Companion.rebootDevice())
++                        .setNegativeButton(R.string.action_later, null)
++                        .show();
++            }
++            return true;
++        }
+         return false;
+     }
+ 
+@@ -133,6 +159,12 @@ public class Sound extends SettingsPreferenceFragment implements
+                 Settings.Secure.VOLUME_DIALOG_DISMISS_TIMEOUT, 3000, UserHandle.USER_CURRENT);
+         Settings.Secure.putIntForUser(resolver,
+                 Settings.Secure.VOLUME_DIALOG_HAPTIC_FEEDBACK, 1, UserHandle.USER_CURRENT);
++        final String[] streams = {"music", "voice_call", "ring", "notification", "alarm"};
++        final int[] steps = {15, 15, 7, 7, 7};
++        for (int i = 0; i < streams.length; i++) {
++            Settings.System.putIntForUser(resolver, "volume_steps_" + streams[i], steps[i],
++                    UserHandle.USER_CURRENT);
++        }
+         Settings.System.putIntForUser(resolver,
+                 "volume_dialog_type", 1, UserHandle.USER_CURRENT);
+         Settings.System.putIntForUser(resolver,
