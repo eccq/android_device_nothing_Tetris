@@ -1,0 +1,15 @@
+diff --git a/src/com/android/launcher3/Utilities.java b/src/com/android/launcher3/Utilities.java
+index 4e58da8578..57bc8c61a6 100644
+--- a/src/com/android/launcher3/Utilities.java
++++ b/src/com/android/launcher3/Utilities.java
+@@ -148,8 +148,8 @@ public final class Utilities {
+     public static final String LENS_URI = "google://lens";
+     public static final String LENS_SHARE_ACTIVITY = "com.google.android.apps.search.lens.LensShareEntryPointActivity";
+ 
+-    private static final String FREEFORM_PACKAGE = "com.libremobileos.freeform";
+-    private static final String FREEFORM_INTENT = "com.libremobileos.freeform.START_FREEFORM";
++    private static final String FREEFORM_PACKAGE = "com.descartes.freeform";
++    private static final String FREEFORM_INTENT = "com.descartes.freeform.START_FREEFORM";
+ 
+     /**
+      * Returns true if theme is dark.

@@ -43,6 +43,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0036-*.patch
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0037-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0038-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0039-*.patch && cd -
+cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0040-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -86,3 +87,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0039-*.patch
 | `0037-SystemUI-Show-the-ColorOS-QS-modules-after-a-fast-open.patch` | Opening the ColorOS QS quickly left it empty (only the edit and settings buttons): a dip of the fraction while the fling settled hid the modules for good. A fully open panel now always shows them. |
 | `0038-SystemUI-Keep-the-depth-subject-off-the-lock-screen-media-card.patch` | The depth wallpaper subject no longer covers the lock screen media card; it still sits over the clock. |
 | `0039-SystemUI-Keep-the-stock-carrier-row-in-the-landscape-ColorOS-header.patch` | In landscape the ColorOS QS header is one row: the carrier name keeps its stock place instead of sticking to the date. |
+| `0040-Launcher3-Send-freeform-to-the-Descartes-freeform-app.patch` | Freeform from recents sent its request to com.libremobileos.freeform, which no longer exists, and only went home. It now goes to com.descartes.freeform. |
