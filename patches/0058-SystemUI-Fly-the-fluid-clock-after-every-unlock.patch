@@ -1,0 +1,75 @@
+diff --git a/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/clock/CosFluidClock.kt b/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/clock/CosFluidClock.kt
+index 152d2ea393c2..a77d3b4cb16e 100644
+--- a/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/clock/CosFluidClock.kt
++++ b/packages/SystemUI/compose/features/src/com/android/systemui/keyguard/ui/composable/clock/CosFluidClock.kt
+@@ -55,9 +55,6 @@ import com.android.systemui.clocks.ClockStyle
+ import com.android.systemui.dagger.SysUISingleton
+ import com.android.systemui.dagger.qualifiers.Application
+ import com.android.systemui.keyguard.data.repository.InWindowLauncherUnlockAnimationRepository
+-import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
+-import com.android.systemui.keyguard.domain.interactor.BiometricUnlockInteractor
+-import com.android.systemui.keyguard.shared.model.toDeviceUnlockSource
+ import com.android.systemui.penguin.CosFeature
+ import com.android.systemui.penguin.CosFeatures
+ import com.android.systemui.penguin.LockscreenClockFace
+@@ -89,7 +86,6 @@ constructor(
+     @Application context: Context,
+     private val clockRegistry: ClockRegistry,
+     private val launcherState: InWindowLauncherUnlockAnimationRepository,
+-    private val biometricUnlock: BiometricUnlockInteractor,
+ ) : LockscreenClockFace {
+     private var settingOn by mutableStateOf(false)
+     private var defaultFace by mutableStateOf(true)
+@@ -145,12 +141,6 @@ constructor(
+     override val cosUnlock: Boolean
+         get() = settingOn
+ 
+-    override val cosHandoff: Boolean
+-        get() =
+-            cosUnlock &&
+-                biometricUnlock.unlockState.value.toDeviceUnlockSource() ==
+-                    DeviceUnlockSource.Fingerprint
+-
+     override val isEnabled: Boolean
+         get() = cosUnlock && defaultFace && customStyle == 0
+ 
+diff --git a/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardUnlockAnimationController.kt b/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardUnlockAnimationController.kt
+index 2b50ca3ea490..0bc80e89bd38 100644
+--- a/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardUnlockAnimationController.kt
++++ b/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardUnlockAnimationController.kt
+@@ -606,7 +606,7 @@ constructor(
+         }
+ 
+         surfacesBehind = surfaces
+-        handingOffClock = clockFace?.cosHandoff == true && isSupportedLauncherUnderneath()
++        handingOffClock = clockFace?.cosUnlock == true && isSupportedLauncherUnderneath()
+         this.openingWallpapers = openingWallpapers
+         this.closingWallpapers = closingWallpapers
+         surfaceBehindRemoteAnimationStartTime = startTime
+diff --git a/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/InWindowLauncherUnlockAnimationManager.kt b/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/InWindowLauncherUnlockAnimationManager.kt
+index 1965ae912650..e9231d7a7bf1 100644
+--- a/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/InWindowLauncherUnlockAnimationManager.kt
++++ b/packages/SystemUI/src/com/android/systemui/keyguard/ui/view/InWindowLauncherUnlockAnimationManager.kt
+@@ -148,7 +148,7 @@ constructor(
+ 
+     private fun handoff(): LockscreenClockFace.Handoff? {
+         val face = clockFace ?: return null
+-        if (!face.cosHandoff) return null
++        if (!face.cosUnlock) return null
+         ClockStyle.showing()?.clockView?.let { return handoff(it, 0) }
+         face.handoff()?.let { return it }
+         if (face.isEnabled) return null
+diff --git a/packages/SystemUI/src/com/android/systemui/penguin/LockscreenClockFace.kt b/packages/SystemUI/src/com/android/systemui/penguin/LockscreenClockFace.kt
+index 1363734cebe9..f6025b30c0fc 100644
+--- a/packages/SystemUI/src/com/android/systemui/penguin/LockscreenClockFace.kt
++++ b/packages/SystemUI/src/com/android/systemui/penguin/LockscreenClockFace.kt
+@@ -14,9 +14,6 @@ interface LockscreenClockFace {
+ 
+     val cosUnlock: Boolean
+ 
+-    /** The clock only flies to the launcher after a fingerprint unlock. */
+-    val cosHandoff: Boolean
+-
+     @Composable fun Placeholder(large: Boolean, modifier: Modifier)
+ 
+     @Composable fun Overlay(alpha: () -> Float, unlocking: () -> Float)
