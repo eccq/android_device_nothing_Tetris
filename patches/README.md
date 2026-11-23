@@ -33,6 +33,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0026-*.patch
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0027-*.patch && cd -
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0028-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0029-*.patch && cd -
+cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0030-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -66,3 +67,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0029-*.patch
 | `0027-services-Read-volume-steps-from-settings.patch` | AudioService takes the media, call, ring, notification and alarm volume steps from the volume_steps_* system settings (5 to 60) at boot. |
 | `0028-Atelier-Add-volume-steps.patch` | Atelier > Sound > Volume steps: one slider per stream, with a reboot prompt. Reset restores the stock 15/15/7/7/7. |
 | `0029-SystemUI-Fade-the-lock-screen-media-blur-with-the-keyguard.patch` | The iOS-style lock screen media card blur follows the alpha of its parent views, so it no longer stays on the home screen after unlocking. |
+| `0030-Launcher3-Make-the-cos-recents-and-fluid-clock-parts-work.patch` | COS Recents also springs the task launch from recents (it only changed the swipe settle before). The Fluid Clock widget is placed again whenever it is missing instead of only once, and a full home screen is logged. |

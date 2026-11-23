@@ -1,0 +1,91 @@
+diff --git a/quickstep/src/com/android/quickstep/TaskViewUtils.java b/quickstep/src/com/android/quickstep/TaskViewUtils.java
+index fb16a702a5..7110156ef0 100644
+--- a/quickstep/src/com/android/quickstep/TaskViewUtils.java
++++ b/quickstep/src/com/android/quickstep/TaskViewUtils.java
+@@ -57,6 +57,7 @@ import android.view.RemoteAnimationTarget;
+ import android.view.Surface;
+ import android.view.SurfaceControl;
+ import android.view.View;
++import android.view.animation.Interpolator;
+ import android.window.TransitionInfo;
+ import android.window.WindowAnimationState;
+ 
+@@ -68,6 +69,7 @@ import com.android.internal.jank.Cuj;
+ import com.android.launcher3.DeviceProfile;
+ import com.android.launcher3.Launcher;
+ import com.android.launcher3.LauncherState;
++import com.android.launcher3.QuickstepTransitionManager;
+ import com.android.launcher3.Utilities;
+ import com.android.launcher3.anim.AnimatedFloat;
+ import com.android.launcher3.anim.AnimationSuccessListener;
+@@ -198,6 +200,8 @@ public final class TaskViewUtils {
+ 
+         Context context = taskView.getContext();
+         T container = RecentsViewContainer.containerFromContext(context);
++        final Interpolator fullScreenCurve = QuickstepTransitionManager.cosRecents(context)
++                ? QuickstepTransitionManager.cosRecentsLaunchInterpolator() : TOUCH_RESPONSE;
+         DeviceProfile dp = container.getDeviceProfile();
+ 
+         RemoteTargetHandle[] remoteTargetHandles;
+@@ -276,10 +280,10 @@ public final class TaskViewUtils {
+         for (RemoteTargetHandle targetHandle : remoteTargetHandles) {
+             TaskViewSimulator tvsLocal = targetHandle.getTaskViewSimulator();
+             out.setFloat(tvsLocal.fullScreenProgress,
+-                    AnimatedFloat.VALUE, 1, TOUCH_RESPONSE);
++                    AnimatedFloat.VALUE, 1, fullScreenCurve);
+             out.setFloat(tvsLocal.recentsViewScale,
+                     AnimatedFloat.VALUE, tvsLocal.getFullScreenScale(),
+-                    TOUCH_RESPONSE);
++                    fullScreenCurve);
+ 
+             out.addListener(new AnimatorListenerAdapter() {
+                 @Override
+@@ -662,7 +666,10 @@ public final class TaskViewUtils {
+             Log.w(TAG, "composeRecentsLaunchAnimator - no TaskView to launch");
+             return;
+         }
+-        PendingAnimation pa = new PendingAnimation(RECENTS_LAUNCH_DURATION);
++        PendingAnimation pa = new PendingAnimation(
++                QuickstepTransitionManager.cosRecents(taskView.getContext())
++                        ? QuickstepTransitionManager.COS_RECENTS_LAUNCH_DURATION
++                        : RECENTS_LAUNCH_DURATION);
+         createRecentsWindowAnimator(recentsView, taskView, skipLauncherChanges, appTargets,
+                 wallpaperTargets, nonAppTargets, depthController, transitionInfo,
+                 appearedTaskId, pa);
+diff --git a/quickstep/src/com/android/quickstep/cos/CosClockPlacer.kt b/quickstep/src/com/android/quickstep/cos/CosClockPlacer.kt
+index da970b563f..dff3de88cd 100644
+--- a/quickstep/src/com/android/quickstep/cos/CosClockPlacer.kt
++++ b/quickstep/src/com/android/quickstep/cos/CosClockPlacer.kt
+@@ -11,6 +11,7 @@ import android.database.ContentObserver
+ import android.os.Handler
+ import android.os.Looper
+ import android.provider.Settings
++import android.util.Log
+ import com.android.launcher3.LauncherSettings.Favorites
+ import com.android.launcher3.Workspace
+ import com.android.launcher3.cos.CosClock
+@@ -94,11 +95,14 @@ class CosClockPlacer(private val launcher: QuickstepLauncher) {
+             return
+         }
+         val placed = prefs.getBoolean(KEY_PLACED, false)
+-        if (enabled && !placed) {
++        if (enabled) {
++            // The unlock flight lands on this widget, so put it back if it was removed.
+             if (hasClock(workspace) || place(workspace)) {
+                 prefs.edit().putBoolean(KEY_PLACED, true).apply()
++            } else {
++                Log.w(TAG, "no free ${SPAN_X}x$SPAN_Y cells on any home page for the COS clock")
+             }
+-        } else if (!enabled && placed) {
++        } else if (placed) {
+             workspace.removeItemsByMatcher(isClock, false)
+             launcher.modelWriter.deleteItemsFromDatabase(isClock, "COS clock turned off")
+             prefs.edit().putBoolean(KEY_PLACED, false).apply()
+@@ -151,6 +155,7 @@ class CosClockPlacer(private val launcher: QuickstepLauncher) {
+         const val KEY_PLACED = "home_widget_placed"
+         const val KEY_CLOCK = "penguin_cos_clock"
+         const val KEY_ALL = "penguin_cos_experience"
++        const val TAG = "CosClockPlacer"
+         const val SPAN_X = 4
+         const val SPAN_Y = 2
+         const val RETRY_MS = 500L
