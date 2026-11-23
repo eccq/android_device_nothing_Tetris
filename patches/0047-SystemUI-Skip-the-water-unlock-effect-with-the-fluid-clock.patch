@@ -1,0 +1,25 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/AuthRippleController.kt b/packages/SystemUI/src/com/android/systemui/biometrics/AuthRippleController.kt
+index 28a367453983..87cd68f1c4ef 100644
+--- a/packages/SystemUI/src/com/android/systemui/biometrics/AuthRippleController.kt
++++ b/packages/SystemUI/src/com/android/systemui/biometrics/AuthRippleController.kt
+@@ -40,6 +40,8 @@ import com.android.systemui.dagger.qualifiers.Main
+ import com.android.systemui.deviceentry.domain.interactor.AuthRippleInteractor
+ import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
+ import com.android.systemui.lifecycle.repeatWhenAttached
++import com.android.systemui.penguin.CosFeature
++import com.android.systemui.penguin.CosFeatures
+ import com.android.systemui.plugins.statusbar.StatusBarStateController
+ import com.android.systemui.res.R
+ import android.graphics.PixelFormat
+@@ -213,6 +215,11 @@ constructor(
+ 
+         updateSensorLocation()
+         if (biometricSourceType == BiometricSourceType.FINGERPRINT) {
++            // The water covers the clock on its way to the launcher.
++            val water =
++                unlockAnimation == WaterRippleView.EFFECT_WATER ||
++                    unlockAnimation == WaterRippleView.EFFECT_WATERCOLOR
++            if (water && CosFeatures.isOn(sysuiContext, CosFeature.Clock)) return
+             fingerprintSensorLocation?.let {
+                 rv.setFingerprintSensorLocation(it, udfpsRadius)
+                 circleReveal =

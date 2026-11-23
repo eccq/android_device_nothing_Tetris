@@ -50,6 +50,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0043-*.patch
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0044-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0045-*.patch && cd -
 cd packages/apps/Settings && git apply ../../../device/nothing/Tetris/patches/0046-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0047-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -100,3 +101,4 @@ cd packages/apps/Settings && git apply ../../../device/nothing/Tetris/patches/00
 | `0044-services-Add-sleep-mode.patch` | Sleep mode from Lunaris: turns off Wi-Fi, Bluetooth, mobile data and sensors by hand or on a schedule, and restores them even after a reboot. |
 | `0045-SystemUI-Add-the-idle-manager-and-the-sleep-mode-tile.patch` | Idle manager from Lunaris, limited to user apps and never the keyboard, phone, messages or next alarm app, plus the sleep mode tile. |
 | `0046-Settings-Add-the-sleep-mode-and-idle-manager-pages.patch` | Sleep mode and Idle manager pages under Battery. |
+| `0047-SystemUI-Skip-the-water-unlock-effect-with-the-fluid-clock.patch` | The water unlock effects do not play when the COS fluid clock is on. |
