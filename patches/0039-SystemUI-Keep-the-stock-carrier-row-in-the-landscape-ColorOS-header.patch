@@ -1,0 +1,33 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/shade/ShadeHeaderController.kt b/packages/SystemUI/src/com/android/systemui/shade/ShadeHeaderController.kt
+index a3a8a9fe0649..69ebc5d27be5 100644
+--- a/packages/SystemUI/src/com/android/systemui/shade/ShadeHeaderController.kt
++++ b/packages/SystemUI/src/com/android/systemui/shade/ShadeHeaderController.kt
+@@ -225,6 +225,7 @@ constructor(
+             }
+             field = value
+             onHeaderStateChanged()
++            updateCarrierGroupPadding()
+         }
+ 
+     /** Expansion fraction of the QQS/QS shade. This is not the expansion between QQS <-> QS. */
+@@ -555,16 +556,17 @@ constructor(
+     private fun updateCarrierGroupPadding() {
+         clock.doOnLayout {
+             // The ColorOS header hides the clock in the expanded state, so the carrier name
+-            // starts at the edge.
++            // starts at the edge. The one-row landscape header keeps the stock layout.
++            val styledRow = !largeScreenActive
+             val maxClockWidth =
+-                if (colorOSStyle || motorolaStyle) {
++                if (styledRow && (colorOSStyle || motorolaStyle)) {
+                     0
+                 } else {
+                     (clock.width * resources.getFloat(R.dimen.qqs_expand_clock_scale)).toInt()
+                 }
+             mShadeCarrierGroup.setPaddingRelative(maxClockWidth, 0, 0, 0)
+             mShadeCarrierGroup.gravity =
+-                if (colorOSStyle) {
++                if (styledRow && colorOSStyle) {
+                     Gravity.START or Gravity.CENTER_VERTICAL
+                 } else {
+                     Gravity.END or Gravity.CENTER_VERTICAL
