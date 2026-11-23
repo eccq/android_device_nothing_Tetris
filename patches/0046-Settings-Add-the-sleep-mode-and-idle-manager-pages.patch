@@ -1,0 +1,518 @@
+diff --git a/res/values/descartes_power.xml b/res/values/descartes_power.xml
+new file mode 100644
+index 00000000000..c7a1deb8dd6
+--- /dev/null
++++ b/res/values/descartes_power.xml
+@@ -0,0 +1,68 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="sleep_mode_title">Sleep mode</string>
++    <string name="sleep_mode_summary">Turn off Wi-Fi, Bluetooth, mobile data and sensors while you sleep</string>
++    <string name="sleep_mode_use">Use sleep mode</string>
++    <string name="sleep_mode_mixed_sunset">Turns on from sunset to a custom time</string>
++    <string name="sleep_mode_mixed_sunrise">Turns on from a custom time to sunrise</string>
++    <string name="sleep_mode_toggles_title">While sleep mode is on</string>
++    <string name="sleep_mode_wifi">Turn off Wi-Fi</string>
++    <string name="sleep_mode_bluetooth">Turn off Bluetooth</string>
++    <string name="sleep_mode_cellular">Turn off mobile data</string>
++    <string name="sleep_mode_sensors">Turn off sensors</string>
++    <string name="sleep_mode_sensors_summary">Camera, microphone, auto-brightness and tap to wake stop working. The fingerprint reader may not work with the screen off.</string>
++    <string name="sleep_mode_ringer">Ringer</string>
++    <string name="sleep_mode_ringer_keep">Do not change</string>
++    <string name="sleep_mode_ringer_vibrate">Vibrate</string>
++    <string name="sleep_mode_ringer_dnd">Do Not Disturb</string>
++    <string name="sleep_mode_ringer_silent">Silent</string>
++    <string name="sleep_mode_footer">Without Wi-Fi and mobile data, messages arrive only after sleep mode ends. Calls and alarms still work.</string>
++    <string-array name="sleep_mode_auto_entries">
++        <item>@string/night_display_auto_mode_never</item>
++        <item>@string/night_display_auto_mode_twilight</item>
++        <item>@string/night_display_auto_mode_custom</item>
++        <item>@string/sleep_mode_mixed_sunset</item>
++        <item>@string/sleep_mode_mixed_sunrise</item>
++    </string-array>
++    <string-array name="sleep_mode_auto_values" translatable="false">
++        <item>0</item>
++        <item>1</item>
++        <item>2</item>
++        <item>3</item>
++        <item>4</item>
++    </string-array>
++    <string-array name="sleep_mode_ringer_entries">
++        <item>@string/sleep_mode_ringer_keep</item>
++        <item>@string/sleep_mode_ringer_vibrate</item>
++        <item>@string/sleep_mode_ringer_dnd</item>
++        <item>@string/sleep_mode_ringer_silent</item>
++    </string-array>
++    <string-array name="sleep_mode_ringer_values" translatable="false">
++        <item>0</item>
++        <item>1</item>
++        <item>2</item>
++        <item>3</item>
++    </string-array>
++
++    <string name="idle_manager_title">Idle manager</string>
++    <string name="idle_manager_summary">Limit or close your apps while the screen is off</string>
++    <string name="idle_manager_use">Use idle manager</string>
++    <string name="idle_manager_sleep_only">Only in sleep mode</string>
++    <string name="idle_manager_apps">Apps</string>
++    <string name="idle_manager_footer">Acts on apps not used for 15 minutes, with the screen off. Force stop also cancels the app\'s notifications and alarms until you open it. The keyboard, phone, messages, WhatsApp and the app of your next alarm are never touched.</string>
++    <string name="idle_manager_count">Acted %1$d times</string>
++    <string-array name="idle_manager_entries">
++        <item>Do nothing</item>
++        <item>Limit (rare)</item>
++        <item>Limit strongly (restricted)</item>
++        <item>Close in background</item>
++        <item>Force stop</item>
++    </string-array>
++    <string-array name="idle_manager_values" translatable="false">
++        <item></item>
++        <item>STANDBY_BUCKET_RARE</item>
++        <item>STANDBY_BUCKET_RESTRICTED</item>
++        <item>KILL_BACKGROUND</item>
++        <item>FULL_KILL</item>
++    </string-array>
++</resources>
+diff --git a/res/xml/idle_manager_settings.xml b/res/xml/idle_manager_settings.xml
+new file mode 100644
+index 00000000000..6e91f816873
+--- /dev/null
++++ b/res/xml/idle_manager_settings.xml
+@@ -0,0 +1,28 @@
++<?xml version="1.0" encoding="utf-8"?>
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res-auto"
++    android:title="@string/idle_manager_title">
++
++    <com.crdroid.settings.preferences.SecureSettingSwitchPreference
++        android:key="idle_manager"
++        android:defaultValue="true"
++        android:title="@string/idle_manager_use" />
++
++    <com.crdroid.settings.preferences.SecureSettingSwitchPreference
++        android:key="idle_manager_sleep_mode_trigger"
++        android:defaultValue="false"
++        android:dependency="idle_manager"
++        android:title="@string/idle_manager_sleep_only" />
++
++    <PreferenceCategory
++        android:key="idle_manager_app_list"
++        android:dependency="idle_manager"
++        android:title="@string/idle_manager_apps" />
++
++    <com.android.settingslib.widget.FooterPreference
++        android:key="idle_manager_footer"
++        android:selectable="false"
++        android:title="@string/idle_manager_footer"
++        settings:searchable="false" />
++</PreferenceScreen>
+diff --git a/res/xml/power_usage_summary.xml b/res/xml/power_usage_summary.xml
+index 3728c937300..7c942cbd620 100644
+--- a/res/xml/power_usage_summary.xml
++++ b/res/xml/power_usage_summary.xml
+@@ -67,6 +67,18 @@
+             settings:controller="com.android.settings.fuelgauge.batterytip.BatteryManagerPreferenceController"
+             settings:keywords="@string/keywords_battery_adaptive_preferences" />
+ 
++        <Preference
++            android:fragment="com.android.settings.fuelgauge.sleepmode.SleepModeSettings"
++            android:key="sleep_mode"
++            android:title="@string/sleep_mode_title"
++            android:summary="@string/sleep_mode_summary" />
++
++        <Preference
++            android:fragment="com.android.settings.fuelgauge.idlemanager.IdleManagerSettings"
++            android:key="idle_manager_page"
++            android:title="@string/idle_manager_title"
++            android:summary="@string/idle_manager_summary" />
++
+         <!-- Battery light
+         <lineageos.preference.LineagePartsPreference
+             android:key="battery_lights"
+diff --git a/res/xml/sleep_mode_settings.xml b/res/xml/sleep_mode_settings.xml
+new file mode 100644
+index 00000000000..3e1e0be2b87
+--- /dev/null
++++ b/res/xml/sleep_mode_settings.xml
+@@ -0,0 +1,67 @@
++<?xml version="1.0" encoding="utf-8"?>
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res-auto"
++    android:title="@string/sleep_mode_title">
++
++    <SwitchPreferenceCompat
++        android:key="sleep_mode_enabled"
++        android:persistent="false"
++        android:title="@string/sleep_mode_use" />
++
++    <ListPreference
++        android:key="sleep_mode_auto_mode"
++        android:entries="@array/sleep_mode_auto_entries"
++        android:entryValues="@array/sleep_mode_auto_values"
++        android:persistent="false"
++        android:summary="%s"
++        android:title="@string/night_display_auto_mode_title" />
++
++    <Preference
++        android:key="sleep_mode_since"
++        android:title="@string/night_display_start_time_title" />
++
++    <Preference
++        android:key="sleep_mode_till"
++        android:title="@string/night_display_end_time_title" />
++
++    <PreferenceCategory
++        android:key="sleep_mode_toggles"
++        android:title="@string/sleep_mode_toggles_title">
++
++        <com.crdroid.settings.preferences.SecureSettingSwitchPreference
++            android:key="sleep_mode_wifi_toggle"
++            android:defaultValue="true"
++            android:title="@string/sleep_mode_wifi" />
++
++        <com.crdroid.settings.preferences.SecureSettingSwitchPreference
++            android:key="sleep_mode_bluetooth_toggle"
++            android:defaultValue="true"
++            android:title="@string/sleep_mode_bluetooth" />
++
++        <com.crdroid.settings.preferences.SecureSettingSwitchPreference
++            android:key="sleep_mode_cellular_toggle"
++            android:defaultValue="true"
++            android:title="@string/sleep_mode_cellular" />
++
++        <com.crdroid.settings.preferences.SecureSettingSwitchPreference
++            android:key="sleep_mode_sensors_toggle"
++            android:defaultValue="true"
++            android:summary="@string/sleep_mode_sensors_summary"
++            android:title="@string/sleep_mode_sensors" />
++
++        <com.crdroid.settings.preferences.SecureSettingListPreference
++            android:key="sleep_mode_ringer_mode"
++            android:defaultValue="0"
++            android:entries="@array/sleep_mode_ringer_entries"
++            android:entryValues="@array/sleep_mode_ringer_values"
++            android:summary="%s"
++            android:title="@string/sleep_mode_ringer" />
++    </PreferenceCategory>
++
++    <com.android.settingslib.widget.FooterPreference
++        android:key="sleep_mode_footer"
++        android:selectable="false"
++        android:title="@string/sleep_mode_footer"
++        settings:searchable="false" />
++</PreferenceScreen>
+diff --git a/src/com/android/settings/fuelgauge/idlemanager/IdleManagerSettings.java b/src/com/android/settings/fuelgauge/idlemanager/IdleManagerSettings.java
+new file mode 100644
+index 00000000000..c820150959c
+--- /dev/null
++++ b/src/com/android/settings/fuelgauge/idlemanager/IdleManagerSettings.java
+@@ -0,0 +1,144 @@
++/*
++ * Copyright (C) 2026 Descartes OS
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.android.settings.fuelgauge.idlemanager;
++
++import android.app.settings.SettingsEnums;
++import android.content.pm.ApplicationInfo;
++import android.content.pm.PackageManager;
++import android.graphics.drawable.Drawable;
++import android.os.Bundle;
++import android.provider.Settings;
++import android.util.Log;
++
++import androidx.preference.ListPreference;
++import androidx.preference.PreferenceCategory;
++
++import com.android.settings.R;
++import com.android.settings.SettingsPreferenceFragment;
++import com.android.settings.search.BaseSearchIndexProvider;
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settingslib.utils.ThreadUtils;
++
++import org.json.JSONArray;
++import org.json.JSONException;
++import org.json.JSONObject;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Map;
++import java.util.TreeMap;
++
++/** What the SystemUI idle manager does to each user app while the screen is off. */
++@SearchIndexable(forTarget = SearchIndexable.ALL & ~SearchIndexable.ARC)
++public class IdleManagerSettings extends SettingsPreferenceFragment {
++
++    private static final String TAG = "IdleManagerSettings";
++
++    private record App(String pkg, CharSequence label, Drawable icon) {}
++
++    private final Map<String, String> mRules = new TreeMap<>();
++
++    @Override
++    public void onCreate(Bundle bundle) {
++        super.onCreate(bundle);
++        addPreferencesFromResource(R.xml.idle_manager_settings);
++        loadRules();
++        PackageManager pm = getContext().getPackageManager();
++        ThreadUtils.postOnBackgroundThread(() -> {
++            List<App> apps = new ArrayList<>();
++            for (ApplicationInfo info : pm.getInstalledApplications(0)) {
++                if ((info.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
++                    apps.add(new App(info.packageName, info.loadLabel(pm), info.loadIcon(pm)));
++                }
++            }
++            apps.sort((a, b) -> a.label.toString().compareToIgnoreCase(b.label.toString()));
++            ThreadUtils.postOnMainThread(() -> showApps(apps));
++        });
++    }
++
++    private void showApps(List<App> apps) {
++        PreferenceCategory list = findPreference("idle_manager_app_list");
++        if (!isAdded() || list == null) return;
++        JSONObject stats = stats();
++        for (App app : apps) {
++            ListPreference pref = new ListPreference(list.getContext());
++            pref.setKey("idle_app_" + app.pkg);
++            pref.setPersistent(false);
++            pref.setTitle(app.label);
++            pref.setIcon(app.icon);
++            pref.setDialogTitle(app.label);
++            pref.setEntries(R.array.idle_manager_entries);
++            pref.setEntryValues(R.array.idle_manager_values);
++            pref.setValue(mRules.getOrDefault(app.pkg, ""));
++            JSONObject stat = stats.optJSONObject(app.pkg);
++            int count = stat == null ? 0 : stat.optInt("count");
++            pref.setSummaryProvider(p -> {
++                CharSequence entry = ((ListPreference) p).getEntry();
++                return count == 0 ? entry
++                        : entry + " · " + getString(R.string.idle_manager_count, count);
++            });
++            pref.setOnPreferenceChangeListener((p, value) -> {
++                saveRule(app.pkg, (String) value);
++                return true;
++            });
++            list.addPreference(pref);
++        }
++    }
++
++    private void loadRules() {
++        String json = Settings.Secure.getString(getContext().getContentResolver(),
++                Settings.Secure.IDLE_MANAGER_APPS);
++        if (json == null || json.isEmpty()) return;
++        try {
++            JSONArray rules = new JSONArray(json);
++            for (int i = 0; i < rules.length(); i++) {
++                JSONObject rule = rules.getJSONObject(i);
++                mRules.put(rule.getString("package"), rule.getString("action"));
++            }
++        } catch (JSONException e) {
++            Log.e(TAG, "Cannot read the rules", e);
++        }
++    }
++
++    private void saveRule(String pkg, String action) {
++        if (action.isEmpty()) {
++            mRules.remove(pkg);
++        } else {
++            mRules.put(pkg, action);
++        }
++        JSONArray rules = new JSONArray();
++        try {
++            for (Map.Entry<String, String> rule : mRules.entrySet()) {
++                rules.put(new JSONObject()
++                        .put("package", rule.getKey())
++                        .put("action", rule.getValue()));
++            }
++        } catch (JSONException e) {
++            Log.e(TAG, "Cannot write the rules", e);
++            return;
++        }
++        Settings.Secure.putString(getContext().getContentResolver(),
++                Settings.Secure.IDLE_MANAGER_APPS, rules.toString());
++    }
++
++    private JSONObject stats() {
++        String json = Settings.Secure.getString(getContext().getContentResolver(),
++                Settings.Secure.IDLE_MANAGER_KILL_STATS);
++        try {
++            return json == null || json.isEmpty() ? new JSONObject() : new JSONObject(json);
++        } catch (JSONException e) {
++            return new JSONObject();
++        }
++    }
++
++    @Override
++    public int getMetricsCategory() {
++        return SettingsEnums.OPEN_BATTERY_ADAPTIVE_PREFERENCES;
++    }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.idle_manager_settings);
++}
+diff --git a/src/com/android/settings/fuelgauge/sleepmode/SleepModeSettings.java b/src/com/android/settings/fuelgauge/sleepmode/SleepModeSettings.java
+new file mode 100644
+index 00000000000..d30b8db96c3
+--- /dev/null
++++ b/src/com/android/settings/fuelgauge/sleepmode/SleepModeSettings.java
+@@ -0,0 +1,158 @@
++/*
++ * Copyright (C) 2021 Havoc-OS
++ * Copyright (C) 2026 Descartes OS
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.android.settings.fuelgauge.sleepmode;
++
++import android.app.TimePickerDialog;
++import android.app.settings.SettingsEnums;
++import android.content.ContentResolver;
++import android.database.ContentObserver;
++import android.net.Uri;
++import android.os.Bundle;
++import android.os.Handler;
++import android.os.Looper;
++import android.os.UserHandle;
++import android.provider.Settings;
++import android.text.format.DateFormat;
++
++import androidx.preference.ListPreference;
++import androidx.preference.Preference;
++import androidx.preference.TwoStatePreference;
++
++import com.android.settings.R;
++import com.android.settings.SettingsPreferenceFragment;
++import com.android.settings.search.BaseSearchIndexProvider;
++import com.android.settingslib.search.SearchIndexable;
++
++import java.time.LocalTime;
++import java.time.format.DateTimeFormatter;
++import java.time.format.DateTimeParseException;
++import java.util.Locale;
++
++/** Sleep mode switch, schedule and what it turns off. */
++@SearchIndexable(forTarget = SearchIndexable.ALL & ~SearchIndexable.ARC)
++public class SleepModeSettings extends SettingsPreferenceFragment {
++
++    private static final String DEFAULT_TIMES = "22:00,07:00";
++
++    private final ContentObserver mObserver =
++            new ContentObserver(new Handler(Looper.getMainLooper())) {
++                @Override
++                public void onChange(boolean selfChange, Uri uri) {
++                    refresh();
++                }
++            };
++
++    private TwoStatePreference mEnabled;
++    private ListPreference mMode;
++    private Preference mSince;
++    private Preference mTill;
++    private Preference mToggles;
++
++    @Override
++    public void onCreate(Bundle bundle) {
++        super.onCreate(bundle);
++        addPreferencesFromResource(R.xml.sleep_mode_settings);
++        mEnabled = findPreference("sleep_mode_enabled");
++        mMode = findPreference("sleep_mode_auto_mode");
++        mSince = findPreference("sleep_mode_since");
++        mTill = findPreference("sleep_mode_till");
++        mToggles = findPreference("sleep_mode_toggles");
++
++        mEnabled.setOnPreferenceChangeListener((p, value) -> {
++            putInt(Settings.Secure.SLEEP_MODE_ENABLED, (Boolean) value ? 1 : 0);
++            return true;
++        });
++        mMode.setOnPreferenceChangeListener((p, value) -> {
++            putInt(Settings.Secure.SLEEP_MODE_AUTO_MODE, Integer.parseInt((String) value));
++            return true;
++        });
++        mSince.setOnPreferenceClickListener(p -> pickTime(0));
++        mTill.setOnPreferenceClickListener(p -> pickTime(1));
++    }
++
++    @Override
++    public void onResume() {
++        super.onResume();
++        for (String key : new String[] {
++                Settings.Secure.SLEEP_MODE_ENABLED,
++                Settings.Secure.SLEEP_MODE_AUTO_MODE,
++                Settings.Secure.SLEEP_MODE_AUTO_TIME}) {
++            resolver().registerContentObserver(Settings.Secure.getUriFor(key), false, mObserver,
++                    UserHandle.USER_CURRENT);
++        }
++        refresh();
++    }
++
++    @Override
++    public void onPause() {
++        resolver().unregisterContentObserver(mObserver);
++        super.onPause();
++    }
++
++    private void refresh() {
++        boolean on = getInt(Settings.Secure.SLEEP_MODE_ENABLED) == 1;
++        int mode = getInt(Settings.Secure.SLEEP_MODE_AUTO_MODE);
++        mEnabled.setChecked(on);
++        mMode.setValue(String.valueOf(mode));
++        mSince.setVisible(mode == 2 || mode == 4);
++        mTill.setVisible(mode == 2 || mode == 3);
++        DateTimeFormatter format = DateTimeFormatter.ofPattern(
++                DateFormat.is24HourFormat(getContext()) ? "HH:mm" : "h:mm a");
++        LocalTime[] times = times();
++        mSince.setSummary(times[0].format(format));
++        mTill.setSummary(times[1].format(format));
++        // Changing them midway would not match what is already off.
++        mToggles.setEnabled(!on);
++    }
++
++    private boolean pickTime(int index) {
++        LocalTime[] times = times();
++        new TimePickerDialog(getContext(), (view, hour, minute) -> {
++            times[index] = LocalTime.of(hour, minute);
++            Settings.Secure.putStringForUser(resolver(), Settings.Secure.SLEEP_MODE_AUTO_TIME,
++                    String.format(Locale.ROOT, "%s,%s", times[0], times[1]),
++                    UserHandle.USER_CURRENT);
++        }, times[index].getHour(), times[index].getMinute(),
++                DateFormat.is24HourFormat(getContext())).show();
++        return true;
++    }
++
++    private LocalTime[] times() {
++        String value = Settings.Secure.getStringForUser(resolver(),
++                Settings.Secure.SLEEP_MODE_AUTO_TIME, UserHandle.USER_CURRENT);
++        try {
++            String[] parts = value == null ? new String[0] : value.split(",");
++            if (parts.length == 2) {
++                return new LocalTime[] {LocalTime.parse(parts[0]), LocalTime.parse(parts[1])};
++            }
++        } catch (DateTimeParseException e) {
++            // Falls back to the default times.
++        }
++        String[] parts = DEFAULT_TIMES.split(",");
++        return new LocalTime[] {LocalTime.parse(parts[0]), LocalTime.parse(parts[1])};
++    }
++
++    private ContentResolver resolver() {
++        return getContext().getContentResolver();
++    }
++
++    private int getInt(String key) {
++        return Settings.Secure.getIntForUser(resolver(), key, 0, UserHandle.USER_CURRENT);
++    }
++
++    private void putInt(String key, int value) {
++        Settings.Secure.putIntForUser(resolver(), key, value, UserHandle.USER_CURRENT);
++    }
++
++    @Override
++    public int getMetricsCategory() {
++        return SettingsEnums.OPEN_BATTERY_SAVER;
++    }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.sleep_mode_settings);
++}

@@ -49,6 +49,7 @@ cd packages/apps/DescartesLaboratory && git apply ../../../device/nothing/Tetris
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0043-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0044-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0045-*.patch && cd -
+cd packages/apps/Settings && git apply ../../../device/nothing/Tetris/patches/0046-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -98,3 +99,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0045-*.patch
 | `0043-SystemUI-Fly-the-fluid-clock-only-after-a-fingerprint-unlock.patch` | The COS fluid clock flies to the home screen widget only when a fingerprint unlocked the device. |
 | `0044-services-Add-sleep-mode.patch` | Sleep mode from Lunaris: turns off Wi-Fi, Bluetooth, mobile data and sensors by hand or on a schedule, and restores them even after a reboot. |
 | `0045-SystemUI-Add-the-idle-manager-and-the-sleep-mode-tile.patch` | Idle manager from Lunaris, limited to user apps and never the keyboard, phone, messages or next alarm app, plus the sleep mode tile. |
+| `0046-Settings-Add-the-sleep-mode-and-idle-manager-pages.patch` | Sleep mode and Idle manager pages under Battery. |
