@@ -56,6 +56,7 @@ cd frameworks/av && git apply ../../device/nothing/Tetris/patches/0049-*.patch &
 cd vendor/lineage && git apply ../../device/nothing/Tetris/patches/0050-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0051-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0052-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0053-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -112,3 +113,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0052-*.patch
 | `0050-changelog-Use-the-device-changelog.patch` | The build ships the device's Changelog.txt when there is one, instead of ten days of commits from every repository. |
 | `0051-SystemUI-Keep-the-depth-layers-off-the-media-card-and-Pulse.patch` | The depth subject is clipped off the media card for real, and the depth background no longer covers Pulse. |
 | `0052-SystemUI-Add-the-PenguinOS-island-look.patch` | The stock Dynamic island can wear the PenguinOS pill: size, outline, text colour and side crescents. |
+| `0053-services-Give-the-DeX-PC-client-a-desktop.patch` | Displays made from the shell, as the PC client does, are DeX desktops whatever the mirror switch says. |

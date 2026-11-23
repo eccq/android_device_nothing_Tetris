@@ -1,0 +1,25 @@
+diff --git a/services/core/java/com/android/server/wm/DisplayContent.java b/services/core/java/com/android/server/wm/DisplayContent.java
+index ce8fd282b297..b7180c5be33c 100644
+--- a/services/core/java/com/android/server/wm/DisplayContent.java
++++ b/services/core/java/com/android/server/wm/DisplayContent.java
+@@ -202,6 +202,7 @@ import android.os.IBinder;
+ import android.os.InputConfig;
+ import android.os.Message;
+ import android.os.PowerManager;
++import android.os.Process;
+ import android.os.RemoteCallbackList;
+ import android.os.RemoteException;
+ import android.os.Trace;
+@@ -6195,7 +6196,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
+     }
+ 
+     boolean isDexDisplay() {
+-        return mWmService.mDexEnabled
++        // The PC client makes its display from the shell. It has nothing to mirror, so it is a
++        // desktop whatever the switch for connected screens says.
++        final boolean fromPcClient = mDisplay.getType() == Display.TYPE_VIRTUAL
++                && mDisplay.getOwnerUid() == Process.SHELL_UID;
++        return (mWmService.mDexEnabled || fromPcClient)
+                 && !isDefaultDisplay
+                 && !isPrivate()
+                 && isTrusted()
