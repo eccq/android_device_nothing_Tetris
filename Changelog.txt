@@ -9,7 +9,8 @@
 - Apps that only switch the torch on get the full level too.
 
    * Quick settings
-- ColorOS panel: opening it quickly no longer leaves it empty.
+- ColorOS panel: the tiles no longer disappear while it opens, and it opens
+  faster.
 - ColorOS panel in landscape: the carrier name keeps its place next to the
   status icons.
 - New Sleep mode tile.
@@ -17,18 +18,20 @@
    * Lock screen
 - The depth wallpaper subject stays off the media card.
 - The Pulse visualizer shows again with the depth wallpaper on.
-- The fluid clock flies to the home screen only after a fingerprint unlock.
 - The water unlock effects are skipped while the fluid clock is on.
 - Descartes Laboratory says what the fluid clock needs to fly.
 
    * Dynamic island
-- New Island style setting: Stock, PenguinOS look or Lunaris (Dynamic Bar).
-  Turning the island on turns the Dynamic Bar off.
+- New Island style setting: Stock, PenguinOS or Lunaris. PenguinOS and Lunaris
+  are the full islands of those ROMs, with their own music, events and cards.
+- The Lunaris island has its own settings pages.
+- A running timer no longer shows as an alarm.
 - The setting shows up in the Settings search.
 
    * DeX
 - The PenguinOS DeX app for Windows always gets a desktop. It used to show only
   the wallpaper and the navigation keys unless Use DeX was on.
+- The dock shows on the desktop when the taskbar is off on the phone.
 
    * Freeform
 - Opening a window from recents and from the game panel works again.

@@ -1,0 +1,3131 @@
+diff --git a/res/layout/lunaris_bar_app_picker.xml b/res/layout/lunaris_bar_app_picker.xml
+new file mode 100644
+index 00000000..df68cc82
+--- /dev/null
++++ b/res/layout/lunaris_bar_app_picker.xml
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:orientation="vertical"
++    android:paddingHorizontal="24dp">
++    <EditText
++        android:id="@+id/lunaris_bar_app_search"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:hint="@string/lunaris_bar_search"
++        android:inputType="text"
++        android:singleLine="true" />
++    <ListView
++        android:id="@+id/lunaris_bar_app_list"
++        android:layout_width="match_parent"
++        android:layout_height="320dp" />
++</LinearLayout>
+diff --git a/res/layout/lunaris_bar_shortcut_editor.xml b/res/layout/lunaris_bar_shortcut_editor.xml
+new file mode 100644
+index 00000000..fd35da00
+--- /dev/null
++++ b/res/layout/lunaris_bar_shortcut_editor.xml
+@@ -0,0 +1,29 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:orientation="vertical"
++    android:paddingHorizontal="24dp">
++    <Switch
++        android:id="@+id/lunaris_bar_contact"
++        android:layout_width="match_parent"
++        android:layout_height="48dp"
++        android:text="@string/lunaris_bar_contact"
++        android:checked="true" />
++    <EditText
++        android:id="@+id/lunaris_bar_shortcut_label"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:hint="@string/lunaris_bar_label"
++        android:maxLength="80"
++        android:inputType="textCapSentences" />
++    <EditText
++        android:id="@+id/lunaris_bar_shortcut_value"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:hint="@string/lunaris_bar_phone_number"
++        android:maxLength="8192"
++        android:inputType="text" />
++</LinearLayout>
+diff --git a/res/values-it-rIT/cr_strings.xml b/res/values-it-rIT/cr_strings.xml
+index 1a82f764..81931b66 100644
+--- a/res/values-it-rIT/cr_strings.xml
++++ b/res/values-it-rIT/cr_strings.xml
+@@ -1550,7 +1550,28 @@
+     <string name="emoji_style_title">Stile emoji</string>
+     <string name="dynamic_island_style_title">Stile isola</string>
+     <string name="dynamic_island_style_stock">Stock</string>
+-    <string name="dynamic_island_style_penguin">Aspetto PenguinOS</string>
+-    <string name="dynamic_island_style_lunaris">Lunaris (Dynamic Bar)</string>
++    <string name="dynamic_island_style_penguin">PenguinOS</string>
++    <string name="dynamic_island_style_lunaris">Lunaris</string>
+     <string name="dynamic_island_style_keywords">dynamic island, isola dinamica, pillola, stile, penguin, lunaris, dynamic bar</string>
++    <string name="dynamic_island_penguin_features_title">Isola PenguinOS</string>
++    <string name="dynamic_island_live_updates_title">Attività in corso</string>
++    <string name="dynamic_island_live_updates_summary">Mostra nell\'isola timer, navigazione e altre notifiche in tempo reale</string>
++    <string name="dynamic_island_battery_title">Ricarica</string>
++    <string name="dynamic_island_battery_summary">Mostra il livello di carica quando colleghi il caricatore</string>
++    <string name="dynamic_island_bluetooth_title">Bluetooth</string>
++    <string name="dynamic_island_bluetooth_summary">Mostra un dispositivo quando si collega</string>
++    <string name="dynamic_island_calls_title">Chiamate</string>
++    <string name="dynamic_island_calls_summary">Mostra le chiamate in arrivo e in corso con i comandi</string>
++    <string name="dynamic_island_ringer_title">Modalità audio</string>
++    <string name="dynamic_island_ringer_summary">Mostra il passaggio a suoneria, vibrazione o silenzioso</string>
++    <string name="dynamic_island_hotspot_title">Hotspot</string>
++    <string name="dynamic_island_hotspot_summary">Mostra l\'hotspot e i dispositivi collegati</string>
++    <string name="dynamic_island_unlock_title">Sblocco</string>
++    <string name="dynamic_island_unlock_summary">Mostra un lucchetto dopo lo sblocco con impronta o volto</string>
++    <string name="dynamic_island_vpn_title">VPN</string>
++    <string name="dynamic_island_vpn_summary">Mostra quando una VPN è attiva</string>
++    <string name="dynamic_island_clipboard_title">Appunti</string>
++    <string name="dynamic_island_clipboard_summary">Mostra il testo che copi</string>
++    <string name="dynamic_island_lockscreen_title">Schermata di blocco</string>
++    <string name="dynamic_island_lockscreen_summary">Mostra l\'isola anche nella schermata di blocco</string>
+ </resources>
+diff --git a/res/values/cr_strings.xml b/res/values/cr_strings.xml
+index ead26c44..5a2e9521 100644
+--- a/res/values/cr_strings.xml
++++ b/res/values/cr_strings.xml
+@@ -1934,7 +1934,28 @@ To setup Depth Wallpaper Feature:
+     <string name="descartes_laboratory_summary">DeX, Liquid Glass, styles, experiments and more</string>
+     <string name="dynamic_island_style_title">Island style</string>
+     <string name="dynamic_island_style_stock">Stock</string>
+-    <string name="dynamic_island_style_penguin">PenguinOS look</string>
+-    <string name="dynamic_island_style_lunaris">Lunaris (Dynamic Bar)</string>
++    <string name="dynamic_island_style_penguin">PenguinOS</string>
++    <string name="dynamic_island_style_lunaris">Lunaris</string>
+     <string name="dynamic_island_style_keywords">dynamic island, pill, style, penguin, lunaris, dynamic bar, live activity</string>
++    <string name="dynamic_island_penguin_features_title">PenguinOS island</string>
++    <string name="dynamic_island_live_updates_title">Live updates</string>
++    <string name="dynamic_island_live_updates_summary">Show timers, navigation and other live notifications in the island</string>
++    <string name="dynamic_island_battery_title">Charging</string>
++    <string name="dynamic_island_battery_summary">Show the charge level when you plug in the charger</string>
++    <string name="dynamic_island_bluetooth_title">Bluetooth</string>
++    <string name="dynamic_island_bluetooth_summary">Show a device when it connects</string>
++    <string name="dynamic_island_calls_title">Calls</string>
++    <string name="dynamic_island_calls_summary">Show incoming and active calls with their controls</string>
++    <string name="dynamic_island_ringer_title">Sound mode</string>
++    <string name="dynamic_island_ringer_summary">Show the change to ring, vibrate or silent</string>
++    <string name="dynamic_island_hotspot_title">Hotspot</string>
++    <string name="dynamic_island_hotspot_summary">Show the hotspot and its connected devices</string>
++    <string name="dynamic_island_unlock_title">Unlock</string>
++    <string name="dynamic_island_unlock_summary">Show a lock animation after a fingerprint or face unlock</string>
++    <string name="dynamic_island_vpn_title">VPN</string>
++    <string name="dynamic_island_vpn_summary">Show when a VPN is connected</string>
++    <string name="dynamic_island_clipboard_title">Clipboard</string>
++    <string name="dynamic_island_clipboard_summary">Show the text you copy</string>
++    <string name="dynamic_island_lockscreen_title">Lock screen</string>
++    <string name="dynamic_island_lockscreen_summary">Show the island on the lock screen too</string>
+ </resources>
+diff --git a/res/values/lunaris_bar_strings.xml b/res/values/lunaris_bar_strings.xml
+new file mode 100644
+index 00000000..7a1c0480
+--- /dev/null
++++ b/res/values/lunaris_bar_strings.xml
+@@ -0,0 +1,419 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP -->
++<resources>
++    <string name="lunaris_bar_card_enabled">Enable this card</string>
++    <string name="lunaris_bar_customize">Customize</string>
++    <string name="lunaris_bar_reset">Reset</string>
++    <string name="lunaris_bar_action">Action</string>
++    <string name="lunaris_bar_actions">Actions</string>
++    <string name="lunaris_bar_add_app">Add an app</string>
++    <string name="lunaris_bar_add_card">Add a card</string>
++    <string name="lunaris_bar_add_contact_action">Add a contact or app action</string>
++    <string name="lunaris_bar_alarm_volume">Alarm</string>
++    <string name="lunaris_bar_alarms">Alarms</string>
++    <string name="lunaris_bar_alternative_versions">Alternative versions</string>
++    <string name="lunaris_bar_always_visible">Keep the capsule visible</string>
++    <string name="lunaris_bar_animation_bounce">Bounce intensity</string>
++    <string name="lunaris_bar_animation_speed">Animation speed</string>
++    <string name="lunaris_bar_animation_style">Expansion style</string>
++    <string name="lunaris_bar_coloros">ColorOS</string>
++    <string name="lunaris_bar_status_glow">Status glow</string>
++    <string name="lunaris_bar_status_glow_description">Glow on bar updates and music changes. Turn off Original expanded music popup for popup glow; Reduce animations disables the effect.</string>
++    <string name="lunaris_bar_app_icon">App icon</string>
++    <string name="lunaris_bar_app_name">App name</string>
++    <string name="lunaris_bar_appearance">Appearance</string>
++    <string name="lunaris_bar_arch">Arch</string>
++    <string name="lunaris_bar_arrow">Arrow</string>
++    <string name="lunaris_bar_artwork_shape">Album art shape</string>
++    <string name="lunaris_bar_audio_recording">Audio recording</string>
++    <string name="lunaris_bar_auto_brightness">Adaptive brightness</string>
++    <string name="lunaris_bar_back">Back</string>
++    <string name="lunaris_bar_background">Background</string>
++    <string name="lunaris_bar_barcode">Barcode</string>
++    <string name="lunaris_bar_barcode_error">This content cannot be encoded in the selected format.</string>
++    <string name="lunaris_bar_barcode_format">Barcode format</string>
++    <string name="lunaris_bar_barcode_label">Label</string>
++    <string name="lunaris_bar_barcode_value">Barcode content</string>
++    <string name="lunaris_bar_battery">Battery</string>
++    <string name="lunaris_bar_battery_icon">Battery icon</string>
++    <string name="lunaris_bar_battery_left">Leading battery content</string>
++    <string name="lunaris_bar_battery_right">Trailing battery content</string>
++    <string name="lunaris_bar_black">Black</string>
++    <string name="lunaris_bar_bluetooth">Bluetooth</string>
++    <string name="lunaris_bar_blurred_cover">Blurred cover</string>
++    <string name="lunaris_bar_bottom">Bottom</string>
++    <string name="lunaris_bar_brightness">Brightness</string>
++    <string name="lunaris_bar_bun">Bun</string>
++    <string name="lunaris_bar_burst">Burst</string>
++    <string name="lunaris_bar_call_volume">Call</string>
++    <string name="lunaris_bar_calls">Calls</string>
++    <string name="lunaris_bar_camera_attached">Attached to the camera</string>
++    <string name="lunaris_bar_cancel">Cancel</string>
++    <string name="lunaris_bar_capsule">Expanded cards</string>
++    <string name="lunaris_bar_capsule_background_day">Background</string>
++    <string name="lunaris_bar_capsule_background_night">Background</string>
++    <string name="lunaris_bar_capsule_blur">Blur behind expanded cards</string>
++    <string name="lunaris_bar_capsule_foreground_day">Foreground</string>
++    <string name="lunaris_bar_capsule_foreground_night">Foreground</string>
++    <string name="lunaris_bar_capsule_opacity_day">Opacity</string>
++    <string name="lunaris_bar_capsule_opacity_night">Opacity</string>
++    <string name="lunaris_bar_capsule_palette_day">Palette</string>
++    <string name="lunaris_bar_capsule_palette_night">Palette</string>
++    <string name="lunaris_bar_card_background">Card background</string>
++    <string name="lunaris_bar_card_foreground">Card foreground</string>
++    <string name="lunaris_bar_card_haptics">Haptic feedback for this card</string>
++    <string name="lunaris_bar_card_name">Card name</string>
++    <string name="lunaris_bar_cards">Cards</string>
++    <string name="lunaris_bar_cards_empty">Add a card to keep your favorite controls close.</string>
++    <string name="lunaris_bar_center">Center</string>
++    <string name="lunaris_bar_charging">Charging</string>
++    <string name="lunaris_bar_choice">Choice</string>
++    <string name="lunaris_bar_choose_color">Choose a color</string>
++    <string name="lunaris_bar_circle">Circle</string>
++    <string name="lunaris_bar_clamshell">Clamshell</string>
++    <string name="lunaris_bar_clock">Clock</string>
++    <string name="lunaris_bar_close_on_tap">Close after tapping</string>
++    <string name="lunaris_bar_clover4">Clover4</string>
++    <string name="lunaris_bar_clover8">Clover8</string>
++    <string name="lunaris_bar_collapsed_border">Resting capsule border</string>
++    <string name="lunaris_bar_collapsed_opacity">Resting capsule opacity</string>
++    <string name="lunaris_bar_colors">Colors</string>
++    <string name="lunaris_bar_columns">Columns</string>
++    <string name="lunaris_bar_companion">Show peek chip</string>
++    <string name="lunaris_bar_contact">Contact</string>
++    <string name="lunaris_bar_content_width">Fit the content</string>
++    <string name="lunaris_bar_cookie">Cookie</string>
++    <string name="lunaris_bar_corner_radius">Chip corner radius</string>
++    <string name="lunaris_bar_cover">Cover</string>
++    <string name="lunaris_bar_custom">Custom</string>
++    <string name="lunaris_bar_custom_colors">Custom colors</string>
++    <string name="lunaris_bar_dark">Dark</string>
++    <string name="lunaris_bar_day">Day</string>
++    <string name="lunaris_bar_delay">Delay</string>
++    <string name="lunaris_bar_delete">Delete</string>
++    <string name="lunaris_bar_diamond">Diamond</string>
++    <string name="lunaris_bar_disable_in_landscape">Disable in landscape</string>
++    <string name="lunaris_bar_edit">Edit</string>
++    <string name="lunaris_bar_edit_card">Edit card</string>
++    <string name="lunaris_bar_enabled">Enabled</string>
++    <string name="lunaris_bar_equalizer">Animate the equalizer</string>
++    <string name="lunaris_bar_expand">Expand</string>
++    <string name="lunaris_bar_expanded_mode">Expansion placement</string>
++    <string name="lunaris_bar_expanded_width">Expanded width</string>
++    <string name="lunaris_bar_expressive">Expressive</string>
++    <string name="lunaris_bar_fahrenheit">Use Fahrenheit</string>
++    <string name="lunaris_bar_fan">Fan</string>
++    <string name="lunaris_bar_features">Events</string>
++    <string name="lunaris_bar_filled">Filled</string>
++    <string name="lunaris_bar_flashlight">Flashlight</string>
++    <string name="lunaris_bar_flower">Flower</string>
++    <string name="lunaris_bar_follow_system">Follow the system</string>
++    <string name="lunaris_bar_foreground">Foreground</string>
++    <string name="lunaris_bar_format">Format</string>
++    <string name="lunaris_bar_four_corner">Four corner</string>
++    <string name="lunaris_bar_fruit">Like a Fruit</string>
++    <string name="lunaris_bar_full_width">Full width</string>
++    <string name="lunaris_bar_gesture_double_tap">Double tap</string>
++    <string name="lunaris_bar_gesture_long_press">Long press</string>
++    <string name="lunaris_bar_gesture_swipe_left">Swipe left</string>
++    <string name="lunaris_bar_gesture_swipe_right">Swipe right</string>
++    <string name="lunaris_bar_gesture_tap">Tap</string>
++    <string name="lunaris_bar_gestures">Gestures</string>
++    <string name="lunaris_bar_ghost">Ghost</string>
++    <string name="lunaris_bar_gradient">Gradient</string>
++    <string name="lunaris_bar_haptics">Haptic feedback</string>
++    <string name="lunaris_bar_heart">Heart</string>
++    <string name="lunaris_bar_height">Card height</string>
++    <string name="lunaris_bar_hex_color">Hex color</string>
++    <string name="lunaris_bar_hexagon">Hexagon</string>
++    <string name="lunaris_bar_hide_after">Close after inactivity</string>
++    <string name="lunaris_bar_high_bounce">High</string>
++    <string name="lunaris_bar_home">Home</string>
++    <string name="lunaris_bar_hotspot">Hotspot</string>
++    <string name="lunaris_bar_hue">Hue</string>
++    <string name="lunaris_bar_icon_scale">Icon size</string>
++    <string name="lunaris_bar_icon_shape">Icon shape</string>
++    <string name="lunaris_bar_independent">Below the status bar</string>
++    <string name="lunaris_bar_inherit">Use capsule colors</string>
++    <string name="lunaris_bar_intent_uri">App intent URI</string>
++    <string name="lunaris_bar_label">Label</string>
++    <string name="lunaris_bar_left">Left</string>
++    <string name="lunaris_bar_light">Light</string>
++    <string name="lunaris_bar_live_scores">Live scores</string>
++    <string name="lunaris_bar_lock">Lock</string>
++    <string name="lunaris_bar_lockscreen">Show on the lock screen</string>
++    <string name="lunaris_bar_media">Music</string>
++    <string name="lunaris_bar_media_artwork_colors">Use album art colors</string>
++    <string name="lunaris_bar_media_background">Music background</string>
++    <string name="lunaris_bar_media_button_shape">Playback button shape</string>
++    <string name="lunaris_bar_media_controls">Media controls</string>
++    <string name="lunaris_bar_media_hide_delay">Hide delay after pausing</string>
++    <string name="lunaris_bar_media_hide_paused">Hide paused players</string>
++    <string name="lunaris_bar_media_mini">Show the compact music chip</string>
++    <string name="lunaris_bar_media_mini_artwork_colors">Use album colors in the chip</string>
++    <string name="lunaris_bar_media_mini_custom">Customize music chip separately</string>
++    <string name="lunaris_bar_media_mini_left_palette">Album art chip palette</string>
++    <string name="lunaris_bar_media_mini_left_shape">Album art chip shape</string>
++    <string name="lunaris_bar_media_mini_right">Trailing chip content</string>
++    <string name="lunaris_bar_media_mini_right_palette">Trailing chip palette</string>
++    <string name="lunaris_bar_media_mini_right_shape">Trailing chip shape</string>
++    <string name="lunaris_bar_media_palette">Player color palette</string>
++    <string name="lunaris_bar_media_slider">Show the seek bar</string>
++    <string name="lunaris_bar_media_thin_border">Thin album art border</string>
++    <string name="lunaris_bar_media_volume">Media</string>
++    <string name="lunaris_bar_mini">Compact chip</string>
++    <string name="lunaris_bar_mini_alignment">Chip alignment</string>
++    <string name="lunaris_bar_mini_background_day">Background</string>
++    <string name="lunaris_bar_mini_background_night">Background</string>
++    <string name="lunaris_bar_mini_fade">Fade when the chip appears</string>
++    <string name="lunaris_bar_mini_foreground_day">Foreground</string>
++    <string name="lunaris_bar_mini_foreground_night">Foreground</string>
++    <string name="lunaris_bar_mini_opacity_day">Opacity</string>
++    <string name="lunaris_bar_mini_opacity_night">Opacity</string>
++    <string name="lunaris_bar_mini_palette_day">Palette</string>
++    <string name="lunaris_bar_mini_palette_night">Palette</string>
++    <string name="lunaris_bar_mini_scale">Chip scale</string>
++    <string name="lunaris_bar_mini_scale_alignment">Scale origin</string>
++    <string name="lunaris_bar_mini_shape">Compact icon shape</string>
++    <string name="lunaris_bar_minutes">Duration in minutes</string>
++    <string name="lunaris_bar_minutes_value">%1$d min</string>
++    <string name="lunaris_bar_motion">Motion</string>
++    <string name="lunaris_bar_move_down">Move down</string>
++    <string name="lunaris_bar_move_up">Move up</string>
++    <string name="lunaris_bar_next_card">Next card</string>
++    <string name="lunaris_bar_next_track">Next track</string>
++    <string name="lunaris_bar_night">Night</string>
++    <string name="lunaris_bar_no_bounce">No bounce</string>
++    <string name="lunaris_bar_no_shortcuts">Add apps, contacts, or actions in Lunaris Bar settings.</string>
++    <string name="lunaris_bar_none">None</string>
++    <string name="lunaris_bar_normal_bounce">Normal</string>
++    <string name="lunaris_bar_notification_volume">Notifications</string>
++    <string name="lunaris_bar_notifications">Notifications</string>
++    <string name="lunaris_bar_now_playing">Now playing</string>
++    <string name="lunaris_bar_off">Off</string>
++    <string name="lunaris_bar_offset_x">Horizontal position</string>
++    <string name="lunaris_bar_offset_y">Vertical position</string>
++    <string name="lunaris_bar_on">On</string>
++    <string name="lunaris_bar_on_battery">On battery</string>
++    <string name="lunaris_bar_one_dp">1 dp</string>
++    <string name="lunaris_bar_ongoing_activities">Ongoing activities</string>
++    <string name="lunaris_bar_opacity">Opacity</string>
++    <string name="lunaris_bar_open">Open</string>
++    <string name="lunaris_bar_open_app">Open app</string>
++    <string name="lunaris_bar_outline_and_shadow">Outline and shadow</string>
++    <string name="lunaris_bar_outline_day">Outline in light mode</string>
++    <string name="lunaris_bar_outline_night">Outline in dark mode</string>
++    <string name="lunaris_bar_outline_width">Outline width</string>
++    <string name="lunaris_bar_palette">Card palette</string>
++    <string name="lunaris_bar_pentagon">Pentagon</string>
++    <string name="lunaris_bar_percentage">Percentage</string>
++    <string name="lunaris_bar_phone_number">Phone number</string>
++    <string name="lunaris_bar_pill">Pill</string>
++    <string name="lunaris_bar_pixel_circle">Pixel circle</string>
++    <string name="lunaris_bar_play_pause">Play pause</string>
++    <string name="lunaris_bar_player_icon">Player identification</string>
++    <string name="lunaris_bar_preview">LIVE PREVIEW</string>
++    <string name="lunaris_bar_preview_hint">Tap to expand or collapse</string>
++    <string name="lunaris_bar_preview_song">Your music, at a glance</string>
++    <string name="lunaris_bar_previous_card">Previous card</string>
++    <string name="lunaris_bar_previous_track">Previous track</string>
++    <string name="lunaris_bar_primary">Primary</string>
++    <string name="lunaris_bar_primary_container">Primary container</string>
++    <string name="lunaris_bar_primary_container_dark">Primary container dark</string>
++    <string name="lunaris_bar_primary_container_light">Primary container light</string>
++    <string name="lunaris_bar_primary_dark">Primary dark</string>
++    <string name="lunaris_bar_primary_light">Primary light</string>
++    <string name="lunaris_bar_provider">Provider</string>
++    <string name="lunaris_bar_quick_settings">Quick settings</string>
++    <string name="lunaris_bar_recents">Recents</string>
++    <string name="lunaris_bar_rectangle">Rectangle</string>
++    <string name="lunaris_bar_reduce_motion">Reduce animations</string>
++    <string name="lunaris_bar_rhombus">Rhombus</string>
++    <string name="lunaris_bar_right">Right</string>
++    <string name="lunaris_bar_ring_volume">Ringtone</string>
++    <string name="lunaris_bar_ringer">Ringer</string>
++    <string name="lunaris_bar_robot">Like a Robot</string>
++    <string name="lunaris_bar_rotate">Rotate the barcode</string>
++    <string name="lunaris_bar_rotate_artwork">Rotate compact album art</string>
++    <string name="lunaris_bar_rounded_corner">Rounded corner</string>
++    <string name="lunaris_bar_saturation">Saturation</string>
++    <string name="lunaris_bar_save">Save</string>
++    <string name="lunaris_bar_save_error">Could not save this change.</string>
++    <string name="lunaris_bar_scale">Scale</string>
++    <string name="lunaris_bar_screen_recording">Screen recording</string>
++    <string name="lunaris_bar_screenshot">Screenshot</string>
++    <string name="lunaris_bar_search">Search</string>
++    <string name="lunaris_bar_secondary_container">Secondary container</string>
++    <string name="lunaris_bar_secondary_container_dark">Secondary container dark</string>
++    <string name="lunaris_bar_secondary_container_light">Secondary container light</string>
++    <string name="lunaris_bar_seconds">Show seconds</string>
++    <string name="lunaris_bar_semicircle">Semicircle</string>
++    <string name="lunaris_bar_settings">Settings</string>
++    <string name="lunaris_bar_shadow_day">Shadow in light mode</string>
++    <string name="lunaris_bar_shadow_elevation">Shadow elevation</string>
++    <string name="lunaris_bar_shadow_night">Shadow in dark mode</string>
++    <string name="lunaris_bar_shortcuts">Shortcuts</string>
++    <string name="lunaris_bar_slider">Slider</string>
++    <string name="lunaris_bar_slider_style">Slider style</string>
++    <string name="lunaris_bar_soft_burst">Soft burst</string>
++    <string name="lunaris_bar_square">Square</string>
++    <string name="lunaris_bar_standard">Standard</string>
++    <string name="lunaris_bar_star">Star</string>
++    <string name="lunaris_bar_start_timer">Start timer</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_alarms">Alarms</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_alternative_animation">Original popup animation</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_alternative_media">Original expanded music popup</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_alternative_flashlight">Original expanded flashlight popup</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_audio_recording">Audio recording</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_battery">Battery</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_bluetooth">Bluetooth</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_calls">Calls</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_disable_in_landscape">Hide in landscape</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_flashlight">Flashlight</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_height_scale">Chip height</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_hotspot">Hotspot</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_live_scores">Live scores</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_lockscreen">Show on the lock screen</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_lyrics">Show lyrics</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_media_controls">Media controls</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_notifications">Notifications</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_now_playing">Now playing</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_ongoing_activities">Ongoing activities</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_ringer">Ringer</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_screen_recording">Screen recording</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_stopwatch">Stopwatch</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_timer">Timer</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_unlock">Unlock</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_vpn">Vpn</string>
++    <string name="lunaris_bar_status_bar_dynamic_island_width_scale">Chip width</string>
++    <string name="lunaris_bar_status_bar_show_dynamic_island">Use Lunaris Bar</string>
++    <string name="lunaris_bar_stopwatch">Stopwatch</string>
++    <string name="lunaris_bar_stream">Stream</string>
++    <string name="lunaris_bar_string">String</string>
++    <string name="lunaris_bar_sunny">Sunny</string>
++    <string name="lunaris_bar_surface">Surface</string>
++    <string name="lunaris_bar_surface_dark">Surface dark</string>
++    <string name="lunaris_bar_surface_light">Surface light</string>
++    <string name="lunaris_bar_switch">Switch</string>
++    <string name="lunaris_bar_system">System</string>
++    <string name="lunaris_bar_temperature">Temperature</string>
++    <string name="lunaris_bar_tertiary">Tertiary</string>
++    <string name="lunaris_bar_tertiary_container">Tertiary container</string>
++    <string name="lunaris_bar_tertiary_container_dark">Tertiary container dark</string>
++    <string name="lunaris_bar_tertiary_container_light">Tertiary container light</string>
++    <string name="lunaris_bar_tertiary_dark">Tertiary dark</string>
++    <string name="lunaris_bar_tertiary_light">Tertiary light</string>
++    <string name="lunaris_bar_theme">Theme</string>
++    <string name="lunaris_bar_themed_icons">Use themed app icons</string>
++    <string name="lunaris_bar_three_dp">3 dp</string>
++    <string name="lunaris_bar_timer">Timer</string>
++    <string name="lunaris_bar_timezone">Time zone</string>
++    <string name="lunaris_bar_title">Lunaris Bar</string>
++    <string name="lunaris_bar_toggle_action">Toggle action</string>
++    <string name="lunaris_bar_toggle_label">Toggle label</string>
++    <string name="lunaris_bar_toggle_shape">Toggle shape</string>
++    <string name="lunaris_bar_tonal">Tonal</string>
++    <string name="lunaris_bar_top">Top</string>
++    <string name="lunaris_bar_triangle">Triangle</string>
++    <string name="lunaris_bar_triangle_round">Triangle round</string>
++    <string name="lunaris_bar_two_dp">2 dp</string>
++    <string name="lunaris_bar_unlock">Unlock</string>
++    <string name="lunaris_bar_value">Value</string>
++    <string name="lunaris_bar_vertical">Vertical</string>
++    <string name="lunaris_bar_very_sunny">Very sunny</string>
++    <string name="lunaris_bar_volume">Volume</string>
++    <string name="lunaris_bar_vpn">Vpn</string>
++    <string name="lunaris_bar_waves">Waves</string>
++    <string name="lunaris_bar_widget">Widget</string>
++    <string name="lunaris_bar_widget_theme">Widget theme</string>
++    <string name="lunaris_bar_widget_unavailable">This widget is unavailable. Add it again in Lunaris Bar settings.</string>
++    <string name="lunaris_bar_screen_profile">Use separate layout for this screen size</string>
++    <string name="lunaris_bar_custom_radius">Use custom corner radius</string>
++    <string name="lunaris_bar_camera_width">Camera gap width</string>
++    <string name="lunaris_bar_camera_height">Resting capsule height</string>
++    <string name="lunaris_bar_media_haptics">Music control haptics</string>
++    <string name="lunaris_bar_media_background_color">Music background color</string>
++    <string name="lunaris_bar_media_foreground_color">Music text color</string>
++    <string name="lunaris_bar_media_accent_color">Music control color</string>
++    <string name="lunaris_bar_feature_appearance">Customize event chips and cards</string>
++    <string name="lunaris_bar_right_shape">Right icon shape</string>
++    <string name="lunaris_bar_left_content">Left chip content</string>
++    <string name="lunaris_bar_right_content">Right chip content</string>
++    <string name="lunaris_bar_left_palette">Left chip colors</string>
++    <string name="lunaris_bar_right_palette">Right chip colors</string>
++    <string name="lunaris_bar_progress_palette">Progress color</string>
++    <string name="lunaris_bar_track_palette">Track color</string>
++    <string name="lunaris_bar_slider_palette">Slider color</string>
++    <string name="lunaris_bar_toggle_palette">Toggle colors</string>
++    <string name="lunaris_bar_show_battery">Show headphone battery levels</string>
++    <string name="lunaris_bar_choose_app">Choose an app</string>
++    <string name="lunaris_bar_gesture_swipe_up">Swipe up</string>
++    <string name="lunaris_bar_gesture_swipe_down">Swipe down</string>
++    <string name="lunaris_bar_notification">Notifications</string>
++    <string name="lunaris_bar_call">Calls</string>
++    <string name="lunaris_bar_ongoing">Ongoing activities</string>
++    <string name="lunaris_bar_recording">Audio recording</string>
++    <string name="lunaris_bar_nowplaying">Now playing</string>
++    <string name="lunaris_bar_text">Text</string>
++    <string name="lunaris_bar_progress">Progress</string>
++    <string name="lunaris_bar_hide_value">Hide slider percentage</string>
++    <string name="lunaris_bar_brightness_settings">Display settings</string>
++    <string name="lunaris_bar_volume_settings">Volume panel</string>
++    <string name="lunaris_bar_wifi_settings">Wi-Fi settings</string>
++    <string name="lunaris_bar_internet_settings">Internet panel</string>
++    <string name="lunaris_bar_location_settings">Location settings</string>
++    <string name="lunaris_bar_mute">Mute or unmute media</string>
++    <string name="lunaris_bar_night_colors">Edit dark theme colors</string>
++    <string name="lunaris_bar_palette_day">Light theme palette</string>
++    <string name="lunaris_bar_palette_night">Dark theme palette</string>
++    <string name="lunaris_bar_card_icon_shape">Card icon shape</string>
++    <string name="lunaris_bar_card_button_shape">Card button shape</string>
++    <string name="lunaris_bar_alarm">Alarm</string>
++    <string name="lunaris_bar_screenrecord">Screen recording</string>
++    <string name="lunaris_bar_livescore">Live scores</string>
++    <string name="lunaris_bar_screenshare">Screen sharing</string>
++    <string name="lunaris_bar_privacy">Camera and microphone</string>
++    <string name="lunaris_bar_left_background">Left background</string>
++    <string name="lunaris_bar_left_foreground">Left content</string>
++    <string name="lunaris_bar_right_background">Right background</string>
++    <string name="lunaris_bar_right_foreground">Right content</string>
++    <string name="lunaris_bar_progress_background">Progress color</string>
++    <string name="lunaris_bar_progress_foreground">Progress content</string>
++    <string name="lunaris_bar_track_background">Track color</string>
++    <string name="lunaris_bar_track_foreground">Track content</string>
++    <string name="lunaris_bar_media_mini_left_background">Left background</string>
++    <string name="lunaris_bar_media_mini_left_foreground">Left content</string>
++    <string name="lunaris_bar_media_mini_right_background">Right background</string>
++    <string name="lunaris_bar_media_mini_right_foreground">Right content</string>
++    <string name="lunaris_bar_width">Widget width</string>
++    <string name="lunaris_bar_mini_enabled">Show compact chip</string>
++    <string name="lunaris_bar_time">Time</string>
++    <string name="lunaris_bar_date">Date</string>
++    <string name="lunaris_bar_details">Details</string>
++    <string name="lunaris_bar_button">Button</string>
++    <string name="lunaris_bar_icon">Icon</string>
++    <string name="lunaris_bar_toggle">Toggle</string>
++    <string name="lunaris_bar_track">Track</string>
++    <string name="lunaris_bar_bluetooth_settings">Bluetooth settings</string>
++    <string name="lunaris_bar_reset_all">Reset All to Defaults</string>
++    <string name="lunaris_bar_reset_all_message">Restore all Lunaris Bar settings, colors, shapes, animations, gestures, and screen profiles to their defaults? Added cards will be removed and Lunaris Bar will be turned off.</string>
++    <string name="lunaris_bar_reset_slider">Reset %1$s to %2$s</string>
++    <string name="lunaris_bar_expanded_shape">Expanded background shape</string>
++    <string name="lunaris_bar_appearance_theme">Theme and background</string>
++    <string name="lunaris_bar_appearance_chip">Compact chip</string>
++    <string name="lunaris_bar_appearance_position">Position and camera spacing</string>
++    <string name="lunaris_bar_appearance_expanded">Expanded card</string>
++    <string name="lunaris_bar_appearance_edges">Corners, outline, and shadow</string>
++    <string name="lunaris_bar_appearance_idle">Idle appearance</string>
++    <string name="lunaris_bar_appearance_description">Adjust the chip and expanded card. Screen profiles can save different placement for each display size.</string>
++    <string name="lunaris_bar_colors_description">Choose colors for the compact chip and expanded card in light and dark themes.</string>
++    <string name="lunaris_bar_motion_description">Tune expansion speed and bounce, reduce motion, or choose an alternative animation.</string>
++    <string name="lunaris_bar_media_description">Customize artwork, music controls, and the compact player. Long press the artwork to show or hide the seek bar.</string>
++    <string name="lunaris_bar_gestures_description">Choose actions for compact chip gestures. Swipe an expanded notification card to dismiss it; other expanded cards swipe between cards.</string>
++    <string name="lunaris_bar_cards_description">Add and arrange shortcut, widget, clock, timer, and utility cards.</string>
++    <string name="lunaris_bar_features_description">Choose which activities appear and customize their card appearance.</string>
++    <string name="lunaris_bar_screen_profile_description">Overrides placement, size, and corners for this screen size. Changes here update the active profile.</string>
++    <string name="lunaris_bar_custom_radius_description">Applies to the compact chip and rounded or squircle expanded backgrounds. The small companion chip stays round.</string>
++    <string name="lunaris_bar_expanded_mode_description">Moves the expanded card below the status bar while preserving the compact chip size.</string>
++    <string name="lunaris_bar_expanded_shape_description">Changes the expanded card background, including the lyrics card.</string>
++</resources>
+diff --git a/res/xml/dynamic_island_settings.xml b/res/xml/dynamic_island_settings.xml
+index 8fa53be1..319d7c35 100644
+--- a/res/xml/dynamic_island_settings.xml
++++ b/res/xml/dynamic_island_settings.xml
+@@ -25,6 +25,12 @@
+         android:title="@string/status_bar_dynamic_island_title"
+         android:defaultValue="false" />
+ 
++    <Preference
++        android:key="lunaris_island_page"
++        android:title="@string/lunaris_bar_customize"
++        android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++        android:dependency="status_bar_show_dynamic_island" />
++
+     <PreferenceCategory
+         android:key="dynamic_island_customization_category"
+         android:title="@string/dynamic_island_customization_title"
+@@ -129,6 +135,83 @@
+ 
+     </PreferenceCategory>
+ 
++    <PreferenceCategory
++        android:key="dynamic_island_penguin_category"
++        android:title="@string/dynamic_island_penguin_features_title"
++        android:dependency="status_bar_show_dynamic_island">
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="status_bar_dynamic_island_live_updates"
++            android:title="@string/dynamic_island_live_updates_title"
++            android:summary="@string/dynamic_island_live_updates_summary"
++            android:dependency="status_bar_show_dynamic_island"
++            android:defaultValue="true" />
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="status_bar_dynamic_island_battery"
++            android:title="@string/dynamic_island_battery_title"
++            android:summary="@string/dynamic_island_battery_summary"
++            android:dependency="status_bar_show_dynamic_island"
++            android:defaultValue="true" />
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="status_bar_dynamic_island_bluetooth"
++            android:title="@string/dynamic_island_bluetooth_title"
++            android:summary="@string/dynamic_island_bluetooth_summary"
++            android:dependency="status_bar_show_dynamic_island"
++            android:defaultValue="true" />
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="status_bar_dynamic_island_calls"
++            android:title="@string/dynamic_island_calls_title"
++            android:summary="@string/dynamic_island_calls_summary"
++            android:dependency="status_bar_show_dynamic_island"
++            android:defaultValue="true" />
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="status_bar_dynamic_island_ringer"
++            android:title="@string/dynamic_island_ringer_title"
++            android:summary="@string/dynamic_island_ringer_summary"
++            android:dependency="status_bar_show_dynamic_island"
++            android:defaultValue="true" />
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="status_bar_dynamic_island_hotspot"
++            android:title="@string/dynamic_island_hotspot_title"
++            android:summary="@string/dynamic_island_hotspot_summary"
++            android:dependency="status_bar_show_dynamic_island"
++            android:defaultValue="true" />
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="status_bar_dynamic_island_unlock"
++            android:title="@string/dynamic_island_unlock_title"
++            android:summary="@string/dynamic_island_unlock_summary"
++            android:dependency="status_bar_show_dynamic_island"
++            android:defaultValue="false" />
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="status_bar_dynamic_island_vpn"
++            android:title="@string/dynamic_island_vpn_title"
++            android:summary="@string/dynamic_island_vpn_summary"
++            android:dependency="status_bar_show_dynamic_island"
++            android:defaultValue="false" />
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="status_bar_dynamic_island_clipboard"
++            android:title="@string/dynamic_island_clipboard_title"
++            android:summary="@string/dynamic_island_clipboard_summary"
++            android:dependency="status_bar_show_dynamic_island"
++            android:defaultValue="false" />
++
++        <com.crdroid.settings.preferences.SystemSettingSwitchPreference
++            android:key="status_bar_dynamic_island_lockscreen"
++            android:title="@string/dynamic_island_lockscreen_title"
++            android:summary="@string/dynamic_island_lockscreen_summary"
++            android:dependency="status_bar_show_dynamic_island"
++            android:defaultValue="false" />
++
++    </PreferenceCategory>
++
+     <PreferenceCategory
+         android:key="dynamic_island_footer_category"
+         android:title="@string/dynamic_island_footer_title">
+diff --git a/res/xml/lunaris_bar_appearance.xml b/res/xml/lunaris_bar_appearance.xml
+new file mode 100644
+index 00000000..3e0808a6
+--- /dev/null
++++ b/res/xml/lunaris_bar_appearance.xml
+@@ -0,0 +1,223 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_appearance">
++
++    <SwitchPreferenceCompat
++        android:key="screen_profile"
++        android:title="@string/lunaris_bar_screen_profile"
++        android:persistent="false"
++        android:summary="@string/lunaris_bar_screen_profile_description" />
++
++    <PreferenceCategory
++        android:key="appearance_theme"
++        android:title="@string/lunaris_bar_appearance_theme">
++
++        <ListPreference
++            android:key="theme"
++            android:title="@string/lunaris_bar_theme"
++            android:persistent="false" />
++
++        <SwitchPreferenceCompat
++            android:key="capsule_blur"
++            android:title="@string/lunaris_bar_capsule_blur"
++            android:persistent="false" />
++
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="appearance_chip"
++        android:title="@string/lunaris_bar_appearance_chip">
++
++        <ListPreference
++            android:key="mini_shape"
++            android:title="@string/lunaris_bar_mini_shape"
++            android:persistent="false" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="mini_scale"
++            android:title="@string/lunaris_bar_mini_scale"
++            android:persistent="false"
++            android:defaultValue="100"
++            settings:min="70"
++            android:max="200"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="status_bar_dynamic_island_width_scale"
++            android:title="@string/lunaris_bar_status_bar_dynamic_island_width_scale"
++            android:persistent="false"
++            android:defaultValue="100"
++            settings:min="70"
++            android:max="140"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="status_bar_dynamic_island_height_scale"
++            android:title="@string/lunaris_bar_status_bar_dynamic_island_height_scale"
++            android:persistent="false"
++            android:defaultValue="100"
++            settings:min="70"
++            android:max="140"
++            settings:interval="1" />
++
++        <SwitchPreferenceCompat
++            android:key="companion"
++            android:title="@string/lunaris_bar_companion"
++            android:persistent="false" />
++
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="appearance_position"
++        android:title="@string/lunaris_bar_appearance_position">
++
++        <ListPreference
++            android:key="mini_alignment"
++            android:title="@string/lunaris_bar_mini_alignment"
++            android:persistent="false" />
++
++        <ListPreference
++            android:key="mini_scale_alignment"
++            android:title="@string/lunaris_bar_mini_scale_alignment"
++            android:persistent="false" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="offset_x"
++            android:title="@string/lunaris_bar_offset_x"
++            android:persistent="false"
++            android:defaultValue="0"
++            settings:min="-200"
++            android:max="200"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="offset_y"
++            android:title="@string/lunaris_bar_offset_y"
++            android:persistent="false"
++            android:defaultValue="0"
++            settings:min="-24"
++            android:max="100"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="camera_width"
++            android:title="@string/lunaris_bar_camera_width"
++            android:persistent="false"
++            android:defaultValue="25"
++            settings:min="0"
++            android:max="120"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="camera_height"
++            android:title="@string/lunaris_bar_camera_height"
++            android:persistent="false"
++            android:defaultValue="24"
++            settings:min="8"
++            android:max="64"
++            settings:interval="1" />
++
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="appearance_expanded"
++        android:title="@string/lunaris_bar_appearance_expanded">
++
++        <ListPreference
++            android:key="expanded_mode"
++            android:title="@string/lunaris_bar_expanded_mode"
++            android:persistent="false"
++            android:summary="@string/lunaris_bar_expanded_mode_description" />
++
++        <ListPreference
++            android:key="expanded_width"
++            android:title="@string/lunaris_bar_expanded_width"
++            android:persistent="false" />
++
++        <ListPreference
++            android:key="expanded_shape"
++            android:title="@string/lunaris_bar_expanded_shape"
++            android:persistent="false"
++            android:summary="@string/lunaris_bar_expanded_shape_description" />
++
++        <ListPreference
++            android:key="card_icon_shape"
++            android:title="@string/lunaris_bar_card_icon_shape"
++            android:persistent="false" />
++
++        <ListPreference
++            android:key="card_button_shape"
++            android:title="@string/lunaris_bar_card_button_shape"
++            android:persistent="false" />
++
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="appearance_edges"
++        android:title="@string/lunaris_bar_appearance_edges">
++
++        <SwitchPreferenceCompat
++            android:key="custom_radius"
++            android:title="@string/lunaris_bar_custom_radius"
++            android:persistent="false"
++            android:summary="@string/lunaris_bar_custom_radius_description" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="corner_radius"
++            android:title="@string/lunaris_bar_corner_radius"
++            android:persistent="false"
++            android:defaultValue="42"
++            settings:min="0"
++            android:max="64"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="outline_width"
++            android:title="@string/lunaris_bar_outline_width"
++            android:persistent="false"
++            android:defaultValue="10"
++            settings:min="0"
++            android:max="30"
++            settings:interval="1" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="shadow_elevation"
++            android:title="@string/lunaris_bar_shadow_elevation"
++            android:persistent="false"
++            android:defaultValue="12"
++            settings:min="0"
++            android:max="32"
++            settings:interval="1" />
++
++    </PreferenceCategory>
++
++    <PreferenceCategory
++        android:key="appearance_idle"
++        android:title="@string/lunaris_bar_appearance_idle">
++
++        <SwitchPreferenceCompat
++            android:key="always_visible"
++            android:title="@string/lunaris_bar_always_visible"
++            android:persistent="false" />
++
++        <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++            android:key="collapsed_opacity"
++            android:title="@string/lunaris_bar_collapsed_opacity"
++            android:persistent="false"
++            android:defaultValue="0"
++            settings:min="0"
++            android:max="100"
++            settings:interval="1" />
++
++        <ListPreference
++            android:key="collapsed_border"
++            android:title="@string/lunaris_bar_collapsed_border"
++            android:persistent="false" />
++
++    </PreferenceCategory>
++
++</PreferenceScreen>
+diff --git a/res/xml/lunaris_bar_card.xml b/res/xml/lunaris_bar_card.xml
+new file mode 100644
+index 00000000..d018649b
+--- /dev/null
++++ b/res/xml/lunaris_bar_card.xml
+@@ -0,0 +1,21 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_edit_card">
++
++    <PreferenceCategory
++        android:key="card"
++        android:title="@string/lunaris_bar_edit_card" />
++
++    <PreferenceCategory
++        android:key="colors"
++        android:title="@string/lunaris_bar_colors" />
++
++    <PreferenceCategory
++        android:key="actions"
++        android:title="@string/lunaris_bar_actions" />
++
++</PreferenceScreen>
+diff --git a/res/xml/lunaris_bar_cards.xml b/res/xml/lunaris_bar_cards.xml
+new file mode 100644
+index 00000000..bb718332
+--- /dev/null
++++ b/res/xml/lunaris_bar_cards.xml
+@@ -0,0 +1,24 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_cards">
++
++    <Preference
++        android:key="add_card"
++        android:title="@string/lunaris_bar_add_card"
++        android:persistent="false" />
++
++    <PreferenceCategory
++        android:key="cards"
++        android:title="@string/lunaris_bar_cards" />
++
++    <Preference
++        android:key="cards_empty"
++        android:title="@string/lunaris_bar_cards_empty"
++        android:persistent="false"
++        android:selectable="false" />
++
++</PreferenceScreen>
+diff --git a/res/xml/lunaris_bar_colors.xml b/res/xml/lunaris_bar_colors.xml
+new file mode 100644
+index 00000000..052e09e0
+--- /dev/null
++++ b/res/xml/lunaris_bar_colors.xml
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_colors">
++
++    <PreferenceCategory
++        android:key="colors"
++        android:title="@string/lunaris_bar_colors" />
++
++</PreferenceScreen>
+diff --git a/res/xml/lunaris_bar_feature_style.xml b/res/xml/lunaris_bar_feature_style.xml
+new file mode 100644
+index 00000000..e110a0a6
+--- /dev/null
++++ b/res/xml/lunaris_bar_feature_style.xml
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_feature_appearance">
++
++    <ListPreference
++        android:key="selected_feature"
++        android:title="@string/lunaris_bar_feature_appearance"
++        android:persistent="false" />
++
++    <PreferenceCategory
++        android:key="style"
++        android:title="@string/lunaris_bar_appearance" />
++
++    <PreferenceCategory
++        android:key="colors"
++        android:title="@string/lunaris_bar_colors" />
++
++</PreferenceScreen>
+diff --git a/res/xml/lunaris_bar_features.xml b/res/xml/lunaris_bar_features.xml
+new file mode 100644
+index 00000000..e399e3f6
+--- /dev/null
++++ b/res/xml/lunaris_bar_features.xml
+@@ -0,0 +1,120 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_features">
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_battery"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_battery"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_unlock"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_unlock"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_bluetooth"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_bluetooth"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_calls"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_calls"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_notifications"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_notifications"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_ongoing_activities"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_ongoing_activities"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_hotspot"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_hotspot"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_vpn"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_vpn"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_ringer"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_ringer"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_timer"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_timer"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_audio_recording"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_audio_recording"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_now_playing"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_now_playing"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_media_controls"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_media_controls"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_screen_recording"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_screen_recording"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_alarms"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_alarms"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_flashlight"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_flashlight"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_stopwatch"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_stopwatch"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_live_scores"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_live_scores"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_lockscreen"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_lockscreen"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_disable_in_landscape"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_disable_in_landscape"
++        android:persistent="false" />
++
++    <Preference
++        android:key="feature_appearance"
++        android:title="@string/lunaris_bar_feature_appearance"
++        android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings">
++
++        <extra
++            android:name="page"
++            android:value="feature_style" />
++
++    </Preference>
++
++</PreferenceScreen>
+diff --git a/res/xml/lunaris_bar_gestures.xml b/res/xml/lunaris_bar_gestures.xml
+new file mode 100644
+index 00000000..9549e38f
+--- /dev/null
++++ b/res/xml/lunaris_bar_gestures.xml
+@@ -0,0 +1,44 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_gestures">
++
++    <Preference
++        android:key="gesture_tap"
++        android:title="@string/lunaris_bar_gesture_tap"
++        android:persistent="false" />
++
++    <Preference
++        android:key="gesture_double_tap"
++        android:title="@string/lunaris_bar_gesture_double_tap"
++        android:persistent="false" />
++
++    <Preference
++        android:key="gesture_long_press"
++        android:title="@string/lunaris_bar_gesture_long_press"
++        android:persistent="false" />
++
++    <Preference
++        android:key="gesture_swipe_left"
++        android:title="@string/lunaris_bar_gesture_swipe_left"
++        android:persistent="false" />
++
++    <Preference
++        android:key="gesture_swipe_right"
++        android:title="@string/lunaris_bar_gesture_swipe_right"
++        android:persistent="false" />
++
++    <Preference
++        android:key="gesture_swipe_up"
++        android:title="@string/lunaris_bar_gesture_swipe_up"
++        android:persistent="false" />
++
++    <Preference
++        android:key="gesture_swipe_down"
++        android:title="@string/lunaris_bar_gesture_swipe_down"
++        android:persistent="false" />
++
++</PreferenceScreen>
+diff --git a/res/xml/lunaris_bar_media.xml b/res/xml/lunaris_bar_media.xml
+new file mode 100644
+index 00000000..281d89fa
+--- /dev/null
++++ b/res/xml/lunaris_bar_media.xml
+@@ -0,0 +1,112 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_media">
++
++    <ListPreference
++        android:key="media_background"
++        android:title="@string/lunaris_bar_media_background"
++        android:persistent="false" />
++
++    <ListPreference
++        android:key="artwork_shape"
++        android:title="@string/lunaris_bar_artwork_shape"
++        android:persistent="false" />
++
++    <ListPreference
++        android:key="media_button_shape"
++        android:title="@string/lunaris_bar_media_button_shape"
++        android:persistent="false" />
++
++    <ListPreference
++        android:key="player_icon"
++        android:title="@string/lunaris_bar_player_icon"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="media_haptics"
++        android:title="@string/lunaris_bar_media_haptics"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="media_artwork_colors"
++        android:title="@string/lunaris_bar_media_artwork_colors"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="rotate_artwork"
++        android:title="@string/lunaris_bar_rotate_artwork"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="equalizer"
++        android:title="@string/lunaris_bar_equalizer"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="media_slider"
++        android:title="@string/lunaris_bar_media_slider"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="media_thin_border"
++        android:title="@string/lunaris_bar_media_thin_border"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="media_hide_paused"
++        android:title="@string/lunaris_bar_media_hide_paused"
++        android:persistent="false" />
++
++    <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++        android:key="media_hide_delay"
++        android:title="@string/lunaris_bar_media_hide_delay"
++        android:persistent="false"
++        android:defaultValue="0"
++        settings:min="0"
++        android:max="300"
++        settings:interval="1" />
++
++    <SwitchPreferenceCompat
++        android:key="media_mini"
++        android:title="@string/lunaris_bar_media_mini"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="media_mini_custom"
++        android:title="@string/lunaris_bar_media_mini_custom"
++        android:persistent="false" />
++
++    <ListPreference
++        android:key="media_mini_left_shape"
++        android:title="@string/lunaris_bar_media_mini_left_shape"
++        android:persistent="false" />
++
++    <ListPreference
++        android:key="media_mini_right_shape"
++        android:title="@string/lunaris_bar_media_mini_right_shape"
++        android:persistent="false" />
++
++    <ListPreference
++        android:key="media_mini_right"
++        android:title="@string/lunaris_bar_media_mini_right"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="media_mini_artwork_colors"
++        android:title="@string/lunaris_bar_media_mini_artwork_colors"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_dynamic_island_lyrics"
++        android:title="@string/lunaris_bar_status_bar_dynamic_island_lyrics"
++        android:persistent="false" />
++
++    <PreferenceCategory
++        android:key="colors"
++        android:title="@string/lunaris_bar_colors" />
++
++</PreferenceScreen>
+diff --git a/res/xml/lunaris_bar_motion.xml b/res/xml/lunaris_bar_motion.xml
+new file mode 100644
+index 00000000..10af7cec
+--- /dev/null
++++ b/res/xml/lunaris_bar_motion.xml
+@@ -0,0 +1,70 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_motion">
++
++    <ListPreference
++        android:key="animation_style"
++        android:title="@string/lunaris_bar_animation_style"
++        android:persistent="false" />
++
++    <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++        android:key="animation_speed"
++        android:title="@string/lunaris_bar_animation_speed"
++        android:persistent="false"
++        android:defaultValue="100"
++        settings:min="50"
++        android:max="200"
++        settings:interval="1" />
++
++    <ListPreference
++        android:key="animation_bounce"
++        android:title="@string/lunaris_bar_animation_bounce"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="status_glow"
++        android:title="@string/lunaris_bar_status_glow"
++        android:persistent="false"
++        android:summary="@string/lunaris_bar_status_glow_description" />
++
++    <SwitchPreferenceCompat
++        android:key="reduce_motion"
++        android:title="@string/lunaris_bar_reduce_motion"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="haptics"
++        android:title="@string/lunaris_bar_haptics"
++        android:persistent="false" />
++
++    <SwitchPreferenceCompat
++        android:key="mini_fade"
++        android:title="@string/lunaris_bar_mini_fade"
++        android:persistent="false" />
++
++    <PreferenceCategory
++        android:key="alternative_versions"
++        android:title="@string/lunaris_bar_alternative_versions">
++
++        <SwitchPreferenceCompat
++            android:key="status_bar_dynamic_island_alternative_animation"
++            android:title="@string/lunaris_bar_status_bar_dynamic_island_alternative_animation"
++            android:persistent="false" />
++
++        <SwitchPreferenceCompat
++            android:key="status_bar_dynamic_island_alternative_media"
++            android:title="@string/lunaris_bar_status_bar_dynamic_island_alternative_media"
++            android:persistent="false" />
++
++        <SwitchPreferenceCompat
++            android:key="status_bar_dynamic_island_alternative_flashlight"
++            android:title="@string/lunaris_bar_status_bar_dynamic_island_alternative_flashlight"
++            android:persistent="false" />
++
++    </PreferenceCategory>
++
++</PreferenceScreen>
+diff --git a/res/xml/lunaris_bar_preference_templates.xml b/res/xml/lunaris_bar_preference_templates.xml
+new file mode 100644
+index 00000000..f7190530
+--- /dev/null
++++ b/res/xml/lunaris_bar_preference_templates.xml
+@@ -0,0 +1,44 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_title">
++
++    <SwitchPreferenceCompat
++        android:key="switch"
++        android:title="@string/lunaris_bar_switch"
++        android:persistent="false" />
++
++    <ListPreference
++        android:key="choice"
++        android:title="@string/lunaris_bar_choice"
++        android:persistent="false" />
++
++    <com.crdroid.settings.preferences.LunarisBarSeekBarPreference
++        android:key="slider"
++        android:title="@string/lunaris_bar_slider"
++        android:persistent="false"
++        android:defaultValue="0"
++        android:max="100"
++        settings:min="0"
++        settings:interval="1" />
++
++    <com.crdroid.settings.preferences.colorpicker.LunarisBarColorPickerPreference
++        android:key="color"
++        android:title="@string/lunaris_bar_choose_color"
++        android:persistent="false"
++        android:defaultValue="-16777216" />
++
++    <EditTextPreference
++        android:key="text"
++        android:title="@string/lunaris_bar_text"
++        android:persistent="false" />
++
++    <Preference
++        android:key="action"
++        android:title="@string/lunaris_bar_action"
++        android:persistent="false" />
++
++</PreferenceScreen>
+diff --git a/res/xml/lunaris_island_settings.xml b/res/xml/lunaris_island_settings.xml
+new file mode 100644
+index 00000000..e1c38f53
+--- /dev/null
++++ b/res/xml/lunaris_island_settings.xml
+@@ -0,0 +1,114 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024-2026 Lunaris AOSP
++     SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++    android:title="@string/lunaris_bar_title">
++
++    <SwitchPreferenceCompat
++        android:key="status_bar_show_dynamic_island"
++        android:title="@string/lunaris_bar_status_bar_show_dynamic_island"
++        android:persistent="false" />
++
++    <PreferenceCategory
++        android:key="customize"
++        android:title="@string/lunaris_bar_customize">
++
++        <Preference
++            android:key="appearance"
++            android:title="@string/lunaris_bar_appearance"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:summary="@string/lunaris_bar_appearance_description">
++
++            <extra
++                android:name="page"
++                android:value="appearance" />
++
++        </Preference>
++
++        <Preference
++            android:key="colors"
++            android:title="@string/lunaris_bar_colors"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:summary="@string/lunaris_bar_colors_description">
++
++            <extra
++                android:name="page"
++                android:value="colors" />
++
++        </Preference>
++
++        <Preference
++            android:key="motion"
++            android:title="@string/lunaris_bar_motion"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:summary="@string/lunaris_bar_motion_description">
++
++            <extra
++                android:name="page"
++                android:value="motion" />
++
++        </Preference>
++
++        <Preference
++            android:key="media"
++            android:title="@string/lunaris_bar_media"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:summary="@string/lunaris_bar_media_description">
++
++            <extra
++                android:name="page"
++                android:value="media" />
++
++        </Preference>
++
++        <Preference
++            android:key="gestures"
++            android:title="@string/lunaris_bar_gestures"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:summary="@string/lunaris_bar_gestures_description">
++
++            <extra
++                android:name="page"
++                android:value="gestures" />
++
++        </Preference>
++
++        <Preference
++            android:key="cards"
++            android:title="@string/lunaris_bar_cards"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisBarCardsSettings"
++            android:summary="@string/lunaris_bar_cards_description">
++
++            <extra
++                android:name="page"
++                android:value="cards" />
++
++        </Preference>
++
++        <Preference
++            android:key="features"
++            android:title="@string/lunaris_bar_features"
++            android:fragment="com.crdroid.settings.fragments.statusbar.lunaris.LunarisIslandSettings"
++            android:summary="@string/lunaris_bar_features_description">
++
++            <extra
++                android:name="page"
++                android:value="features" />
++
++        </Preference>
++
++    </PreferenceCategory>
++
++ <com.android.settingslib.widget.UntitledPreferenceCategory
++        android:key="singularity_two_category">
++
++    <Preference
++        android:key="reset_all"
++        android:title="@string/lunaris_bar_reset_all"
++        android:persistent="false" />
++
++</com.android.settingslib.widget.UntitledPreferenceCategory>
++
++</PreferenceScreen>
+diff --git a/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt b/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt
+index 87310cae..abf29459 100644
+--- a/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt
++++ b/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt
+@@ -20,9 +20,11 @@ import android.os.Bundle
+ import android.os.UserHandle
+ import android.provider.Settings
+ import androidx.preference.ListPreference
++import androidx.preference.Preference
+ import androidx.preference.TwoStatePreference
+ 
+ import com.android.internal.logging.nano.MetricsProto
++import com.android.internal.util.lunaris.LunarisBarSettings
+ 
+ import com.android.settings.R
+ import com.android.settings.SettingsPreferenceFragment
+@@ -37,9 +39,10 @@ class DynamicIslandSettings : SettingsPreferenceFragment() {
+         addPreferencesFromResource(R.xml.dynamic_island_settings)
+         findPreference<ListPreference>(KEY_STYLE)?.setOnPreferenceChangeListener { _, value ->
+             applyStyle(value as String)
++            listView?.post { if (isAdded) updateStyle() }
+             true
+         }
+-        // The two islands share the status bar, so only one can be on.
++        // The island and the dynamic bar share the status bar, so only one can be on.
+         findPreference<TwoStatePreference>(KEY_ISLAND)?.setOnPreferenceChangeListener { _, value ->
+             if (value as Boolean) putDynamicBar(false)
+             listView?.post { if (isAdded) updateStyle() }
+@@ -53,11 +56,13 @@ class DynamicIslandSettings : SettingsPreferenceFragment() {
+     }
+ 
+     private fun applyStyle(style: String) {
+-        val lunaris = style == STYLE_LUNARIS
+-        Settings.System.putIntForUser(requireContext().contentResolver, KEY_PENGUIN,
++        val resolver = requireContext().contentResolver
++        Settings.System.putIntForUser(resolver, KEY_PENGUIN,
+             if (style == STYLE_PENGUIN) 1 else 0, UserHandle.USER_CURRENT)
+-        putDynamicBar(lunaris)
+-        findPreference<TwoStatePreference>(KEY_ISLAND)?.isChecked = !lunaris
++        Settings.System.putIntForUser(resolver, KEY_LUNARIS,
++            if (style == STYLE_LUNARIS) 1 else 0, UserHandle.USER_CURRENT)
++        putDynamicBar(false)
++        findPreference<TwoStatePreference>(KEY_ISLAND)?.isChecked = true
+     }
+ 
+     private fun putDynamicBar(on: Boolean) {
+@@ -69,13 +74,13 @@ class DynamicIslandSettings : SettingsPreferenceFragment() {
+         val resolver = requireContext().contentResolver
+         fun system(key: String) =
+             Settings.System.getIntForUser(resolver, key, 0, UserHandle.USER_CURRENT) == 1
+-        val bar = Settings.Secure.getIntForUser(
+-            resolver, KEY_DYNAMIC_BAR, 0, UserHandle.USER_CURRENT) == 1
+         findPreference<ListPreference>(KEY_STYLE)?.value = when {
+-            bar && !system(KEY_ISLAND) -> STYLE_LUNARIS
++            system(KEY_LUNARIS) -> STYLE_LUNARIS
+             system(KEY_PENGUIN) -> STYLE_PENGUIN
+             else -> STYLE_STOCK
+         }
++        findPreference<Preference>(KEY_PENGUIN_FEATURES)?.isVisible = system(KEY_PENGUIN)
++        findPreference<Preference>(KEY_LUNARIS_PAGE)?.isVisible = system(KEY_LUNARIS)
+     }
+ 
+     override fun getMetricsCategory(): Int = MetricsProto.MetricsEvent.CRDROID_SETTINGS
+@@ -84,7 +89,13 @@ class DynamicIslandSettings : SettingsPreferenceFragment() {
+         private const val KEY_STYLE = "dynamic_island_style"
+         private const val KEY_ISLAND = "status_bar_show_dynamic_island"
+         private const val KEY_PENGUIN = "status_bar_dynamic_island_penguin_look"
++        private const val KEY_LUNARIS = "status_bar_dynamic_island_lunaris_look"
++        private const val KEY_LUNARIS_PAGE = "lunaris_island_page"
++        private const val KEY_PENGUIN_FEATURES = "dynamic_island_penguin_category"
+         private const val KEY_DYNAMIC_BAR = "ax_dynamic_bar_enabled"
++        private val PENGUIN_ON =
++            listOf("live_updates", "battery", "bluetooth", "calls", "ringer", "hotspot")
++        private val PENGUIN_OFF = listOf("unlock", "vpn", "clipboard", "lockscreen")
+         private const val STYLE_STOCK = "stock"
+         private const val STYLE_PENGUIN = "penguin"
+         private const val STYLE_LUNARIS = "lunaris"
+@@ -96,6 +107,9 @@ class DynamicIslandSettings : SettingsPreferenceFragment() {
+                 "status_bar_show_dynamic_island", 0, UserHandle.USER_CURRENT)
+             Settings.System.putIntForUser(resolver,
+                 KEY_PENGUIN, 0, UserHandle.USER_CURRENT)
++            Settings.System.putIntForUser(resolver,
++                KEY_LUNARIS, 0, UserHandle.USER_CURRENT)
++            LunarisBarSettings.reset(resolver, UserHandle.USER_CURRENT)
+             Settings.System.putIntForUser(resolver,
+                 "status_bar_dynamic_island_width_scale", 100, UserHandle.USER_CURRENT)
+             Settings.System.putIntForUser(resolver,
+@@ -120,6 +134,14 @@ class DynamicIslandSettings : SettingsPreferenceFragment() {
+                 "status_bar_dynamic_island_live_scores", 1, UserHandle.USER_CURRENT)
+             Settings.System.putIntForUser(resolver,
+                 "status_bar_dynamic_island_lyrics", 0, UserHandle.USER_CURRENT)
++            PENGUIN_ON.forEach {
++                Settings.System.putIntForUser(resolver, "status_bar_dynamic_island_$it", 1,
++                    UserHandle.USER_CURRENT)
++            }
++            PENGUIN_OFF.forEach {
++                Settings.System.putIntForUser(resolver, "status_bar_dynamic_island_$it", 0,
++                    UserHandle.USER_CURRENT)
++            }
+         }
+ 
+         @JvmField
+diff --git a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarCardSettings.kt b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarCardSettings.kt
+new file mode 100644
+index 00000000..36358744
+--- /dev/null
++++ b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarCardSettings.kt
+@@ -0,0 +1,271 @@
++/*
++ * Copyright (C) 2024-2026 Lunaris AOSP
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.crdroid.settings.fragments.statusbar.lunaris
++
++import android.app.ActivityManager
++import android.app.AlertDialog
++import android.graphics.Color
++import android.os.Bundle
++import android.text.Editable
++import android.text.TextWatcher
++import android.widget.EditText
++import android.widget.Switch
++import androidx.preference.PreferenceGroup
++import androidx.preference.Preference
++import com.android.internal.util.lunaris.LunarisBarSettings
++import com.android.settings.R
++import org.json.JSONArray
++import org.json.JSONObject
++
++class LunarisBarCardSettings : LunarisBarPreferenceFragment() {
++    private lateinit var card: LunarisBarSettings.Card
++    private var ownerUser = 0
++    private var existing = false
++
++    override fun onCreate(savedInstanceState: Bundle?) {
++        super.onCreate(savedInstanceState)
++        addPreferencesFromResource(R.xml.lunaris_bar_card)
++        requireActivity().title = preferenceScreen.title
++        ownerUser = savedInstanceState?.getInt("owner_user") ?: ActivityManager.getCurrentUser()
++        existing = arguments?.containsKey("card_id") == true
++        val restored = savedInstanceState?.getString("card")?.let {
++            LunarisBarSettings.parse("{\"cards\":[$it]}").cards.firstOrNull()
++        }
++        val stored = editor.config.cards.firstOrNull { it.id == arguments?.getString("card_id") }
++        val type = arguments?.getString("type") ?: "shortcuts"
++        card = restored ?: stored ?: LunarisBarSettings.Card.create(type, label(type))
++        if (existing && stored == null) finish()
++        refreshPreferences()
++    }
++
++    override fun onSaveInstanceState(outState: Bundle) {
++        outState.putString("card", card.toString())
++        outState.putInt("owner_user", ownerUser)
++        super.onSaveInstanceState(outState)
++    }
++
++    override fun refreshPreferences() {
++        if (!::card.isInitialized) return
++        if (ownerUser != ActivityManager.getCurrentUser() ||
++            (existing && editor.config.cards.none { it.id == card.id })) {
++            finish()
++            return
++        }
++        val parent = requireNotNull(findPreference<PreferenceGroup>("card"))
++        parent.removeAll()
++        textPreference(parent, "title", "card_name", card.title, 80) { card = card.with("title", it) }
++        cardOption(parent, LunarisBarOption("enabled", default = 1)).title = label("card_enabled")
++        cardOption(parent, LunarisBarOption("lockscreen"))
++        cardOption(parent, LunarisBarOption("mini_enabled", default = 1))
++        cardOption(parent, LunarisBarOption("card_haptics", default = 1))
++        when (card.type) {
++            "shortcuts" -> {
++                val entries = shortcuts()
++                for (index in 0 until entries.length()) {
++                    val entry = entries.optJSONObject(index) ?: continue
++                    action(parent, "shortcut_$index", "delete") {
++                        val latest = shortcuts()
++                        latest.remove(index)
++                        card = card.with("actions", latest.toString())
++                        scheduleRefresh()
++                    }.apply {
++                        title = entry.optString("label")
++                        summary = label("delete")
++                    }
++                }
++                action(parent, "add_app") { chooseApp(::addShortcut) }.isEnabled = entries.length() < 24
++                action(parent, "add_contact_action") { shortcutDialog() }.isEnabled = entries.length() < 24
++                cardOption(parent, LunarisBarOption("columns", "slider", 4, 2, 6))
++                cardOption(parent, LunarisBarOption("icon_scale", "slider", 100, 70, 150))
++                cardOption(parent, LunarisBarOption("icon_shape", "choice", 2, choices = lunarisBarShapeNames))
++                cardOption(parent, LunarisBarOption("themed_icons"))
++                cardOption(parent, LunarisBarOption("close_on_tap", default = 1))
++            }
++            "barcode" -> {
++                cardText(parent, "value", "barcode_value")
++                cardText(parent, "label", "barcode_label")
++                val formats = listOf("QR_CODE", "CODE_128", "CODE_39", "CODE_93", "CODABAR", "EAN_13",
++                    "EAN_8", "ITF", "UPC_A", "UPC_E", "AZTEC", "DATA_MATRIX", "PDF_417")
++                val preference = template(parent, "choice", "format", "barcode_format")
++                bindOption(preference, LunarisBarOption("format", "choice", choices = formats),
++                    formats.indexOf(card.text("format", "QR_CODE")).coerceAtLeast(0)) {
++                    card = card.with("format", formats[it]); scheduleRefresh(); true
++                }
++                cardOption(parent, LunarisBarOption("rotate"))
++                cardOption(parent, LunarisBarOption("height", "slider", 180, 64, 320))
++            }
++            "clock" -> {
++                cardText(parent, "timezone", "timezone")
++                cardOption(parent, LunarisBarOption("seconds"))
++            }
++            "timer" -> cardOption(parent, LunarisBarOption("minutes", "slider", 5, 1, 180))
++            "battery" -> {
++                cardOption(parent, LunarisBarOption("fahrenheit"))
++                cardOption(parent, LunarisBarOption("battery_left", "choice", choices = listOf("battery_icon", "percentage", "temperature")))
++                cardOption(parent, LunarisBarOption("battery_right", "choice", 1, choices = listOf("battery_icon", "percentage", "temperature")))
++            }
++            "widget" -> {
++                cardOption(parent, LunarisBarOption("width", "slider", 360, 64, 480))
++                cardOption(parent, LunarisBarOption("height", "slider", 180, 64, 480))
++                cardOption(parent, LunarisBarOption("widget_theme", "choice", choices = listOf("follow_system", "light", "dark")))
++                cardOption(parent, LunarisBarOption("close_on_tap"))
++            }
++            "volume", "brightness", "flashlight" -> {
++                if (card.type == "volume") cardOption(parent, LunarisBarOption("stream", "choice",
++                    choices = listOf("media_volume", "ring_volume", "notification_volume", "alarm_volume", "call_volume")))
++                if (card.type != "flashlight") cardOption(parent, LunarisBarOption("hide_value"))
++                cardOption(parent, LunarisBarOption("slider_style", "choice", choices = listOf("standard", "expressive", "vertical")))
++                cardOption(parent, LunarisBarOption("toggle_shape", "choice", 2, choices = lunarisBarShapeNames))
++                action(parent, "toggle_action") { chooseToggleAction() }.summary = label(card.text("toggle_action", "none"))
++                cardText(parent, "toggle_label", "toggle_label")
++                cardOption(parent, LunarisBarOption("hide_after", "slider", 0, 0, 60))
++            }
++        }
++        buildColors()
++        val actions = requireNotNull(findPreference<PreferenceGroup>("actions"))
++        actions.removeAll()
++        action(actions, "save") { saveCard() }.isEnabled = card.title.isNotBlank() &&
++            (card.type != "barcode" || card.text("value", "").isNotBlank())
++        action(actions, "cancel") { finish() }
++        if (existing) {
++            val index = editor.config.cards.indexOfFirst { it.id == card.id }
++            action(actions, "move_up") { moveCard(-1) }.isEnabled = index > 0
++            action(actions, "move_down") { moveCard(1) }.isEnabled = index < editor.config.cards.lastIndex
++            action(actions, "delete") {
++                editor.reload()
++                if (changed(editor.cards(editor.config.cards.filterNot { it.id == card.id }))) finish()
++            }
++        }
++    }
++
++    private fun cardOption(parent: PreferenceGroup, option: LunarisBarOption, after: () -> Unit = {}): Preference {
++        val value = if (option.kind == "switch") {
++            if (card.enabled(option.key, option.default != 0)) 1 else 0
++        } else card.integer(option.key, option.default, option.min,
++            if (option.choices.isEmpty()) option.max else option.choices.lastIndex)
++        return this.option(parent, option, value) {
++            card = card.with(option.key, if (option.kind == "switch") it != 0 else it)
++            after()
++            scheduleRefresh()
++            true
++        }
++    }
++
++    private fun cardText(parent: PreferenceGroup, key: String, title: String) {
++        textPreference(parent, key, title, card.text(key, "")) { card = card.with(key, it) }
++    }
++
++    private fun buildColors() {
++        val parent = requireNotNull(findPreference<PreferenceGroup>("colors"))
++        parent.removeAll()
++        val parts = when (card.type) {
++            "shortcuts" -> listOf("icon" to 2)
++            "barcode" -> listOf("barcode" to 6)
++            "clock" -> listOf("time" to 5, "date" to 0)
++            "timer" -> listOf("time" to 5, "slider" to 5, "track" to 2, "button" to 5)
++            "battery" -> listOf("battery" to 5, "details" to 2, "button" to 5)
++            "volume", "brightness", "flashlight" -> listOf("slider" to 5, "track" to 2, "toggle" to 2)
++            else -> emptyList()
++        }
++        for (suffix in listOf("day", "night")) {
++            val theme = category(parent, suffix, if (suffix == "day") "light" else "dark")
++            cardOption(theme, LunarisBarOption("palette_$suffix", "choice", choices = listOf("inherit") + lunarisBarPalettes)) {
++                card = card.with("custom_colors_$suffix", false)
++            }
++            for (role in listOf("foreground", "background")) {
++                val key = "${role}_$suffix"
++                val fallback = if (role == "background") Color.BLACK else Color.WHITE
++                color(theme, key, "card_$role", card.integer(key, fallback, Int.MIN_VALUE, Int.MAX_VALUE), fallback) {
++                    card = card.with(key, it).with("custom_colors_$suffix", true)
++                    scheduleRefresh(); true
++                }
++            }
++            for ((part, fallbackPalette) in parts) {
++                val group = category(theme, "${part}_$suffix", part)
++                val paletteKey = "${part}_palette_$suffix"
++                cardOption(group, LunarisBarOption(paletteKey, "choice",
++                    card.integer("${part}_palette", fallbackPalette, 0, 20), choices = lunarisBarPalettes)).title = label("palette")
++                val roles = if (part in listOf("slider", "track")) listOf("background") else listOf("background", "foreground")
++                for (role in roles) {
++                    val key = "${part}_${role}_$suffix"
++                    val fallback = if (part == "barcode") {
++                        if (role == "background") Color.WHITE else Color.BLACK
++                    } else paletteColor(fallbackPalette, role == "foreground")
++                    color(group, key, role, card.integer(key, fallback, Int.MIN_VALUE, Int.MAX_VALUE), fallback) {
++                        card = card.with(key, it).with(paletteKey, 6)
++                        scheduleRefresh(); true
++                    }
++                }
++            }
++        }
++    }
++
++    private fun saveCard() {
++        if (ownerUser != ActivityManager.getCurrentUser()) { finish(); return }
++        editor.reload()
++        val latest = editor.config.cards
++        if (existing && latest.none { it.id == card.id }) { finish(); return }
++        if (!existing && latest.size >= LunarisBarSettings.MAX_CARDS) { changed(false); return }
++        if (changed(editor.cards(if (existing) latest.map { if (it.id == card.id) card else it } else latest + card))) finish()
++    }
++
++    private fun moveCard(direction: Int) {
++        editor.reload()
++        val latest = editor.config.cards.toMutableList()
++        val index = latest.indexOfFirst { it.id == card.id }
++        if (index < 0 || index + direction !in latest.indices) return
++        java.util.Collections.swap(latest, index, index + direction)
++        changed(editor.cards(latest))
++    }
++
++    private fun shortcuts(): JSONArray = runCatching { JSONArray(card.text("actions", "[]")) }.getOrDefault(JSONArray())
++
++    private fun addShortcut(label: String, action: String) {
++        val entries = shortcuts()
++        if (entries.length() >= 24) return
++        entries.put(JSONObject().put("label", label).put("action", action))
++        card = card.with("actions", entries.toString())
++        scheduleRefresh()
++    }
++
++    private fun chooseToggleAction() {
++        val actions = lunarisBarGestureActions.filterNot { it in listOf("expand", "next_card", "previous_card", "open_app") }
++        choose(label("toggle_action"), (actions + "choose_app").map(::label), actions.indexOf(card.text("toggle_action", "none"))) { index ->
++            if (index == actions.size) chooseApp { label, action ->
++                card = card.with("toggle_action", action).with("toggle_label", label)
++                scheduleRefresh()
++            } else {
++                card = card.with("toggle_action", actions[index])
++                scheduleRefresh()
++            }
++        }
++    }
++
++    private fun shortcutDialog() {
++        val view = layoutInflater.inflate(R.layout.lunaris_bar_shortcut_editor, null)
++        val contact = view.findViewById<Switch>(R.id.lunaris_bar_contact)
++        val title = view.findViewById<EditText>(R.id.lunaris_bar_shortcut_label)
++        val value = view.findViewById<EditText>(R.id.lunaris_bar_shortcut_value)
++        contact.setOnCheckedChangeListener { _, checked ->
++            value.setHint(if (checked) R.string.lunaris_bar_phone_number else R.string.lunaris_bar_intent_uri)
++        }
++        val dialog = showDialog(AlertDialog.Builder(requireContext())
++            .setTitle(R.string.lunaris_bar_add_contact_action).setView(view)
++            .setPositiveButton(R.string.lunaris_bar_save) { _, _ ->
++                addShortcut(title.text.toString(), (if (contact.isChecked) "contact:" else "intent:") + value.text.toString())
++            }.setNegativeButton(R.string.lunaris_bar_cancel, null))
++        dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
++        val watcher = object : TextWatcher {
++            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
++            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
++                dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = title.text.isNotBlank() && value.text.isNotBlank()
++            }
++            override fun afterTextChanged(s: Editable?) {}
++        }
++        title.addTextChangedListener(watcher)
++        value.addTextChangedListener(watcher)
++    }
++}
+diff --git a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarCardsSettings.kt b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarCardsSettings.kt
+new file mode 100644
+index 00000000..07bb835e
+--- /dev/null
++++ b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarCardsSettings.kt
+@@ -0,0 +1,73 @@
++/*
++ * Copyright (C) 2024-2026 Lunaris AOSP
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.crdroid.settings.fragments.statusbar.lunaris
++
++import android.appwidget.AppWidgetManager
++import android.content.ActivityNotFoundException
++import android.content.Intent
++import android.os.Bundle
++import androidx.preference.Preference
++import androidx.preference.PreferenceGroup
++import com.android.internal.util.lunaris.LunarisBarSettings
++import com.android.settings.R
++import com.android.settings.core.SubSettingLauncher
++
++class LunarisBarCardsSettings : LunarisBarPreferenceFragment() {
++    override fun onCreate(savedInstanceState: Bundle?) {
++        super.onCreate(savedInstanceState)
++        addPreferencesFromResource(R.xml.lunaris_bar_cards)
++        requireActivity().title = preferenceScreen.title
++        refreshPreferences()
++    }
++
++    override fun refreshPreferences() {
++        val cards = editor.config.cards
++        val parent = requireNotNull(findPreference<PreferenceGroup>("cards"))
++        parent.removeAll()
++        for (card in cards) {
++            action(parent, card.id) { openCard(Bundle().apply { putString("card_id", card.id) }) }.apply {
++                title = card.title
++                summary = "${label(card.type)} · ${label(if (card.isEnabled) "on" else "off")}"
++            }
++        }
++        findPreference<Preference>("cards_empty")?.isVisible = cards.isEmpty()
++        findPreference<Preference>("add_card")?.apply {
++            isEnabled = cards.size < LunarisBarSettings.MAX_CARDS
++            setOnPreferenceClickListener {
++                val types = LunarisBarSettings.Card.TYPES.toList()
++                choose(label("add_card"), types.map(::label)) { index ->
++                    if (types[index] == "widget") chooseWidget()
++                    else openCard(Bundle().apply { putString("type", types[index]) })
++                }
++                true
++            }
++        }
++    }
++
++    private fun openCard(arguments: Bundle) {
++        SubSettingLauncher(requireContext())
++            .setDestination(LunarisBarCardSettings::class.java.name)
++            .setArguments(arguments)
++            .setTitleRes(R.string.lunaris_bar_edit_card)
++            .setSourceMetricsCategory(getMetricsCategory())
++            .launch()
++    }
++
++    private fun chooseWidget() {
++        val providers = AppWidgetManager.getInstance(requireContext()).installedProviders.sortedBy {
++            it.loadLabel(requireContext().packageManager).lowercase()
++        }
++        choose(label("widget"), providers.map { it.loadLabel(requireContext().packageManager) }) { index ->
++            try {
++                startActivity(Intent(LunarisBarSettings.WIDGET_PICKER_ACTION)
++                    .setPackage("com.android.systemui")
++                    .putExtra("provider", providers[index].provider.flattenToString()))
++            } catch (_: ActivityNotFoundException) {
++                changed(false)
++            }
++        }
++    }
++}
+diff --git a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarEditor.kt b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarEditor.kt
+new file mode 100644
+index 00000000..716bbafb
+--- /dev/null
++++ b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarEditor.kt
+@@ -0,0 +1,171 @@
++/*
++ * Copyright (C) 2024-2026 Lunaris AOSP
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.crdroid.settings.fragments.statusbar.lunaris
++
++import android.content.Context
++import android.app.ActivityManager
++import android.provider.Settings
++import com.android.internal.util.lunaris.LunarisBarSettings
++
++internal class LunarisBarEditor(val context: Context) {
++    val userId = ActivityManager.getCurrentUser()
++
++    fun isCurrentUser(): Boolean = userId == ActivityManager.getCurrentUser()
++
++    private fun readConfig(): LunarisBarSettings {
++        return LunarisBarSettings.read(context.contentResolver, userId)
++            .forScreen(
++                LunarisBarSettings.screenWidth(context),
++                LunarisBarSettings.screenHeight(context),
++            )
++    }
++
++    var config = readConfig()
++        private set
++
++    fun resetAll(): Boolean {
++        if (!isCurrentUser()) return false
++        val success = LunarisBarSettings.reset(context.contentResolver, userId)
++        reload()
++        return success
++    }
++
++    fun reload() {
++        config = readConfig()
++    }
++
++    fun defaultValue(option: LunarisBarOption): Int =
++        if (option.system) LunarisBarSettings.systemDefaults()[option.key] ?: option.default
++        else option.default
++
++    fun read(option: LunarisBarOption): Int {
++        return if (option.system)
++            Settings.System.getIntForUser(
++                context.contentResolver,
++                option.key,
++                defaultValue(option),
++                userId,
++            )
++        else if (option.kind == "switch") {
++            if (config.enabled(option.key, option.default != 0)) 1 else 0
++        } else if (option.key.startsWith("feature_") && option.key.endsWith("_left_content")) {
++            if (config.integer(option.key, 0, 0, 2) == 2) 1 else 0
++        } else {
++            val value =
++                config.integer(
++                    option.key,
++                    option.values.getOrElse(option.default) { option.default },
++                    option.min,
++                    option.values.maxOrNull()
++                        ?: if (option.choices.isNotEmpty()) option.choices.lastIndex else option.max,
++                )
++            if (option.values.isEmpty()) value
++            else option.values.indexOf(value).takeIf { it >= 0 } ?: option.default
++        }
++    }
++
++    fun alternative(key: String): Boolean = read(LunarisBarOption(key, system = true)) != 0
++
++    fun available(option: LunarisBarOption): Boolean {
++        val key = option.key
++        if (
++            alternative(LunarisBarSettings.ALTERNATIVE_ANIMATION) &&
++                key in listOf("animation_style", "animation_speed", "animation_bounce", "mini_fade")
++        )
++            return false
++        if (
++            config.isReducedMotion &&
++                key in
++                    listOf(
++                        "animation_style",
++                        "animation_speed",
++                        "animation_bounce",
++                        "mini_fade",
++                        "rotate_artwork",
++                    )
++        )
++            return false
++        if (key == "corner_radius" && !config.enabled("custom_radius", true)) return false
++        if (key in listOf("collapsed_opacity", "collapsed_border") && !config.isAlwaysVisible)
++            return false
++        if (
++            alternative(LunarisBarSettings.ALTERNATIVE_MEDIA) &&
++                key in
++                    listOf(
++                        "media_background",
++                        "artwork_shape",
++                        "media_button_shape",
++                        "player_icon",
++                        "media_slider",
++                        "media_artwork_colors",
++                        "media_haptics",
++                    )
++        )
++            return false
++        if (key == "media_hide_delay" && !config.enabled("media_hide_paused", false)) return false
++        if (
++            key in
++                listOf(
++                    "rotate_artwork",
++                    "equalizer",
++                    "media_thin_border",
++                    "media_mini_custom",
++                    "media_mini_left_shape",
++                    "media_mini_right_shape",
++                    "media_mini_right",
++                    "media_mini_artwork_colors",
++                ) && !config.enabled("media_mini", true)
++        )
++            return false
++        if (
++            key in listOf("media_mini_left_shape", "media_mini_right_shape") &&
++                !config.enabled("media_mini_custom", false)
++        )
++            return false
++        return true
++    }
++
++    fun set(option: LunarisBarOption, value: Int): Boolean {
++        if (!isCurrentUser()) return false
++        if (option.system) {
++            return Settings.System.putIntForUser(
++                context.contentResolver, option.key, value, userId,
++            ).also { reload() }
++        }
++        val stored: Any = when {
++            option.key.startsWith("feature_") && option.key.endsWith("_left_content") ->
++                if (value == 1) 2 else 0
++            option.kind == "switch" -> value != 0
++            else -> option.values.getOrElse(value) { value }
++        }
++        return put(option.key to stored)
++    }
++
++    fun put(vararg changes: Pair<String, Any>): Boolean {
++        if (!isCurrentUser()) return false
++        var next = LunarisBarSettings.read(context.contentResolver, userId)
++        for ((key, value) in changes) {
++            next = next.withScreenValue(
++                LunarisBarSettings.screenWidth(context), LunarisBarSettings.screenHeight(context),
++                key, value,
++            )
++        }
++        return next.write(context.contentResolver, userId).also { reload() }
++    }
++
++    fun screenProfile(enabled: Boolean): Boolean {
++        if (!isCurrentUser()) return false
++        return LunarisBarSettings.read(context.contentResolver, userId).withScreenProfile(
++            LunarisBarSettings.screenWidth(context), LunarisBarSettings.screenHeight(context), enabled,
++        ).write(context.contentResolver, userId).also { reload() }
++    }
++
++    fun cards(cards: List<LunarisBarSettings.Card>): Boolean {
++        if (!isCurrentUser()) return false
++        return LunarisBarSettings.read(context.contentResolver, userId).withCards(cards)
++            .write(context.contentResolver, userId).also { reload() }
++    }
++}
+diff --git a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarOptions.kt b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarOptions.kt
+new file mode 100644
+index 00000000..0db70eca
+--- /dev/null
++++ b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarOptions.kt
+@@ -0,0 +1,283 @@
++/*
++ * Copyright (C) 2024-2026 Lunaris AOSP
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.crdroid.settings.fragments.statusbar.lunaris
++
++internal data class LunarisBarOption(
++    val key: String,
++    val kind: String = "switch",
++    val default: Int = 0,
++    val min: Int = 0,
++    val max: Int = 100,
++    val choices: List<String> = emptyList(),
++    val system: Boolean = false,
++    val values: List<Int> = emptyList(),
++)
++
++internal val lunarisBarPalettes =
++    listOf(
++        "surface",
++        "primary_container",
++        "secondary_container",
++        "tertiary_container",
++        "black",
++        "primary",
++        "custom",
++        "surface_light",
++        "surface_dark",
++        "primary_container_light",
++        "primary_container_dark",
++        "secondary_container_light",
++        "secondary_container_dark",
++        "tertiary_container_light",
++        "tertiary_container_dark",
++        "primary_light",
++        "primary_dark",
++        "tertiary",
++        "tertiary_light",
++        "tertiary_dark",
++        "tonal",
++    )
++
++internal val lunarisBarShapeNames =
++    listOf(
++        "none",
++        "system",
++        "circle",
++        "star",
++        "rounded_corner",
++        "square",
++        "hexagon",
++        "four_corner",
++        "rhombus",
++        "triangle",
++        "triangle_round",
++        "rectangle",
++        "arrow",
++        "sunny",
++        "very_sunny",
++        "diamond",
++        "pentagon",
++        "semicircle",
++        "arch",
++        "ghost",
++        "pill",
++        "burst",
++        "soft_burst",
++        "clover8",
++        "clover4",
++        "flower",
++        "clamshell",
++        "cookie",
++        "fan",
++        "pixel_circle",
++        "bun",
++        "heart",
++    )
++
++internal val lunarisBarGestureActions =
++    listOf(
++        "none",
++        "expand",
++        "open_app",
++        "next_card",
++        "previous_card",
++        "play_pause",
++        "next_track",
++        "previous_track",
++        "flashlight",
++        "notifications",
++        "quick_settings",
++        "home",
++        "back",
++        "recents",
++        "lock",
++        "screenshot",
++        "settings",
++        "brightness_settings",
++        "volume_settings",
++        "wifi_settings",
++        "bluetooth_settings",
++        "internet_settings",
++        "location_settings",
++        "mute",
++        "auto_brightness",
++    )
++
++internal val lunarisBarAppearanceOptions =
++    listOf(
++        LunarisBarOption("theme", "choice", choices = listOf("follow_system", "light", "dark")),
++        LunarisBarOption("capsule_blur"),
++        LunarisBarOption("mini_shape", "choice", 2, choices = lunarisBarShapeNames),
++        LunarisBarOption("card_icon_shape", "choice", 2, choices = lunarisBarShapeNames),
++        LunarisBarOption("card_button_shape", "choice", 20, choices = lunarisBarShapeNames),
++        LunarisBarOption("mini_alignment", "choice", choices = listOf("center", "left", "right")),
++        LunarisBarOption("mini_scale", "slider", 100, 70, 200),
++        LunarisBarOption(
++            "mini_scale_alignment",
++            "choice",
++            choices = listOf("center", "top", "bottom"),
++        ),
++        LunarisBarOption(
++            "status_bar_dynamic_island_width_scale",
++            "slider",
++            100,
++            70,
++            140,
++            system = true,
++        ),
++        LunarisBarOption(
++            "status_bar_dynamic_island_height_scale",
++            "slider",
++            100,
++            70,
++            140,
++            system = true,
++        ),
++        LunarisBarOption("offset_x", "slider", 0, -200, 200),
++        LunarisBarOption("offset_y", "slider", 0, -24, 100),
++        LunarisBarOption(
++            "expanded_mode",
++            "choice",
++            default = 1,
++            choices = listOf("camera_attached", "independent"),
++        ),
++        LunarisBarOption(
++            "expanded_width",
++            "choice",
++            default = 1,
++            choices = listOf("full_width", "content_width"),
++        ),
++        LunarisBarOption(
++            "expanded_shape",
++            "choice",
++            default = 1,
++            choices = listOf("pill", "rounded_corner", "squircle"),
++        ),
++        LunarisBarOption("custom_radius", default = 1),
++        LunarisBarOption("camera_width", "slider", 25, 0, 120),
++        LunarisBarOption("camera_height", "slider", 24, 8, 64),
++        LunarisBarOption("corner_radius", "slider", 42, 0, 64),
++        LunarisBarOption("outline_width", "slider", 10, 0, 30),
++        LunarisBarOption("shadow_elevation", "slider", 12, 0, 32),
++        LunarisBarOption("collapsed_opacity", "slider", 0, 0, 100),
++        LunarisBarOption(
++            "collapsed_border",
++            "choice",
++            choices = listOf("filled", "one_dp", "two_dp", "three_dp"),
++        ),
++        LunarisBarOption("companion", default = 1),
++        LunarisBarOption("always_visible"),
++    )
++
++internal val lunarisBarMotionOptions =
++    listOf(
++        LunarisBarOption(
++            "animation_style",
++            "choice",
++            choices = listOf("fruit", "robot", "coloros"),
++        ),
++        LunarisBarOption("animation_speed", "slider", 100, 50, 200),
++        LunarisBarOption(
++            "animation_bounce",
++            "choice",
++            1,
++            choices = listOf("no_bounce", "normal_bounce", "high_bounce"),
++        ),
++        LunarisBarOption("status_glow", default = 1),
++        LunarisBarOption("reduce_motion"),
++        LunarisBarOption("haptics", default = 1),
++        LunarisBarOption("mini_fade", default = 1),
++    )
++
++internal val lunarisBarMediaOptions =
++    listOf(
++        LunarisBarOption(
++            "media_background",
++            "choice",
++            default = 2,
++            choices = listOf("none", "cover", "blurred_cover", "waves", "gradient"),
++        ),
++        LunarisBarOption("artwork_shape", "choice", 4, choices = lunarisBarShapeNames),
++        LunarisBarOption("media_button_shape", "choice", 2, choices = lunarisBarShapeNames),
++        LunarisBarOption("player_icon", "choice", choices = listOf("app_icon", "app_name", "none")),
++        LunarisBarOption("media_haptics", default = 1),
++        LunarisBarOption("media_artwork_colors"),
++        LunarisBarOption("rotate_artwork", default = 1),
++        LunarisBarOption("equalizer", default = 1),
++        LunarisBarOption("media_slider", default = 1),
++        LunarisBarOption("media_thin_border", default = 1),
++        LunarisBarOption("media_hide_paused"),
++        LunarisBarOption("media_hide_delay", "slider", 0, 0, 300),
++        LunarisBarOption("media_mini", default = 1),
++        LunarisBarOption("media_mini_custom"),
++        LunarisBarOption("media_mini_left_shape", "choice", 2, choices = lunarisBarShapeNames),
++        LunarisBarOption("media_mini_right_shape", "choice", 2, choices = lunarisBarShapeNames),
++        LunarisBarOption(
++            "media_mini_right",
++            "choice",
++            1,
++            choices = listOf("app_icon", "equalizer"),
++        ),
++        LunarisBarOption("media_mini_artwork_colors"),
++        LunarisBarOption("status_bar_dynamic_island_lyrics", system = true),
++    )
++
++internal val lunarisBarFeatureKeys =
++    listOf(
++        "battery",
++        "unlock",
++        "bluetooth",
++        "calls",
++        "notifications",
++        "ongoing_activities",
++        "hotspot",
++        "vpn",
++        "ringer",
++        "timer",
++        "audio_recording",
++        "now_playing",
++        "media_controls",
++        "screen_recording",
++        "alarms",
++        "flashlight",
++        "stopwatch",
++        "live_scores",
++        "lockscreen",
++        "disable_in_landscape",
++    )
++
++internal val lunarisBarFeatureOptions =
++    lunarisBarFeatureKeys.map {
++        LunarisBarOption(
++            "status_bar_dynamic_island_$it",
++            default =
++                if (
++                    it in
++                        listOf(
++                            "media_controls",
++                            "screen_recording",
++                            "alarms",
++                            "flashlight",
++                            "stopwatch",
++                            "live_scores",
++                        )
++                )
++                    1
++                else 0,
++            system = true,
++        )
++    }
+diff --git a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarPreferenceFragment.kt b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarPreferenceFragment.kt
+new file mode 100644
+index 00000000..d107b245
+--- /dev/null
++++ b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisBarPreferenceFragment.kt
+@@ -0,0 +1,333 @@
++/*
++ * Copyright (C) 2024-2026 Lunaris AOSP
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.crdroid.settings.fragments.statusbar.lunaris
++
++import android.app.AlertDialog
++import android.content.BroadcastReceiver
++import android.content.ComponentName
++import android.content.Context
++import android.content.Intent
++import android.content.IntentFilter
++import android.database.ContentObserver
++import android.graphics.Color
++import android.os.Handler
++import android.os.Looper
++import android.os.UserHandle
++import android.provider.Settings
++import android.text.Editable
++import android.text.TextWatcher
++import android.widget.ArrayAdapter
++import android.widget.EditText
++import android.widget.ListView
++import android.widget.Toast
++import androidx.lifecycle.lifecycleScope
++import androidx.preference.EditTextPreference
++import androidx.preference.ListPreference
++import androidx.preference.Preference
++import androidx.preference.PreferenceGroup
++import androidx.preference.PreferenceViewHolder
++import androidx.preference.SwitchPreferenceCompat
++import com.android.internal.logging.nano.MetricsProto
++import com.android.internal.util.lunaris.LunarisBarSettings
++import com.android.settings.R
++import com.android.settings.SettingsPreferenceFragment
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.Job
++import kotlinx.coroutines.launch
++import kotlinx.coroutines.withContext
++import com.crdroid.settings.preferences.CustomSeekBarPreference
++import com.crdroid.settings.preferences.colorpicker.ColorPickerPreference
++import com.crdroid.settings.preferences.colorpicker.LunarisBarColorPickerPreference
++
++/** Shared binding for the XML screens. All values belong to LunarisBarSettings, not SharedPreferences. */
++abstract class LunarisBarPreferenceFragment : SettingsPreferenceFragment() {
++    internal val editor by lazy { LunarisBarEditor(requireContext()) }
++    private val handler = Handler(Looper.getMainLooper())
++    private val refresh = Runnable {
++        if (isAdded) {
++            if (!editor.isCurrentUser()) {
++                onUserChanged()
++                return@Runnable
++            }
++            editor.reload()
++            refreshScreen()
++        }
++    }
++    private val dynamicPreferences = mutableMapOf<String, Preference>()
++    private var dialog: AlertDialog? = null
++    private var appPickerJob: Job? = null
++    private var observing = false
++    private val observer = object : ContentObserver(handler) {
++        override fun onChange(selfChange: Boolean) = scheduleRefresh()
++    }
++    private val userReceiver = object : BroadcastReceiver() {
++        override fun onReceive(context: Context, intent: Intent) = onUserChanged()
++    }
++
++    override fun getMetricsCategory() = MetricsProto.MetricsEvent.CRDROID_SETTINGS
++
++    override fun onResume() {
++        super.onResume()
++        if (!editor.isCurrentUser()) {
++            onUserChanged()
++            return
++        }
++        editor.reload()
++        refreshScreen()
++        for (key in LunarisBarSettings.systemDefaults().keys + LunarisBarSettings.KEY) {
++            requireContext().contentResolver.registerContentObserver(
++                Settings.System.getUriFor(key), false, observer, UserHandle.USER_ALL,
++            )
++        }
++        requireContext().registerReceiver(
++            userReceiver, IntentFilter(Intent.ACTION_USER_SWITCHED), Context.RECEIVER_EXPORTED,
++        )
++        observing = true
++    }
++
++    override fun onPause() {
++        if (observing) {
++            requireContext().contentResolver.unregisterContentObserver(observer)
++            requireContext().unregisterReceiver(userReceiver)
++            observing = false
++        }
++        appPickerJob?.cancel()
++        handler.removeCallbacks(refresh)
++        super.onPause()
++    }
++
++    override fun onDestroyView() {
++        handler.removeCallbacks(refresh)
++        dismissDialogs()
++        super.onDestroyView()
++    }
++
++    private fun dismissDialogs() {
++        dialog?.dismiss()
++        dialog = null
++        dynamicPreferences.values.filterIsInstance<LunarisBarColorPickerPreference>()
++            .forEach { it.dismissDialog() }
++    }
++
++    protected open fun onUserChanged() {
++        dismissDialogs()
++        finish()
++    }
++
++    protected abstract fun refreshPreferences()
++
++    private fun refreshScreen() {
++        refreshPreferences()
++        val iterator = dynamicPreferences.values.iterator()
++        while (iterator.hasNext()) {
++            val preference = iterator.next()
++            if (preference.parent == null) {
++                (preference as? LunarisBarColorPickerPreference)?.dismissDialog()
++                iterator.remove()
++            }
++        }
++    }
++
++    internal fun scheduleRefresh() {
++        handler.removeCallbacks(refresh)
++        handler.post(refresh)
++    }
++
++    internal fun changed(success: Boolean): Boolean {
++        if (!success) Toast.makeText(requireContext(), R.string.lunaris_bar_save_error, Toast.LENGTH_SHORT).show()
++        scheduleRefresh()
++        return success
++    }
++
++    internal fun label(key: String): String = lunarisBarText(requireContext(), key)
++
++    internal fun template(parent: PreferenceGroup, kind: String, key: String, title: String = key): Preference {
++        // Dialog fragments hold their Preference instance. Keep that instance across
++        // refreshes so an open or restored editor still updates the visible row.
++        val preference = dynamicPreferences.getOrPut(key) {
++            val templates = preferenceManager.inflateFromResource(
++                requireContext(), R.xml.lunaris_bar_preference_templates, null,
++            )
++            requireNotNull(templates.findPreference<Preference>(kind)).also {
++                templates.removePreference(it)
++            }
++        }
++        // Reattaching a preference can dispatch its initial value. Never save that
++        // default over the existing configuration or an unsaved card draft.
++        preference.onPreferenceChangeListener = null
++        preference.onPreferenceClickListener = null
++        preference.key = key
++        preference.title = label(title)
++        preference.isPersistent = false
++        preference.order = parent.preferenceCount
++        parent.addPreference(preference)
++        return preference
++    }
++
++    internal fun category(parent: PreferenceGroup, key: String, title: String): PreferenceGroup {
++        // PreferenceCategory cannot contain another PreferenceCategory. Use its standard
++        // heading style for the light/dark and component headings within a color category.
++        object : Preference(requireContext(), null, androidx.preference.R.attr.preferenceCategoryStyle) {
++            override fun onBindViewHolder(holder: PreferenceViewHolder) {
++                super.onBindViewHolder(holder)
++                holder.itemView.isAccessibilityHeading = true
++            }
++        }.also {
++            it.key = key
++            it.title = label(title)
++            it.isSelectable = false
++            it.order = parent.preferenceCount
++            parent.addPreference(it)
++        }
++        return parent
++    }
++
++    internal fun bindOption(preference: Preference, option: LunarisBarOption, value: Int, save: (Int) -> Boolean) {
++        preference.onPreferenceChangeListener = null
++        preference.isPersistent = false
++        when (preference) {
++            is SwitchPreferenceCompat -> preference.isChecked = value != 0
++            is ListPreference -> {
++                preference.entries = option.choices.map(::label).toTypedArray()
++                preference.entryValues = option.choices.indices.map(Int::toString).toTypedArray()
++                preference.value = value.toString()
++                val description = requireContext().resources.getIdentifier(
++                    "lunaris_bar_${option.key}_description", "string", requireContext().packageName,
++                )
++                preference.summary = if (description == 0) preference.entry
++                    else "${preference.entry}\n${getString(description)}"
++            }
++            is CustomSeekBarPreference -> {
++                preference.setMax(option.max)
++                preference.setMin(option.min)
++                preference.setDefaultValue(option.default)
++                preference.setValue(value)
++            }
++        }
++        preference.setOnPreferenceChangeListener { _, next ->
++            val number = when (next) {
++                is Boolean -> if (next) 1 else 0
++                is Int -> next
++                else -> next.toString().toInt()
++            }
++            save(number)
++        }
++    }
++
++    internal fun option(parent: PreferenceGroup, option: LunarisBarOption, value: Int = editor.read(option), save: (Int) -> Boolean = { changed(editor.set(option, it)) }): Preference {
++        val preference = template(parent, option.kind, option.key)
++        bindOption(preference, option, value, save)
++        return preference
++    }
++
++    internal fun color(parent: PreferenceGroup, key: String, title: String, value: Int, fallback: Int, save: (Int) -> Boolean) {
++        val preference = template(parent, "color", key, title) as ColorPickerPreference
++        preference.setDefaultValue(fallback)
++        preference.setColor(value)
++        preference.setOnPreferenceChangeListener { _, next -> save(next as Int) }
++    }
++
++    internal fun action(parent: PreferenceGroup, key: String, title: String = key, click: () -> Unit): Preference =
++        template(parent, "action", key, title).also {
++            it.setOnPreferenceClickListener { click(); true }
++        }
++
++    internal fun textPreference(parent: PreferenceGroup, key: String, title: String, value: String, maxLength: Int = 8192, save: (String) -> Unit) {
++        val preference = template(parent, "text", key, title) as EditTextPreference
++        preference.text = value
++        preference.summary = value
++        preference.setOnBindEditTextListener { edit ->
++            edit.filters = arrayOf(android.text.InputFilter.LengthFilter(maxLength))
++        }
++        preference.setOnPreferenceChangeListener { _, next ->
++            save(next.toString().take(maxLength))
++            scheduleRefresh()
++            true
++        }
++    }
++
++    internal fun showDialog(builder: AlertDialog.Builder): AlertDialog {
++        dialog?.dismiss()
++        return builder.create().also { dialog = it; it.show() }
++    }
++
++    internal fun choose(title: String, labels: List<String>, selected: Int = -1, select: (Int) -> Unit) {
++        showDialog(AlertDialog.Builder(requireContext())
++            .setTitle(title)
++            .setSingleChoiceItems(labels.toTypedArray(), selected) { selectedDialog, index ->
++                selectedDialog.dismiss()
++                select(index)
++            }
++            .setNegativeButton(R.string.lunaris_bar_cancel, null))
++    }
++
++    internal fun chooseApp(select: (String, String) -> Unit) {
++        val context = requireContext()
++        val user = android.app.ActivityManager.getCurrentUser()
++        appPickerJob?.cancel()
++        appPickerJob = lifecycleScope.launch {
++            val apps = withContext(Dispatchers.IO) {
++                val pm = context.packageManager
++                pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)
++                    .map { info ->
++                        info.loadLabel(pm).toString() to "app:" + ComponentName(
++                            info.activityInfo.packageName, info.activityInfo.name,
++                        ).flattenToString()
++                    }.sortedBy { it.first.lowercase() }
++            }
++            if (!isResumed || user != android.app.ActivityManager.getCurrentUser()) return@launch
++            val view = layoutInflater.inflate(R.layout.lunaris_bar_app_picker, null)
++            val search = view.findViewById<EditText>(R.id.lunaris_bar_app_search)
++            val list = view.findViewById<ListView>(R.id.lunaris_bar_app_list)
++            var filtered = apps
++            val adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, apps.map { it.first }.toMutableList())
++            list.adapter = adapter
++            val picker = showDialog(AlertDialog.Builder(context)
++                .setTitle(R.string.lunaris_bar_choose_app).setView(view)
++                .setNegativeButton(R.string.lunaris_bar_cancel, null))
++            search.addTextChangedListener(object : TextWatcher {
++                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
++                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
++                    filtered = apps.filter { it.first.contains(s?.toString().orEmpty(), true) }
++                    adapter.clear()
++                    adapter.addAll(filtered.map { it.first })
++                }
++                override fun afterTextChanged(s: Editable?) {}
++            })
++            list.setOnItemClickListener { _, _, position, _ ->
++                picker.dismiss()
++                select(filtered[position].first, filtered[position].second)
++            }
++        }
++    }
++
++    internal fun paletteColor(index: Int, foreground: Boolean): Int {
++        if (index == 4 || index == 6) return if (foreground) Color.WHITE else Color.BLACK
++        val attr = when (index) {
++            2 -> if (foreground) com.google.android.material.R.attr.colorOnSecondaryContainer else com.google.android.material.R.attr.colorSecondaryContainer
++            5 -> if (foreground) com.google.android.material.R.attr.colorOnPrimary else androidx.appcompat.R.attr.colorPrimary
++            else -> if (foreground) com.google.android.material.R.attr.colorOnSurface else com.google.android.material.R.attr.colorSurface
++        }
++        val colors = requireContext().obtainStyledAttributes(intArrayOf(attr))
++        return try { colors.getColor(0, if (foreground) Color.WHITE else Color.BLACK) } finally { colors.recycle() }
++    }
++}
++
++internal fun lunarisBarText(context: Context, key: String): String {
++    val base = key.removeSuffix("_day").removeSuffix("_night")
++    val candidates = if (base.startsWith("feature_")) listOf(
++        "card_icon_shape", "card_button_shape", "left_background", "left_foreground",
++        "right_background", "right_foreground", "progress_background", "progress_foreground",
++        "track_background", "track_foreground", "show_battery", "progress_palette", "track_palette",
++        "left_palette", "right_palette", "left_content", "right_content", "mini_shape", "right_shape",
++        "background", "foreground", "palette", "haptics",
++    ).filter { base.endsWith("_$it") } else emptyList()
++    for (candidate in listOf(key, base) + candidates) {
++        val id = context.resources.getIdentifier("lunaris_bar_$candidate", "string", context.packageName)
++        if (id != 0) return context.getString(id)
++    }
++    return base.replace('_', ' ')
++}
+diff --git a/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisIslandSettings.kt b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisIslandSettings.kt
+new file mode 100644
+index 00000000..a2b0304a
+--- /dev/null
++++ b/src/com/crdroid/settings/fragments/statusbar/lunaris/LunarisIslandSettings.kt
+@@ -0,0 +1,234 @@
++/*
++ * Copyright (C) 2024-2026 Lunaris AOSP
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.crdroid.settings.fragments.statusbar.lunaris
++
++import android.app.AlertDialog
++import android.content.ComponentName
++import android.graphics.Color
++import android.os.Bundle
++import androidx.preference.ListPreference
++import androidx.preference.Preference
++import androidx.preference.PreferenceGroup
++import androidx.preference.SwitchPreferenceCompat
++import com.android.internal.util.lunaris.LunarisBarSettings
++import com.android.settings.R
++
++class LunarisIslandSettings : LunarisBarPreferenceFragment() {
++    private var page = "main"
++    private var selectedFeature = "notification"
++
++    override fun onCreate(savedInstanceState: Bundle?) {
++        super.onCreate(savedInstanceState)
++        page = arguments?.getString("page") ?: "main"
++        selectedFeature = savedInstanceState?.getString("selected_feature") ?: "notification"
++        addPreferencesFromResource(when (page) {
++            "appearance" -> R.xml.lunaris_bar_appearance
++            "colors" -> R.xml.lunaris_bar_colors
++            "motion" -> R.xml.lunaris_bar_motion
++            "media" -> R.xml.lunaris_bar_media
++            "gestures" -> R.xml.lunaris_bar_gestures
++            "features" -> R.xml.lunaris_bar_features
++            "feature_style" -> R.xml.lunaris_bar_feature_style
++            else -> R.xml.lunaris_island_settings
++        })
++        requireActivity().title = preferenceScreen.title
++        refreshPreferences()
++    }
++
++    override fun onSaveInstanceState(outState: Bundle) {
++        outState.putString("selected_feature", selectedFeature)
++        super.onSaveInstanceState(outState)
++    }
++
++    override fun refreshPreferences() {
++        val options = when (page) {
++            "appearance" -> lunarisBarAppearanceOptions
++            "motion" -> lunarisBarMotionOptions + listOf(
++                LunarisBarOption(LunarisBarSettings.ALTERNATIVE_ANIMATION, default = 1, system = true),
++                LunarisBarOption(LunarisBarSettings.ALTERNATIVE_MEDIA, default = 1, system = true),
++                LunarisBarOption(LunarisBarSettings.ALTERNATIVE_FLASHLIGHT, default = 1, system = true),
++            )
++            "media" -> lunarisBarMediaOptions
++            "features" -> lunarisBarFeatureOptions
++            "main" -> listOf(LunarisBarOption("status_bar_show_dynamic_island", system = true))
++            else -> emptyList()
++        }
++        for (option in options) {
++            val preference = findPreference<Preference>(option.key) ?: continue
++            preference.isVisible = editor.available(option)
++            bindOption(preference, option.copy(default = editor.defaultValue(option)), editor.read(option)) {
++                changed(editor.set(option, it))
++            }
++        }
++        when (page) {
++            "main" -> findPreference<Preference>("reset_all")?.setOnPreferenceClickListener {
++                showDialog(AlertDialog.Builder(requireContext())
++                    .setTitle(R.string.lunaris_bar_reset_all)
++                    .setMessage(R.string.lunaris_bar_reset_all_message)
++                    .setPositiveButton(R.string.lunaris_bar_reset) { _, _ -> changed(editor.resetAll()) }
++                    .setNegativeButton(R.string.lunaris_bar_cancel, null))
++                true
++            }
++            "appearance" -> {
++                val preference = requireNotNull(findPreference<SwitchPreferenceCompat>("screen_profile"))
++                val width = LunarisBarSettings.screenWidth(requireContext())
++                val height = LunarisBarSettings.screenHeight(requireContext())
++                preference.isChecked = editor.config.hasScreenProfile(width, height)
++                preference.summary = getString(R.string.lunaris_bar_screen_profile_description) + "\n$width × $height dp"
++                preference.setOnPreferenceChangeListener { _, next -> changed(editor.screenProfile(next as Boolean)) }
++            }
++            "colors" -> buildColors()
++            "media" -> buildMediaColors()
++            "gestures" -> bindGestures()
++            "feature_style" -> buildFeatureStyle()
++        }
++    }
++
++    private fun colorGroup(): PreferenceGroup = requireNotNull(findPreference<PreferenceGroup>("colors")).also { it.removeAll() }
++
++    private fun buildColors() {
++        val parent = colorGroup()
++        for (night in listOf(false, true)) {
++            val suffix = if (night) "night" else "day"
++            val theme = category(parent, suffix, if (night) "dark" else "light")
++            for (part in listOf("mini", "capsule")) {
++                val group = category(theme, "${part}_$suffix", part)
++                option(group, LunarisBarOption("${part}_palette_$suffix", "choice", 4, choices = lunarisBarPalettes))
++                option(group, LunarisBarOption("${part}_opacity_$suffix", "slider", 100, 10, 100))
++                for (role in listOf("background", "foreground")) {
++                    val key = "${part}_${role}_$suffix"
++                    val fallback = if (role == "background") Color.BLACK else Color.WHITE
++                    color(group, key, role, editor.config.color(part == "mini", night, role == "foreground"), fallback) {
++                        changed(editor.put(key to it, "${part}_palette_$suffix" to 6))
++                    }
++                }
++            }
++            option(theme, LunarisBarOption("outline_$suffix", default = if (night) 1 else 0))
++            option(theme, LunarisBarOption("shadow_$suffix", default = if (night) 0 else 1))
++        }
++    }
++
++    private fun buildMediaColors() {
++        val parent = colorGroup()
++        val parts = buildList {
++            if (!editor.alternative(LunarisBarSettings.ALTERNATIVE_MEDIA)) add("media")
++            if (editor.config.enabled("media_mini", true) && editor.config.enabled("media_mini_custom", false)) {
++                add("media_mini_left")
++                add("media_mini_right")
++            }
++        }
++        parent.isVisible = parts.isNotEmpty()
++        for (suffix in listOf("day", "night")) {
++            val theme = category(parent, suffix, if (suffix == "day") "light" else "dark")
++            for (part in parts) {
++                val palette = "${part}_palette_$suffix"
++                option(theme, LunarisBarOption(palette, "choice",
++                    editor.config.integer("${part}_palette", if (part == "media") 4 else 0, 0, 20), choices = lunarisBarPalettes))
++                val roles = if (part == "media") listOf("background_color", "foreground_color") +
++                    (if (editor.config.mediaBackground in listOf(3, 4)) listOf("accent_color") else emptyList())
++                    else listOf("background", "foreground")
++                for (role in roles) {
++                    val key = "${part}_${role}_$suffix"
++                    val fallback = if (role.startsWith("background")) Color.BLACK else Color.WHITE
++                    color(theme, key, key, configColor(key, "${part}_$role", fallback), fallback) {
++                        val change = if (part == "media") "media_artwork_colors" to false else "media_mini_custom" to true
++                        changed(editor.put(key to it, palette to 6, change))
++                    }
++                }
++            }
++        }
++    }
++
++    private fun configColor(key: String, legacy: String, fallback: Int): Int =
++        editor.config.integer(key, editor.config.integer(legacy, fallback, Int.MIN_VALUE, Int.MAX_VALUE), Int.MIN_VALUE, Int.MAX_VALUE)
++
++    private fun bindGestures() {
++        for ((key, fallback) in listOf(
++            "gesture_tap" to "expand", "gesture_double_tap" to "none",
++            "gesture_long_press" to "open_app", "gesture_swipe_left" to "next_card",
++            "gesture_swipe_right" to "previous_card", "gesture_swipe_up" to "expand",
++            "gesture_swipe_down" to "notifications",
++        )) {
++            val preference = requireNotNull(findPreference<Preference>(key))
++            val action = editor.config.text(key, fallback)
++            val cards = editor.config.cards.filter { it.isEnabled }
++            preference.summary = cards.firstOrNull { "card:${it.id}" == action }?.title ?: actionLabel(action)
++            preference.setOnPreferenceClickListener {
++                val actions = lunarisBarGestureActions + "choose_app" + cards.map { "card:${it.id}" }
++                choose(label(key), lunarisBarGestureActions.map(::label) + label("choose_app") + cards.map { it.title }, actions.indexOf(action)) { index ->
++                    if (actions[index] == "choose_app") chooseApp { _, value -> changed(editor.put(key to value)) }
++                    else changed(editor.put(key to actions[index]))
++                }
++                true
++            }
++        }
++    }
++
++    private fun actionLabel(action: String): String {
++        if (!action.startsWith("app:")) return label(action)
++        val component = ComponentName.unflattenFromString(action.removePrefix("app:")) ?: return action
++        return runCatching { requireContext().packageManager.getActivityInfo(component, 0).loadLabel(requireContext().packageManager).toString() }.getOrDefault(component.packageName)
++    }
++
++    private fun buildFeatureStyle() {
++        val features = listOf("charging", "unlock", "bluetooth", "hotspot", "vpn", "ringer", "call",
++            "notification", "ongoing", "timer", "recording", "nowplaying", "alarm", "stopwatch",
++            "screenrecord", "flashlight", "livescore", "privacy", "screenshare")
++        val selected = requireNotNull(findPreference<ListPreference>("selected_feature"))
++        selected.entries = features.map(::label).toTypedArray()
++        selected.entryValues = features.toTypedArray()
++        selected.value = selectedFeature
++        selected.summary = selected.entry
++        selected.setOnPreferenceChangeListener { _, value -> selectedFeature = value.toString(); scheduleRefresh(); true }
++        val parent = requireNotNull(findPreference<PreferenceGroup>("style"))
++        parent.removeAll()
++        val prefix = "feature_$selectedFeature"
++        val alternativeFlashlight = selectedFeature == "flashlight" && editor.alternative(LunarisBarSettings.ALTERNATIVE_FLASHLIGHT)
++        val hasProgress = selectedFeature in listOf("charging", "bluetooth", "notification", "ongoing", "timer")
++        val shapes = buildList {
++            add("mini_shape")
++            if (editor.config.integer("${prefix}_right_content", 0, 0, 3) == 1) add("right_shape")
++            if (!alternativeFlashlight) add("card_icon_shape")
++            if (selectedFeature != "unlock") add("card_button_shape")
++        }
++        for (shape in shapes) option(parent, LunarisBarOption("${prefix}_$shape", "choice", choices = listOf("inherit") + lunarisBarShapeNames))
++        option(parent, LunarisBarOption("${prefix}_left_content", "choice", choices = listOf("app_icon", "none")))
++        option(parent, LunarisBarOption("${prefix}_right_content", "choice",
++            choices = if (hasProgress) listOf("text", "app_icon", "progress", "none") else listOf("text", "app_icon", "none"),
++            values = if (hasProgress) emptyList() else listOf(0, 1, 3)))
++        option(parent, LunarisBarOption("${prefix}_haptics", default = 1))
++        if (selectedFeature == "bluetooth") option(parent, LunarisBarOption("feature_bluetooth_show_battery", default = 1))
++        val parts = buildList {
++            add("")
++            if (editor.config.integer("${prefix}_left_content", 0, 0, 2) != 2) add("left_")
++            if (editor.config.integer("${prefix}_right_content", 0, 0, 3) != 3) add("right_")
++            if (hasProgress || (selectedFeature == "flashlight" && !alternativeFlashlight)) {
++                add("progress_")
++                add("track_")
++            }
++        }
++        val colors = colorGroup()
++        for (suffix in listOf("day", "night")) {
++            val theme = category(colors, suffix, if (suffix == "day") "light" else "dark")
++            for (part in parts) {
++                val inherits = part in listOf("", "left_", "right_")
++                val palette = "${prefix}_${part}palette"
++                val default = when (part) { "progress_" -> 5; "track_" -> 2; else -> 0 }
++                option(theme, LunarisBarOption("${palette}_$suffix", "choice",
++                    editor.config.integer(palette, default, 0, if (inherits) 21 else 20),
++                    choices = (if (inherits) listOf("inherit") else emptyList()) + lunarisBarPalettes))
++                val roles = if (part in listOf("progress_", "track_")) listOf("background") else listOf("background", "foreground")
++                for (role in roles) {
++                    val key = "${prefix}_${part}${role}_$suffix"
++                    val fallback = paletteColor(if (part == "progress_") 5 else if (part == "track_") 2 else 4, role == "foreground")
++                    color(theme, key, key, configColor(key, "${prefix}_${part}$role", fallback), fallback) {
++                        changed(editor.put(key to it, "${palette}_$suffix" to if (inherits) 7 else 6))
++                    }
++                }
++            }
++        }
++    }
++}
+diff --git a/src/com/crdroid/settings/preferences/CustomSeekBarPreference.java b/src/com/crdroid/settings/preferences/CustomSeekBarPreference.java
+index 6873b9db..07f8a428 100644
+--- a/src/com/crdroid/settings/preferences/CustomSeekBarPreference.java
++++ b/src/com/crdroid/settings/preferences/CustomSeekBarPreference.java
+@@ -153,7 +153,7 @@ public class CustomSeekBarPreference extends SliderPreference {
+         super.setSummary(composed);
+     }
+ 
+-    private String formatValueForSummary(int v) {
++    protected String formatValueForSummary(int v) {
+         if (mDefaultValueExists && mDefaultValueTextExists && v == mDefaultValue) {
+             return mDefaultValueText;
+         }
+diff --git a/src/com/crdroid/settings/preferences/LunarisBarSeekBarPreference.java b/src/com/crdroid/settings/preferences/LunarisBarSeekBarPreference.java
+new file mode 100644
+index 00000000..f4ef0206
+--- /dev/null
++++ b/src/com/crdroid/settings/preferences/LunarisBarSeekBarPreference.java
+@@ -0,0 +1,36 @@
++/*
++ * Copyright (C) 2024-2026 Lunaris AOSP
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.crdroid.settings.preferences;
++
++import android.content.Context;
++import android.util.AttributeSet;
++
++/** Uses the same seek bar and reset controls as the other settings pages. */
++public class LunarisBarSeekBarPreference extends CustomSeekBarPreference {
++    public LunarisBarSeekBarPreference(Context context, AttributeSet attrs) {
++        super(context, attrs);
++    }
++
++    @Override
++    public void setValue(int value) {
++        super.setValue(value);
++        notifyChanged();
++    }
++
++    @Override
++    protected String formatValueForSummary(int value) {
++        String key = getKey();
++        if (key == null) return super.formatValueForSummary(value);
++        if (key.equals("animation_speed")) return (value / 100f) + "×";
++        if (key.equals("outline_width")) return (value / 10f) + " dp";
++        if (key.contains("scale") || key.contains("opacity")) return value + "%";
++        if (key.endsWith("delay") || key.equals("hide_after")) return value + " s";
++        if (key.equals("minutes")) return getContext().getString(
++                com.android.settings.R.string.lunaris_bar_minutes_value, value);
++        if (key.equals("columns")) return Integer.toString(value);
++        return value + " dp";
++    }
++}
+diff --git a/src/com/crdroid/settings/preferences/colorpicker/ColorPickerPreference.java b/src/com/crdroid/settings/preferences/colorpicker/ColorPickerPreference.java
+index 1ec2e76b..c43a8fee 100644
+--- a/src/com/crdroid/settings/preferences/colorpicker/ColorPickerPreference.java
++++ b/src/com/crdroid/settings/preferences/colorpicker/ColorPickerPreference.java
+@@ -68,7 +68,7 @@ public class ColorPickerPreference extends Preference
+ 
+     @Nullable private ImageView mPreviewView;
+     @Nullable private View mResetView;
+-    @Nullable private ColorPickerDialog mDialog;
++    @Nullable protected ColorPickerDialog mDialog;
+ 
+     public ColorPickerPreference(Context context) {
+         this(context, null);
+diff --git a/src/com/crdroid/settings/preferences/colorpicker/LunarisBarColorPickerPreference.java b/src/com/crdroid/settings/preferences/colorpicker/LunarisBarColorPickerPreference.java
+new file mode 100644
+index 00000000..43912872
+--- /dev/null
++++ b/src/com/crdroid/settings/preferences/colorpicker/LunarisBarColorPickerPreference.java
+@@ -0,0 +1,24 @@
++/*
++ * Copyright (C) 2024-2026 Lunaris AOSP
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.crdroid.settings.preferences.colorpicker;
++
++import android.content.Context;
++import android.util.AttributeSet;
++
++/** Lets the hosting fragment close color dialogs when its view is destroyed. */
++public class LunarisBarColorPickerPreference extends ColorPickerPreference {
++    public LunarisBarColorPickerPreference(Context context, AttributeSet attrs) {
++        super(context, attrs);
++    }
++
++    public void dismissDialog() {
++        if (mDialog != null) {
++            mDialog.setOnColorChangedListener(null);
++            mDialog.dismiss();
++            mDialog = null;
++        }
++    }
++}

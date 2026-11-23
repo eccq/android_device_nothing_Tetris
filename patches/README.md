@@ -64,6 +64,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0057-*.patch
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0058-*.patch && cd -
 cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0059-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0060-*.patch && cd -
+cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0061-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -128,3 +129,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0060-*.patch
 | `0058-SystemUI-Fly-the-fluid-clock-after-every-unlock.patch` | Undoes 0043: the COS fluid clock flies to the home screen widget after any unlock, as on PenguinOS. |
 | `0059-Launcher3-Keep-the-dock-on-the-DeX-display.patch` | Turning the taskbar off on the phone no longer removes the dock from an external display. |
 | `0060-SystemUI-Add-the-PenguinOS-and-Lunaris-islands.patch` | The whole PenguinOS and Lunaris Dynamic islands, next to the stock one: music, calls, events, cards and lights. The stock island stays off while one of them is on. Replaces the look of 0052. A running timer no longer shows as an alarm. |
+| `0061-Atelier-Add-the-PenguinOS-and-Lunaris-island-settings.patch` | Island style picks the stock, PenguinOS or Lunaris island. Adds the PenguinOS events and the Lunaris settings pages. Needs 0060. |
