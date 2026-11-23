@@ -38,6 +38,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0031-*.patch
 cd packages/apps/LockStyles && git apply ../../../device/nothing/Tetris/patches/0032-*.patch && cd -
 cd packages/apps/Settings && git apply ../../../device/nothing/Tetris/patches/0033-*.patch && cd -
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0034-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0035-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -76,3 +77,4 @@ cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/003
 | `0032-LockStyles-Adopt-the-wallpaper-set-outside-the-app.patch` | LockStyles adopted the built-in default wallpaper whenever the lock screen shared the home wallpaper, then put it back on every apply, clock changes included. It now falls back to the home wallpaper, adopts again when the wallpaper was changed outside the app, and opens on the current lock screen. |
 | `0033-Settings-Register-the-search-index-refresh.patch` | Registers Atelier's search index refresh receiver for BOOT_COMPLETED (see 0034). |
 | `0034-Atelier-Refresh-the-search-index-on-a-new-build.patch` | Settings search found nothing in Atelier: the search app only rebuilds its index when the fingerprint or the providers' version codes change, and the spoofed fingerprint and Settings' version code never do. On the first boot of each build the index of the search app is cleared, so every page and sub-page is indexed again on the next search. |
+| `0035-SystemUI-Centre-the-COS-volume-panel-on-the-landscape-cutout.patch` | In landscape the COS volume panel sat too low. Its column (ringer, slider, expand button and app sliders) is now centred on the side punch hole, or on the screen without one, and kept inside the window. |
