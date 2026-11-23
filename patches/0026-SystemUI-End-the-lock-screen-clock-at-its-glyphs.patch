@@ -1,0 +1,115 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
+index 61c26cfbf12c..0d17666e7c5a 100644
+--- a/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
++++ b/packages/SystemUI/src/com/android/systemui/clocks/ClockStyle.kt
+@@ -12,6 +12,8 @@ import android.content.res.Configuration
+ import android.graphics.Color
+ import android.graphics.Matrix
+ import android.graphics.RadialGradient
++import android.graphics.Rect
++import android.graphics.RectF
+ import android.graphics.Shader
+ import android.graphics.Typeface
+ import android.os.Handler
+@@ -47,6 +49,8 @@ class ClockStyle @JvmOverloads constructor(
+     private val random = java.util.Random()
+ 
+     private var currentClockView: View? = null
++    private var drawnHeight = -1
++    private val textBounds = Rect()
+     var forHome = false
+ 
+     val clockView: View?
+@@ -566,22 +570,32 @@ class ClockStyle @JvmOverloads constructor(
+         view.pivotX = view.width / 2f
+         view.pivotY = 0f
+         disableClippingOnParents(view)
+-        post { updateOverflowPadding() }
++        post { updateDrawnHeight() }
++    }
++
++    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
++        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
++        // RelativeLayout places its children while measuring, so this moves only what is below.
++        if (drawnHeight >= 0) setMeasuredDimension(measuredWidth, drawnHeight)
+     }
+ 
+     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+         super.onLayout(changed, l, t, r, b)
+-        post { updateOverflowPadding() }
++        post { updateDrawnHeight() }
+     }
+ 
+-    // The keyguard places the media card and notifications under this view's measured bottom,
+-    // but negative margins and the size scale draw parts of many clocks below it.
+-    private fun updateOverflowPadding() {
++    // The media card and notifications go under this view's bottom, so it ends where the clock's
++    // glyphs end: font line spacing leaves empty space below the digits, and negative margins
++    // and the size scale draw parts of many clocks past the measured bottom.
++    private fun updateDrawnHeight() {
+         val view = currentClockView
+-        val overflow =
+-            if (forHome || view == null || view.visibility != View.VISIBLE) 0
+-            else (drawnBottom(view) - (height - paddingBottom)).coerceAtLeast(0)
+-        if (overflow != paddingBottom) setPadding(paddingLeft, paddingTop, paddingRight, overflow)
++        val height =
++            if (forHome || view == null || view.visibility != View.VISIBLE || view.height == 0) -1
++            else drawnBottom(view)
++        if (height != drawnHeight) {
++            drawnHeight = height
++            requestLayout()
++        }
+     }
+ 
+     private fun drawnBottom(clock: View): Int {
+@@ -595,19 +609,45 @@ class ClockStyle @JvmOverloads constructor(
+         return top + (contentBottom(clock) * getScaleFactor()).toInt()
+     }
+ 
+-    private fun contentBottom(view: View): Int {
+-        var bottom = view.height
++    private fun contentBottom(view: View): Float {
++        var bottom = when {
++            view is TextView -> textBottom(view)
++            view !is ViewGroup || view.background != null -> view.height.toFloat()
++            else -> 0f
++        }
+         if (view is ViewGroup) {
+             for (i in 0 until view.childCount) {
+                 val child = view.getChildAt(i)
+-                if (child.visibility == View.VISIBLE) {
+-                    bottom = maxOf(bottom, child.top + contentBottom(child))
+-                }
++                if (child.visibility != View.VISIBLE) continue
++                val inner = contentBottom(child)
++                if (inner <= 0f) continue
++                // Translation, scale and rotation move the drawn content without changing layout.
++                val drawn = RectF(0f, 0f, child.width.toFloat(), inner)
++                if (!child.matrix.isIdentity) child.matrix.mapRect(drawn)
++                bottom = maxOf(bottom, child.top + drawn.bottom)
+             }
+         }
+         return bottom
+     }
+ 
++    private fun textBottom(view: TextView): Float {
++        val layout = view.layout ?: return view.height.toFloat()
++        val text = layout.text
++        var ink = Float.NaN
++        for (line in 0 until layout.lineCount) {
++            val start = layout.getLineStart(line)
++            val end = layout.getLineVisibleEnd(line)
++            if (end <= start) continue
++            view.paint.getTextBounds(text, start, end, textBounds)
++            ink = maxOf(if (ink.isNaN()) 0f else ink,
++                (layout.getLineBaseline(line) + textBounds.bottom).toFloat())
++        }
++        if (ink.isNaN()) return 0f
++        // Shadows and outlines draw past the glyph bounds.
++        val extra = maxOf(view.shadowRadius + view.shadowDy, 0f) + view.paint.strokeWidth / 2f
++        return view.totalPaddingTop + ink + extra
++    }
++
+     /** Restore the current appearance, rather than a pre-unlock alpha saved by the launcher. */
+     fun restoreAfterHandoff() {
+         val dozing = !forHome && statusBarStateController.isDozing
