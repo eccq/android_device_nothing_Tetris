@@ -1,0 +1,15 @@
+diff --git a/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/GamePanelCard.kt b/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/GamePanelCard.kt
+index f2caa5a..c164019 100644
+--- a/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/GamePanelCard.kt
++++ b/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/GamePanelCard.kt
+@@ -1268,8 +1268,8 @@ fun launchAppInFreeformMode(context: Context, packageName: String) {
+         if (launchIntent != null) {
+             val activityName = launchIntent.component?.className
+ 
+-            val freeformIntent = Intent("com.libremobileos.freeform.START_FREEFORM").apply {
+-                setPackage("com.libremobileos.freeform")
++            val freeformIntent = Intent("com.descartes.freeform.START_FREEFORM").apply {
++                setPackage("com.descartes.freeform")
+                 putExtra("packageName", packageName)
+                 putExtra("activityName", activityName)
+                 putExtra("userId", UserHandle.myUserId())
