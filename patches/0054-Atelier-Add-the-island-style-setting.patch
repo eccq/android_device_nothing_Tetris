@@ -1,0 +1,153 @@
+diff --git a/res/values-it-rIT/cr_strings.xml b/res/values-it-rIT/cr_strings.xml
+index 54f71ee8..1a82f764 100644
+--- a/res/values-it-rIT/cr_strings.xml
++++ b/res/values-it-rIT/cr_strings.xml
+@@ -1548,4 +1548,9 @@
+     <string name="display_engine_default">Predefinito</string>
+     <string name="display_engine_mode_footer_text">Inspired by Sony\'s Bravia/X-Reality engine, the Display Engine features Vivid mode for enhanced brightness and color saturation, X-Reality mode for improved detail and color accuracy, and Triluminous mode for a wider color range.</string>
+     <string name="emoji_style_title">Stile emoji</string>
++    <string name="dynamic_island_style_title">Stile isola</string>
++    <string name="dynamic_island_style_stock">Stock</string>
++    <string name="dynamic_island_style_penguin">Aspetto PenguinOS</string>
++    <string name="dynamic_island_style_lunaris">Lunaris (Dynamic Bar)</string>
++    <string name="dynamic_island_style_keywords">dynamic island, isola dinamica, pillola, stile, penguin, lunaris, dynamic bar</string>
+ </resources>
+diff --git a/res/values/cr_arrays.xml b/res/values/cr_arrays.xml
+index 73d3caa6..1583f26b 100644
+--- a/res/values/cr_arrays.xml
++++ b/res/values/cr_arrays.xml
+@@ -1299,6 +1299,18 @@
+         <item>100</item>
+     </string-array>
+     <!-- Dynamic island -->
++    <string-array name="dynamic_island_style_entries">
++        <item>@string/dynamic_island_style_stock</item>
++        <item>@string/dynamic_island_style_penguin</item>
++        <item>@string/dynamic_island_style_lunaris</item>
++    </string-array>
++
++    <string-array name="dynamic_island_style_values" translatable="false">
++        <item>stock</item>
++        <item>penguin</item>
++        <item>lunaris</item>
++    </string-array>
++
+     <string-array name="dynamic_island_popup_color_mode_entries">
+         <item>@string/dynamic_island_popup_color_mode_entry_default</item>
+         <item>@string/dynamic_island_popup_color_mode_entry_blur</item>
+diff --git a/res/values/cr_strings.xml b/res/values/cr_strings.xml
+index a39d2695..ead26c44 100644
+--- a/res/values/cr_strings.xml
++++ b/res/values/cr_strings.xml
+@@ -1932,4 +1932,9 @@ To setup Depth Wallpaper Feature:
+     <string name="qs_panel_style_motorola" translatable="false">Motorola HelloUI</string>
+     <string name="descartes_laboratory_title">Descartes Laboratory</string>
+     <string name="descartes_laboratory_summary">DeX, Liquid Glass, styles, experiments and more</string>
++    <string name="dynamic_island_style_title">Island style</string>
++    <string name="dynamic_island_style_stock">Stock</string>
++    <string name="dynamic_island_style_penguin">PenguinOS look</string>
++    <string name="dynamic_island_style_lunaris">Lunaris (Dynamic Bar)</string>
++    <string name="dynamic_island_style_keywords">dynamic island, pill, style, penguin, lunaris, dynamic bar, live activity</string>
+ </resources>
+diff --git a/res/xml/dynamic_island_settings.xml b/res/xml/dynamic_island_settings.xml
+index d03954cc..8fa53be1 100644
+--- a/res/xml/dynamic_island_settings.xml
++++ b/res/xml/dynamic_island_settings.xml
+@@ -10,6 +10,16 @@
+     android:key="dynamic_island_settings"
+     android:title="@string/status_bar_dynamic_island_title">
+ 
++    <ListPreference
++        android:key="dynamic_island_style"
++        android:title="@string/dynamic_island_style_title"
++        android:dialogTitle="@string/dynamic_island_style_title"
++        android:summary="%s"
++        android:persistent="false"
++        android:entries="@array/dynamic_island_style_entries"
++        android:entryValues="@array/dynamic_island_style_values"
++        settings:keywords="@string/dynamic_island_style_keywords" />
++
+     <lineageos.preference.SystemSettingMainSwitchPreference
+         android:key="status_bar_show_dynamic_island"
+         android:title="@string/status_bar_dynamic_island_title"
+diff --git a/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt b/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt
+index d46498b8..87310cae 100644
+--- a/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt
++++ b/src/com/crdroid/settings/fragments/statusbar/DynamicIslandSettings.kt
+@@ -19,6 +19,8 @@ import android.content.Context
+ import android.os.Bundle
+ import android.os.UserHandle
+ import android.provider.Settings
++import androidx.preference.ListPreference
++import androidx.preference.TwoStatePreference
+ 
+ import com.android.internal.logging.nano.MetricsProto
+ 
+@@ -33,16 +35,67 @@ class DynamicIslandSettings : SettingsPreferenceFragment() {
+     override fun onCreate(icicle: Bundle?) {
+         super.onCreate(icicle)
+         addPreferencesFromResource(R.xml.dynamic_island_settings)
++        findPreference<ListPreference>(KEY_STYLE)?.setOnPreferenceChangeListener { _, value ->
++            applyStyle(value as String)
++            true
++        }
++        // The two islands share the status bar, so only one can be on.
++        findPreference<TwoStatePreference>(KEY_ISLAND)?.setOnPreferenceChangeListener { _, value ->
++            if (value as Boolean) putDynamicBar(false)
++            listView?.post { if (isAdded) updateStyle() }
++            true
++        }
++    }
++
++    override fun onResume() {
++        super.onResume()
++        updateStyle()
++    }
++
++    private fun applyStyle(style: String) {
++        val lunaris = style == STYLE_LUNARIS
++        Settings.System.putIntForUser(requireContext().contentResolver, KEY_PENGUIN,
++            if (style == STYLE_PENGUIN) 1 else 0, UserHandle.USER_CURRENT)
++        putDynamicBar(lunaris)
++        findPreference<TwoStatePreference>(KEY_ISLAND)?.isChecked = !lunaris
++    }
++
++    private fun putDynamicBar(on: Boolean) {
++        Settings.Secure.putIntForUser(requireContext().contentResolver, KEY_DYNAMIC_BAR,
++            if (on) 1 else 0, UserHandle.USER_CURRENT)
++    }
++
++    private fun updateStyle() {
++        val resolver = requireContext().contentResolver
++        fun system(key: String) =
++            Settings.System.getIntForUser(resolver, key, 0, UserHandle.USER_CURRENT) == 1
++        val bar = Settings.Secure.getIntForUser(
++            resolver, KEY_DYNAMIC_BAR, 0, UserHandle.USER_CURRENT) == 1
++        findPreference<ListPreference>(KEY_STYLE)?.value = when {
++            bar && !system(KEY_ISLAND) -> STYLE_LUNARIS
++            system(KEY_PENGUIN) -> STYLE_PENGUIN
++            else -> STYLE_STOCK
++        }
+     }
+ 
+     override fun getMetricsCategory(): Int = MetricsProto.MetricsEvent.CRDROID_SETTINGS
+ 
+     companion object {
++        private const val KEY_STYLE = "dynamic_island_style"
++        private const val KEY_ISLAND = "status_bar_show_dynamic_island"
++        private const val KEY_PENGUIN = "status_bar_dynamic_island_penguin_look"
++        private const val KEY_DYNAMIC_BAR = "ax_dynamic_bar_enabled"
++        private const val STYLE_STOCK = "stock"
++        private const val STYLE_PENGUIN = "penguin"
++        private const val STYLE_LUNARIS = "lunaris"
++
+         @JvmStatic
+         fun reset(context: Context) {
+             val resolver = context.contentResolver
+             Settings.System.putIntForUser(resolver,
+                 "status_bar_show_dynamic_island", 0, UserHandle.USER_CURRENT)
++            Settings.System.putIntForUser(resolver,
++                KEY_PENGUIN, 0, UserHandle.USER_CURRENT)
+             Settings.System.putIntForUser(resolver,
+                 "status_bar_dynamic_island_width_scale", 100, UserHandle.USER_CURRENT)
+             Settings.System.putIntForUser(resolver,
