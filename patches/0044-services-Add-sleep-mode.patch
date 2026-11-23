@@ -1,0 +1,805 @@
+diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
+index 2a5ef9772e39..6e435a66d5d0 100644
+--- a/core/java/android/provider/Settings.java
++++ b/core/java/android/provider/Settings.java
+@@ -14927,6 +14927,96 @@ public final class Settings {
+          */
+         public static final String NOTIFICATION_ROW_TRANSPARENCY_LOCKSCREEN = "notification_row_transparency_lockscreen";
+ 
++        /**
++         * Whether the idle manager is on
++         * @hide
++         */
++        public static final String IDLE_MANAGER = "idle_manager";
++
++        /**
++         * Apps the idle manager limits, as a JSON array
++         * @hide
++         */
++        public static final String IDLE_MANAGER_APPS = "idle_manager_app_rules";
++
++        /**
++         * What the idle manager did, per app
++         * @hide
++         */
++        public static final String IDLE_MANAGER_KILL_STATS = "idle_manager_stats";
++
++        /**
++         * Whether standby buckets still have to be restored
++         * @hide
++         */
++        public static final String IDLE_MANAGER_RESTORE_PENDING = "idle_manager_restore_pending";
++
++        /**
++         * Original and applied standby buckets, for recovery
++         * @hide
++         */
++        public static final String IDLE_MANAGER_BUCKET_STATE = "idle_manager_bucket_state";
++
++        /**
++         * Whether the idle manager only runs in sleep mode
++         * @hide
++         */
++        public static final String IDLE_MANAGER_SLEEP_MODE_TRIGGER = "idle_manager_sleep_mode_trigger";
++
++        /**
++         * Whether sleep mode is on
++         * @hide
++         */
++        public static final String SLEEP_MODE_ENABLED = "sleep_mode_enabled";
++
++        /**
++         * 0 manual, 1 sunset to sunrise, 2 custom, 3 sunset to a time, 4 a time to sunrise
++         * @hide
++         */
++        public static final String SLEEP_MODE_AUTO_MODE = "sleep_mode_auto_mode";
++
++        /**
++         * Sleep mode times as HH:mm,HH:mm (since,till)
++         * @hide
++         */
++        public static final String SLEEP_MODE_AUTO_TIME = "sleep_mode_auto_time";
++
++        /**
++         * What sleep mode turned off, to turn it back on after a reboot
++         * @hide
++         */
++        public static final String SLEEP_MODE_SAVED_STATE = "sleep_mode_saved_state";
++
++        /**
++         * Whether sleep mode turns off Wi-Fi
++         * @hide
++         */
++        public static final String SLEEP_MODE_WIFI_TOGGLE = "sleep_mode_wifi_toggle";
++
++        /**
++         * Whether sleep mode turns off Bluetooth
++         * @hide
++         */
++        public static final String SLEEP_MODE_BLUETOOTH_TOGGLE = "sleep_mode_bluetooth_toggle";
++
++        /**
++         * Whether sleep mode turns off mobile data
++         * @hide
++         */
++        public static final String SLEEP_MODE_CELLULAR_TOGGLE = "sleep_mode_cellular_toggle";
++
++        /**
++         * Whether sleep mode turns off the sensors
++         * @hide
++         */
++        public static final String SLEEP_MODE_SENSORS_TOGGLE = "sleep_mode_sensors_toggle";
++
++        /**
++         * Ringer in sleep mode: 0 unchanged, 1 vibrate, 2 do not disturb, 3 silent
++         * @hide
++         */
++        public static final String SLEEP_MODE_RINGER_MODE = "sleep_mode_ringer_mode";
++
+         /**
+          * Lockscreen custom clock face
+          * @hide
+diff --git a/core/res/res/values/cr_strings.xml b/core/res/res/values/cr_strings.xml
+index ca80dde78ef8..4440e641d085 100644
+--- a/core/res/res/values/cr_strings.xml
++++ b/core/res/res/values/cr_strings.xml
+@@ -22,4 +22,8 @@
+ 
+     <!-- Cycle through ringer modes -->
+     <string name="volume_dialog_ringer_guidance_normal">Calls and notifications will ring</string>
++
++    <!-- Sleep mode -->
++    <string name="sleep_mode_notification_title">Sleep mode is on</string>
++    <string name="sleep_mode_notification_content">Tap to turn it off</string>
+ </resources>
+diff --git a/core/res/res/values/cr_symbols.xml b/core/res/res/values/cr_symbols.xml
+index 5e3bc637efb5..62df2672217a 100644
+--- a/core/res/res/values/cr_symbols.xml
++++ b/core/res/res/values/cr_symbols.xml
+@@ -79,4 +79,8 @@
+ 
+     <!-- Vibrator service -->
+     <java-symbol type="array" name="config_textureTickVibePattern" />
++
++    <!-- Sleep mode -->
++    <java-symbol type="string" name="sleep_mode_notification_title" />
++    <java-symbol type="string" name="sleep_mode_notification_content" />
+ </resources>
+diff --git a/services/core/java/com/android/server/power/SleepModeController.java b/services/core/java/com/android/server/power/SleepModeController.java
+new file mode 100644
+index 000000000000..d46474ae3b4b
+--- /dev/null
++++ b/services/core/java/com/android/server/power/SleepModeController.java
+@@ -0,0 +1,225 @@
++/*
++ * Copyright (C) 2021 Havoc-OS
++ * Copyright (C) 2024-2026 Lunaris AOSP
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.android.server.power;
++
++import android.app.Notification;
++import android.app.NotificationManager;
++import android.app.PendingIntent;
++import android.bluetooth.BluetoothAdapter;
++import android.bluetooth.BluetoothManager;
++import android.content.BroadcastReceiver;
++import android.content.Context;
++import android.content.Intent;
++import android.content.IntentFilter;
++import android.database.ContentObserver;
++import android.hardware.SensorPrivacyManager;
++import android.media.AudioManager;
++import android.net.Uri;
++import android.net.wifi.WifiManager;
++import android.os.Handler;
++import android.os.HandlerThread;
++import android.os.UserHandle;
++import android.provider.Settings;
++import android.telephony.SubscriptionManager;
++import android.telephony.TelephonyManager;
++import android.util.Slog;
++
++import com.android.internal.R;
++import com.android.internal.notification.SystemNotificationChannels;
++
++import org.json.JSONException;
++import org.json.JSONObject;
++
++/** Turns radios, sensors and the ringer off in sleep mode and back on after it. */
++class SleepModeController {
++
++    private static final String TAG = "SleepModeController";
++    private static final String ACTION_TURN_OFF = "com.android.server.power.SLEEP_MODE_TURN_OFF";
++    private static final int NOTIFICATION_ID = 727;
++
++    private final Context mContext;
++    private final NotificationManager mNotificationManager;
++
++    SleepModeController(Context context) {
++        mContext = context;
++        mNotificationManager = context.getSystemService(NotificationManager.class);
++
++        HandlerThread thread = new HandlerThread(TAG);
++        thread.start();
++        Handler handler = new Handler(thread.getLooper());
++        context.getContentResolver().registerContentObserver(
++                Settings.Secure.getUriFor(Settings.Secure.SLEEP_MODE_ENABLED), false,
++                new ContentObserver(handler) {
++                    @Override
++                    public void onChange(boolean selfChange, Uri uri) {
++                        update();
++                    }
++                }, UserHandle.USER_ALL);
++        context.registerReceiver(new BroadcastReceiver() {
++            @Override
++            public void onReceive(Context c, Intent intent) {
++                putInt(Settings.Secure.SLEEP_MODE_ENABLED, 0);
++            }
++        }, new IntentFilter(ACTION_TURN_OFF), null, handler, Context.RECEIVER_NOT_EXPORTED);
++        handler.post(this::update);
++    }
++
++    private void update() {
++        boolean enabled = getInt(Settings.Secure.SLEEP_MODE_ENABLED, 0) == 1;
++        // The saved state survives a reboot, so it tells whether sleep mode was applied.
++        String saved = Settings.Secure.getStringForUser(mContext.getContentResolver(),
++                Settings.Secure.SLEEP_MODE_SAVED_STATE, UserHandle.USER_CURRENT);
++        boolean applied = saved != null && !saved.isEmpty();
++        if (enabled && !applied) {
++            enable();
++        } else if (!enabled && applied) {
++            disable(saved);
++        }
++        if (enabled) {
++            showNotification();
++        } else {
++            mNotificationManager.cancel(NOTIFICATION_ID);
++        }
++    }
++
++    private void enable() {
++        WifiManager wifi = mContext.getSystemService(WifiManager.class);
++        BluetoothAdapter bluetooth = bluetooth();
++        TelephonyManager telephony = telephony();
++        SensorPrivacyManager sensors = mContext.getSystemService(SensorPrivacyManager.class);
++        AudioManager audio = mContext.getSystemService(AudioManager.class);
++
++        boolean wifiOff = isOn(Settings.Secure.SLEEP_MODE_WIFI_TOGGLE) && wifi != null
++                && wifi.isWifiEnabled();
++        boolean bluetoothOff = isOn(Settings.Secure.SLEEP_MODE_BLUETOOTH_TOGGLE)
++                && bluetooth != null && bluetooth.isEnabled();
++        boolean dataOff = isOn(Settings.Secure.SLEEP_MODE_CELLULAR_TOGGLE)
++                && telephony != null && telephony.isDataEnabled();
++        boolean sensorsOff = isOn(Settings.Secure.SLEEP_MODE_SENSORS_TOGGLE)
++                && sensors != null && !sensors.isAllSensorPrivacyEnabled();
++        int ringer = audio == null ? 0 : getInt(Settings.Secure.SLEEP_MODE_RINGER_MODE, 0);
++
++        // Saved first: a crash halfway still restores everything.
++        JSONObject saved = new JSONObject();
++        try {
++            saved.put("wifi", wifiOff);
++            saved.put("bluetooth", bluetoothOff);
++            saved.put("data", dataOff);
++            saved.put("sub", dataOff ? telephony.getSubscriptionId() : -1);
++            saved.put("sensors", sensorsOff);
++            if (ringer != 0) {
++                saved.put("ringer", audio.getRingerModeInternal());
++                saved.put("zen", mNotificationManager.getZenMode());
++            }
++        } catch (JSONException e) {
++            Slog.e(TAG, "Cannot save the state", e);
++            return;
++        }
++        putString(saved.toString());
++
++        if (wifiOff) attempt(() -> wifi.setWifiEnabled(false));
++        if (bluetoothOff) attempt(bluetooth::disable);
++        if (dataOff) attempt(() -> telephony.setDataEnabled(false));
++        if (sensorsOff) attempt(() -> sensors.setAllSensorPrivacy(true));
++        if (ringer != 0) {
++            attempt(() -> {
++                int mode = ringer == 1 ? AudioManager.RINGER_MODE_VIBRATE
++                        : ringer == 2 ? AudioManager.RINGER_MODE_NORMAL
++                        : AudioManager.RINGER_MODE_SILENT;
++                audio.setRingerModeInternal(mode);
++                mNotificationManager.setZenMode(ringer == 2
++                        ? Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS
++                        : Settings.Global.ZEN_MODE_OFF, null, TAG);
++            });
++        }
++    }
++
++    private void disable(String json) {
++        JSONObject saved;
++        try {
++            saved = new JSONObject(json);
++        } catch (JSONException e) {
++            Slog.e(TAG, "Cannot read the saved state", e);
++            putString("");
++            return;
++        }
++        if (saved.optBoolean("wifi")) {
++            attempt(() -> mContext.getSystemService(WifiManager.class).setWifiEnabled(true));
++        }
++        if (saved.optBoolean("bluetooth")) attempt(() -> bluetooth().enable());
++        if (saved.optBoolean("data")) {
++            attempt(() -> mContext.getSystemService(TelephonyManager.class)
++                    .createForSubscriptionId(saved.optInt("sub",
++                            SubscriptionManager.getDefaultDataSubscriptionId()))
++                    .setDataEnabled(true));
++        }
++        if (saved.optBoolean("sensors")) {
++            attempt(() -> mContext.getSystemService(SensorPrivacyManager.class)
++                    .setAllSensorPrivacy(false));
++        }
++        if (saved.has("ringer")) {
++            attempt(() -> {
++                mContext.getSystemService(AudioManager.class)
++                        .setRingerModeInternal(saved.optInt("ringer"));
++                mNotificationManager.setZenMode(saved.optInt("zen"), null, TAG);
++            });
++        }
++        putString("");
++    }
++
++    private BluetoothAdapter bluetooth() {
++        BluetoothManager manager = mContext.getSystemService(BluetoothManager.class);
++        return manager == null ? null : manager.getAdapter();
++    }
++
++    private TelephonyManager telephony() {
++        TelephonyManager manager = mContext.getSystemService(TelephonyManager.class);
++        return manager == null ? null : manager.createForSubscriptionId(
++                SubscriptionManager.getDefaultDataSubscriptionId());
++    }
++
++    private void attempt(Runnable action) {
++        try {
++            action.run();
++        } catch (RuntimeException e) {
++            Slog.w(TAG, "Sleep mode step failed", e);
++        }
++    }
++
++    private void showNotification() {
++        PendingIntent turnOff = PendingIntent.getBroadcast(mContext, 0,
++                new Intent(ACTION_TURN_OFF).setPackage(mContext.getPackageName()),
++                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
++        mNotificationManager.notify(NOTIFICATION_ID,
++                new Notification.Builder(mContext, SystemNotificationChannels.NETWORK_STATUS)
++                        .setContentTitle(mContext.getString(R.string.sleep_mode_notification_title))
++                        .setContentText(mContext.getString(R.string.sleep_mode_notification_content))
++                        .setSmallIcon(R.drawable.ic_zen_24dp)
++                        .setOngoing(true)
++                        .setContentIntent(turnOff)
++                        .build());
++    }
++
++    private boolean isOn(String key) {
++        return getInt(key, 1) == 1;
++    }
++
++    private int getInt(String key, int def) {
++        return Settings.Secure.getIntForUser(mContext.getContentResolver(), key, def,
++                UserHandle.USER_CURRENT);
++    }
++
++    private void putInt(String key, int value) {
++        Settings.Secure.putIntForUser(mContext.getContentResolver(), key, value,
++                UserHandle.USER_CURRENT);
++    }
++
++    private void putString(String value) {
++        Settings.Secure.putStringForUser(mContext.getContentResolver(),
++                Settings.Secure.SLEEP_MODE_SAVED_STATE, value, UserHandle.USER_CURRENT);
++    }
++}
+diff --git a/services/core/java/com/android/server/power/SleepModeService.java b/services/core/java/com/android/server/power/SleepModeService.java
+new file mode 100644
+index 000000000000..43be24b51afc
+--- /dev/null
++++ b/services/core/java/com/android/server/power/SleepModeService.java
+@@ -0,0 +1,418 @@
++/*
++ * Copyright (C) 2021 Havoc-OS
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.android.server.power;
++
++import android.annotation.Nullable;
++import android.app.AlarmManager;
++import android.content.BroadcastReceiver;
++import android.content.ContentResolver;
++import android.content.Context;
++import android.content.Intent;
++import android.content.IntentFilter;
++import android.database.ContentObserver;
++import android.net.Uri;
++import android.os.Handler;
++import android.os.Looper;
++import android.os.PowerManager;
++import android.os.PowerManager.WakeLock;
++import android.os.SystemClock;
++import android.os.UserHandle;
++import android.provider.Settings;
++import android.util.Slog;
++
++import com.android.server.SystemService;
++import com.android.server.twilight.TwilightListener;
++import com.android.server.twilight.TwilightManager;
++import com.android.server.twilight.TwilightState;
++
++import java.lang.IllegalArgumentException;
++import java.util.Calendar;
++
++public class SleepModeService extends SystemService {
++
++    private static final String TAG = "SleepModeService";
++    private static final int WAKELOCK_TIMEOUT_MS = 3000;
++
++    /**
++     * Disabled state (default)
++     */
++    private static final int MODE_DISABLED = 0;
++    /**
++     * Active from sunset to sunrise
++     */
++    private static final int MODE_NIGHT = 1;
++    /**
++     * Active at a user set time
++     */
++    private static final int MODE_TIME = 2;
++    /**
++     * Active from sunset till a time
++     */
++    private static final int MODE_MIXED_SUNSET = 3;
++    /**
++     * Active from a time till sunrise
++     */
++    private static final int MODE_MIXED_SUNRISE = 4;
++
++    private SleepModeController mSleepModeController;
++    private final AlarmManager mAlarmManager;
++    private final Context mContext;
++    private final Handler mHandler = new Handler(Looper.getMainLooper());
++    private TwilightManager mTwilightManager;
++    private TwilightState mTwilightState;
++
++    /**
++     * Current operation mode
++     * Can either be {@link #MODE_DISABLED}, {@link #MODE_NIGHT} or {@link #MODE_TIME}
++     */
++    private int mMode = MODE_DISABLED;
++    /**
++     * Whether next alarm should enable or disable Sleep Mode
++     */
++    private boolean mIsNextActivate = false;
++
++    private final TwilightListener mTwilightListener = new TwilightListener() {
++        @Override
++        public void onTwilightStateChanged(@Nullable TwilightState state) {
++            if (mMode != MODE_NIGHT && mMode < MODE_MIXED_SUNSET) {
++                setTwilightListener(false);
++                return;
++            }
++            Slog.v(TAG, "onTwilightStateChanged state: " + state);
++            if (state == null) return;
++            mTwilightState = state;
++            if (mMode < MODE_MIXED_SUNSET) mHandler.post(() -> maybeActivateSleepMode());
++            else mHandler.post(() -> maybeActivateTime());
++        }
++    };
++
++    private final BroadcastReceiver mTimeChangedReceiver = new BroadcastReceiver() {
++        @Override
++        public void onReceive(Context context, Intent intent) {
++            if (mMode != MODE_TIME && mMode < MODE_MIXED_SUNSET) {
++                setTimeReciever(false);
++                return;
++            }
++            Slog.v(TAG, "mTimeChangedReceiver onReceive");
++            mHandler.post(() -> maybeActivateTime());
++        }
++    };
++
++    /**
++     * A class to manage and handle alarms
++     */
++    private class Alarm implements AlarmManager.OnAlarmListener {
++        @Override
++        public void onAlarm() {
++            Slog.v(TAG, "onAlarm");
++            mHandler.post(() -> setAutoSleepModeActive(mIsNextActivate));
++            if (mMode == MODE_TIME || mMode >= MODE_MIXED_SUNSET)
++                mHandler.post(() -> maybeActivateTime(false));
++            else
++                mHandler.post(() -> maybeActivateNight(false));
++        }
++
++        /**
++         * Set a new alarm using a Calendar
++         * @param time time as Calendar
++         */
++        public void set(Calendar time) {
++            set(time.getTimeInMillis());
++        }
++
++        /**
++         * Set a new alarm using ms since epoch
++         * @param time time as ms since epoch
++         */
++        public void set(long time) {
++            cancel();
++            mAlarmManager.setExact(AlarmManager.RTC_WAKEUP,
++                    time, TAG, this, mHandler);
++            Slog.v(TAG, "new alarm set to " + time
++                    + " mIsNextActivate=" + mIsNextActivate);
++        }
++
++        public void cancel() {
++            mAlarmManager.cancel(this);
++            Slog.v(TAG, "alarm cancelled");
++        }
++    }
++
++    private final Alarm mAlarm = new Alarm();
++
++    private class SettingsObserver extends ContentObserver {
++        SettingsObserver(Handler handler) {
++            super(handler);
++        }
++
++        void observe() {
++            ContentResolver resolver = mContext.getContentResolver();
++            resolver.registerContentObserver(Settings.Secure.getUriFor(
++                    Settings.Secure.SLEEP_MODE_AUTO_MODE),
++                    false, this, UserHandle.USER_ALL);
++            resolver.registerContentObserver(Settings.Secure.getUriFor(
++                    Settings.Secure.SLEEP_MODE_AUTO_TIME),
++                    false, this, UserHandle.USER_ALL);
++        }
++
++        @Override
++        public void onChange(boolean selfChange, Uri uri) {
++            mHandler.post(() -> {
++                if (mSleepModeController != null) initState();
++            });
++        }
++    }
++
++    private final SettingsObserver mSettingsObserver;
++
++    public SleepModeService(Context context) {
++        super(context);
++        mContext = context;
++        mAlarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
++        mSettingsObserver = new SettingsObserver(mHandler);
++    }
++
++    @Override
++    public void onStart() {
++        Slog.v(TAG, "Starting " + TAG);
++        publishLocalService(SleepModeService.class, this);
++        mSettingsObserver.observe();
++    }
++
++    @Override
++    public void onBootPhase(int phase) {
++        if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
++            Slog.v(TAG, "onBootPhase PHASE_SYSTEM_SERVICES_READY");
++            mTwilightManager = getLocalService(TwilightManager.class);
++        } else if (phase == SystemService.PHASE_BOOT_COMPLETED) {
++            Slog.v(TAG, "onBootPhase PHASE_BOOT_COMPLETED");
++            mHandler.post(() -> {
++                mSleepModeController = new SleepModeController(mContext);
++                initState();
++            });
++        }
++    }
++
++    /**
++     * Registers or unregisters {@link #mTimeChangedReceiver}
++     * @param register Register when true, unregister when false
++     */
++    private void setTimeReciever(boolean register) {
++        if (register) {
++            Slog.v(TAG, "Registering mTimeChangedReceiver");
++            final IntentFilter intentFilter = new IntentFilter(Intent.ACTION_TIME_CHANGED);
++            intentFilter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
++            mContext.registerReceiver(mTimeChangedReceiver, intentFilter);
++            return;
++        }
++        try {
++            mContext.unregisterReceiver(mTimeChangedReceiver);
++            Slog.v(TAG, "Unregistered mTimeChangedReceiver");
++        } catch (IllegalArgumentException e) {
++            // Nothing to do. Already unregistered
++        }
++    }
++
++    /**
++     * Registers or unregisters {@link #mTwilightListener}
++     * @param register Register when true, unregister when false
++     */
++    private void setTwilightListener(boolean register) {
++        if (register) {
++            try {
++                Slog.v(TAG, "Registering mTwilightListener");
++                mTwilightManager.registerListener(mTwilightListener, mHandler);
++                mTwilightState = mTwilightManager.getLastTwilightState();
++            } catch (Exception e) {
++                Slog.v(TAG, "Failed to register mTwilightListener");
++            }
++            return;
++        }
++        try {
++            mTwilightManager.unregisterListener(mTwilightListener);
++            Slog.v(TAG, "Unregistered mTwilightListener");
++        } catch (Exception e) {
++            // Nothing to do. Already unregistered
++        }
++    }
++
++    /**
++     * Initiates the state according to user settings
++     * Registers or unregisters listeners and calls {@link #maybeActivateSleepMode()}
++     */
++    private void initState() {
++        final int pMode = mMode;
++        mMode = Settings.Secure.getIntForUser(mContext.getContentResolver(),
++                Settings.Secure.SLEEP_MODE_AUTO_MODE, MODE_DISABLED,
++                UserHandle.USER_CURRENT);
++        mAlarm.cancel();
++        switch (mMode) {
++            default:
++            case MODE_DISABLED:
++                if (pMode != MODE_DISABLED) setAutoSleepModeActive(false);
++                return;
++            case MODE_TIME:
++                if (pMode == MODE_TIME) break;
++                setTimeReciever(true);
++                break;
++            case MODE_NIGHT:
++                if (pMode == MODE_NIGHT) break;
++                setTwilightListener(true);
++                break;
++            case MODE_MIXED_SUNSET:
++            case MODE_MIXED_SUNRISE:
++                if (pMode >= MODE_MIXED_SUNSET) break;
++                if (pMode != MODE_NIGHT) setTwilightListener(true);
++                if (pMode != MODE_TIME) setTimeReciever(true);
++                break;
++        }
++        switch (pMode) {
++            case MODE_TIME:
++                if (mMode == MODE_TIME || mMode >= MODE_MIXED_SUNSET) break;
++                setTimeReciever(false);
++                break;
++            case MODE_NIGHT:
++            case MODE_MIXED_SUNSET:
++            case MODE_MIXED_SUNRISE:
++                if (mMode == MODE_NIGHT || mMode >= MODE_MIXED_SUNSET) break;
++                setTwilightListener(false);
++                if (pMode < MODE_MIXED_SUNSET) break;
++                setTimeReciever(false);
++                break;
++        }
++        maybeActivateSleepMode();
++    }
++
++    /**
++     * Calls the correct function to set the next alarm according to {@link #mMode}
++     */
++    private void maybeActivateSleepMode() {
++        switch (mMode) {
++            default:
++            case MODE_DISABLED:
++                break;
++            case MODE_NIGHT:
++                maybeActivateNight();
++                break;
++            case MODE_TIME:
++            case MODE_MIXED_SUNSET:
++            case MODE_MIXED_SUNRISE:
++                maybeActivateTime();
++                break;
++        }
++    }
++
++    /**
++     * See {@link #maybeActivateNight(boolean)}
++     */
++    private void maybeActivateNight() {
++        maybeActivateNight(true);
++    }
++
++    /**
++     * Sets the next alarm for {@link #MODE_NIGHT}
++     * @param setActive Whether to set activation state.
++     *                  When false only updates the alarm
++     */
++    private void maybeActivateNight(boolean setActive) {
++        if (mTwilightState == null) {
++            Slog.e(TAG, "aborting maybeActivateNight(). mTwilightState is null");
++            return;
++        }
++        mIsNextActivate = !mTwilightState.isNight();
++        mAlarm.set(mIsNextActivate ? mTwilightState.sunsetTimeMillis()
++                : mTwilightState.sunriseTimeMillis());
++        if (setActive) mHandler.post(() -> setAutoSleepModeActive(!mIsNextActivate));
++    }
++
++    /**
++     * See {@link #maybeActivateTime(boolean)}
++     */
++    private void maybeActivateTime() {
++        maybeActivateTime(true);
++    }
++
++    /**
++     * Sets the next alarm for {@link #MODE_TIME}, {@link #MODE_MIXED_SUNSET} and
++     *                         {@link #MODE_MIXED_SUNRISE}
++     * @param setActive Whether to set activation state
++     *                  When false only updates the alarm
++     */
++    private void maybeActivateTime(boolean setActive) {
++        Calendar currentTime = Calendar.getInstance();
++        Calendar since = Calendar.getInstance();
++        Calendar till = Calendar.getInstance();
++        String value = Settings.Secure.getStringForUser(mContext.getContentResolver(),
++                Settings.Secure.SLEEP_MODE_AUTO_TIME, UserHandle.USER_CURRENT);
++        if (value == null || value.equals("")) value = "22:00,07:00";
++        String[] times = value.split(",", 0);
++        String[] sinceValues = times[0].split(":", 0);
++        String[] tillValues = times[1].split(":", 0);
++        since.set(Calendar.HOUR_OF_DAY, Integer.parseInt(sinceValues[0]));
++        since.set(Calendar.MINUTE, Integer.parseInt(sinceValues[1]));
++        since.set(Calendar.SECOND, 0);
++        till.set(Calendar.HOUR_OF_DAY, Integer.parseInt(tillValues[0]));
++        till.set(Calendar.MINUTE, Integer.parseInt(tillValues[1]));
++        till.set(Calendar.SECOND, 0);
++
++        // Handle mixed modes
++        if (mMode >= MODE_MIXED_SUNSET) {
++            if (mTwilightState == null) {
++                Slog.e(TAG, "aborting maybeActivateTime(). mTwilightState is null");
++                return;
++            }
++            if (mMode == MODE_MIXED_SUNSET) {
++                since.setTimeInMillis(mTwilightState.sunsetTimeMillis());
++            } else { // MODE_MIXED_SUNRISE
++                till.setTimeInMillis(mTwilightState.sunriseTimeMillis());
++                if (!mTwilightState.isNight()) till.add(Calendar.DATE, 1);
++            }
++        }
++
++        if (currentTime.before(since) && currentTime.before(till) && till.compareTo(since) < 0) {
++            since.add(Calendar.DATE, -1);
++        }
++        // Roll to the next day if needed be
++        if (since.after(till)) till.add(Calendar.DATE, 1);
++        if (currentTime.after(since) && currentTime.compareTo(till) >= 0) {
++            since.add(Calendar.DATE, 1);
++            till.add(Calendar.DATE, 1);
++        }
++        // Abort if the user was dumb enough to set the same time
++        if (since.compareTo(till) == 0) {
++            Slog.e(TAG, "Aborting maybeActivateTime(). Time diff is 0");
++            return;
++        }
++
++        // Update the next alarm
++        mIsNextActivate = currentTime.before(since);
++        mAlarm.set(mIsNextActivate ? since : till);
++
++        // Activate or disable according to current time
++        if (setActive) setAutoSleepModeActive(currentTime.compareTo(since) >= 0
++                && currentTime.before(till));
++    }
++
++    /**
++     * Activates or deactivates Sleep Mode
++     * @param active Whether to enable or disable Sleep Mode
++     */
++    private void setAutoSleepModeActive(boolean active) {
++        Slog.v(TAG, "setAutoSleepModeActive: active=" + active);
++        Settings.Secure.putIntForUser(mContext.getContentResolver(),
++                Settings.Secure.SLEEP_MODE_ENABLED, active ? 1 : 0, UserHandle.USER_CURRENT);
++    }
++}
+diff --git a/services/java/com/android/server/SystemServer.java b/services/java/com/android/server/SystemServer.java
+index 1c9435a367f8..983809206054 100644
+--- a/services/java/com/android/server/SystemServer.java
++++ b/services/java/com/android/server/SystemServer.java
+@@ -250,6 +250,7 @@ import com.android.server.policy.PermissionPolicyService;
+ import com.android.server.policy.PhoneWindowManager;
+ import com.android.server.policy.role.RoleServicePlatformHelperImpl;
+ import com.android.server.power.PowerManagerService;
++import com.android.server.power.SleepModeService;
+ import com.android.server.power.ShutdownThread;
+ import com.android.server.power.hint.HintManagerService;
+ import com.android.server.power.thermal.ThermalManagerService;
+@@ -2622,6 +2623,10 @@ public final class SystemServer implements Dumpable {
+                 t.traceBegin("StartTwilightService");
+                 mSystemServiceManager.startService(TwilightService.class);
+                 t.traceEnd();
++
++                t.traceBegin("StartSleepMode");
++                mSystemServiceManager.startService(SleepModeService.class);
++                t.traceEnd();
+             }
+ 
+             t.traceBegin("StartColorDisplay");

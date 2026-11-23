@@ -47,6 +47,7 @@ cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0
 cd packages/apps/GameSpace && git apply ../../../device/nothing/Tetris/patches/0041-*.patch && cd -
 cd packages/apps/DescartesLaboratory && git apply ../../../device/nothing/Tetris/patches/0042-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0043-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0044-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -94,3 +95,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0043-*.patch
 | `0041-GameSpace-Send-freeform-to-the-Descartes-freeform-app.patch` | Same freeform fix for the game panel. |
 | `0042-DescartesLaboratory-Say-what-the-fluid-clock-needs.patch` | The Fluid Clock summary says it needs the lock screen clock widget on the first home page, where the clock lands. |
 | `0043-SystemUI-Fly-the-fluid-clock-only-after-a-fingerprint-unlock.patch` | The COS fluid clock flies to the home screen widget only when a fingerprint unlocked the device. |
+| `0044-services-Add-sleep-mode.patch` | Sleep mode from Lunaris: turns off Wi-Fi, Bluetooth, mobile data and sensors by hand or on a schedule, and restores them even after a reboot. |
