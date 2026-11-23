@@ -1,0 +1,90 @@
+diff --git a/src/org/lunaris/lockstyles/GalleryApplier.kt b/src/org/lunaris/lockstyles/GalleryApplier.kt
+index ec24c78..20397ef 100644
+--- a/src/org/lunaris/lockstyles/GalleryApplier.kt
++++ b/src/org/lunaris/lockstyles/GalleryApplier.kt
+@@ -38,6 +38,11 @@ object GalleryApplier {
+         }
+     }
+ 
++    /** The lock screen shows the home wallpaper when it has none of its own. */
++    fun lockWallpaperId(wm: WallpaperManager): Int =
++        wm.getWallpaperId(WallpaperManager.FLAG_LOCK).takeIf { it > 0 }
++            ?: wm.getWallpaperId(WallpaperManager.FLAG_SYSTEM)
++
+     fun screenSize(context: Context): Pair<Int, Int> {
+         val bounds = context.getSystemService(WindowManager::class.java)!!
+             .maximumWindowMetrics.bounds
+@@ -122,6 +127,7 @@ object GalleryApplier {
+         }
+         applyDepth(context, wallpaper)
+         store.setCurrent(lockScreen.id)
++        store.deviceWallpaperId = lockWallpaperId(wm)
+         store.pruneImportedPhotos()
+         return true
+     }
+diff --git a/src/org/lunaris/lockstyles/GalleryStore.kt b/src/org/lunaris/lockstyles/GalleryStore.kt
+index 238229c..ac77b31 100644
+--- a/src/org/lunaris/lockstyles/GalleryStore.kt
++++ b/src/org/lunaris/lockstyles/GalleryStore.kt
+@@ -59,6 +59,11 @@ class GalleryStore private constructor(private val context: Context) {
+         prefs.edit().putString(KEY_CURRENT, id).apply()
+     }
+ 
++    /** WallpaperManager id of the lock wallpaper this app last put or adopted; -1 if none. */
++    var deviceWallpaperId: Int
++        get() = prefs.getInt(KEY_DEVICE_WALLPAPER_ID, -1)
++        set(value) = prefs.edit().putInt(KEY_DEVICE_WALLPAPER_ID, value).apply()
++
+     private fun write(list: List<LockScreen>) {
+         prefs.edit().putString(KEY_LOCK_SCREENS,
+             JSONArray().also { a -> list.forEach { a.put(it.toJson()) } }.toString()).apply()
+@@ -135,6 +140,7 @@ class GalleryStore private constructor(private val context: Context) {
+         private const val KEY_LIVE_HOME = "live_home"
+         private const val KEY_SHUFFLE_INDEX = "shuffle_index"
+         private const val KEY_SHUFFLE_AT = "shuffle_at"
++        private const val KEY_DEVICE_WALLPAPER_ID = "device_wallpaper_id"
+ 
+         const val PACK_EMOJI = "emoji"
+         const val PACK_KALEIDOSCOPE = "kaleidoscope"
+diff --git a/src/org/lunaris/lockstyles/ui/LockScreenGalleryActivity.kt b/src/org/lunaris/lockstyles/ui/LockScreenGalleryActivity.kt
+index 5eb74d1..5c52fab 100644
+--- a/src/org/lunaris/lockstyles/ui/LockScreenGalleryActivity.kt
++++ b/src/org/lunaris/lockstyles/ui/LockScreenGalleryActivity.kt
+@@ -311,14 +311,20 @@ class LockScreenGalleryActivity : ComponentActivity() {
+     }
+ 
+     /**
+-     * The first time, the wallpaper already on the lock screen becomes the first saved lock
+-     * screen, so the switcher never starts empty.
++     * The wallpaper on the lock screen becomes a saved lock screen the first time, and again
++     * whenever it was changed outside this app, so applying a clock never brings back an old one.
+      */
+     private fun adoptCurrentWallpaper(store: GalleryStore) {
+-        if (store.lockScreens.isNotEmpty()) return
+         val wm = WallpaperManager.getInstance(this)
++        val deviceId = GalleryApplier.lockWallpaperId(wm)
++        val first = store.lockScreens.isEmpty()
++        if (!first && deviceId == store.deviceWallpaperId) return
++        // getDrawable(FLAG_LOCK) is null while the lock screen shares the home wallpaper.
+         val drawable = runCatching { wm.getDrawable(WallpaperManager.FLAG_LOCK) }.getOrNull()
+-            ?: runCatching { wm.builtInDrawable }.getOrNull() ?: return
++            ?: runCatching { wm.getDrawable(WallpaperManager.FLAG_SYSTEM) }.getOrNull()
++            ?: if (first) runCatching { wm.builtInDrawable }.getOrNull() else null
++        store.deviceWallpaperId = deviceId
++        if (drawable == null) return
+         val (w, h) = GalleryApplier.screenSize(this)
+         val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+         drawable.setBounds(0, 0, w, h)
+diff --git a/src/org/lunaris/lockstyles/ui/SwitcherScreen.kt b/src/org/lunaris/lockstyles/ui/SwitcherScreen.kt
+index 62aa375..ca8a8cd 100644
+--- a/src/org/lunaris/lockstyles/ui/SwitcherScreen.kt
++++ b/src/org/lunaris/lockstyles/ui/SwitcherScreen.kt
+@@ -119,6 +119,8 @@ fun SwitcherScreen(
+         lockScreens.indexOfFirst { it.id == store.currentId }.coerceAtLeast(0)
+     }
+     val pager = rememberPagerState(initialPage = current) { lockScreens.size }
++    // The wallpaper adopted at launch becomes current after the pager is built.
++    LaunchedEffect(current) { if (pager.currentPage != current) pager.scrollToPage(current) }
+     val scope = rememberCoroutineScope()
+     // 1 is the lock screen filling the display, 0 is it sitting in its card.
+     val zoom = remember { Animatable(if (zoomIn) 1f else 0f) }
