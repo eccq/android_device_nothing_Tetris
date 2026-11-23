@@ -1,0 +1,44 @@
+diff --git a/services/core/java/com/android/server/audio/AudioService.java b/services/core/java/com/android/server/audio/AudioService.java
+index a52cd99d69c0..0cdba9065253 100644
+--- a/services/core/java/com/android/server/audio/AudioService.java
++++ b/services/core/java/com/android/server/audio/AudioService.java
+@@ -1760,6 +1760,8 @@ public class AudioService extends IAudioService.Stub
+             }
+         }
+ 
++        applyUserVolumeSteps();
++
+         if (looper == null) {
+             createAudioSystemThread();
+         } else {
+@@ -2634,6 +2636,30 @@ public class AudioService extends IAudioService.Stub
+         }
+     }
+ 
++    // Volume steps chosen in Atelier > Sound. The stream state is built once at boot, so a new
++    // value applies after a reboot.
++    private static final int MIN_USER_VOLUME_STEPS = 1;
++    private static final int MAX_USER_VOLUME_STEPS = 30;
++
++    private void applyUserVolumeSteps() {
++        final String[] keys = { "volume_steps_music", "volume_steps_voice_call",
++                "volume_steps_ring", "volume_steps_notification", "volume_steps_alarm" };
++        final int[] streams = { AudioSystem.STREAM_MUSIC, AudioSystem.STREAM_VOICE_CALL,
++                AudioSystem.STREAM_RING, AudioSystem.STREAM_NOTIFICATION,
++                AudioSystem.STREAM_ALARM };
++        for (int i = 0; i < keys.length; i++) {
++            final int steps = Settings.System.getIntForUser(mContext.getContentResolver(),
++                    keys[i], -1, UserHandle.USER_SYSTEM);
++            if (steps < MIN_USER_VOLUME_STEPS || steps > MAX_USER_VOLUME_STEPS) continue;
++            final int stream = streams[i];
++            Log.i(TAG, "Stream " + stream + ": using user max vol of " + steps);
++            MAX_STREAM_VOLUME[stream] = steps;
++            if (AudioSystem.DEFAULT_STREAM_VOLUME[stream] > steps) {
++                AudioSystem.DEFAULT_STREAM_VOLUME[stream] = steps;
++            }
++        }
++    }
++
+     private void createAudioSystemThread() {
+         mAudioSystemThread = new AudioSystemThread();
+         mAudioSystemThread.start();

@@ -30,6 +30,7 @@ cd packages/apps/LockStyles && git apply ../../../device/nothing/Tetris/patches/
 cd packages/apps/Atelier && git apply ../../../device/nothing/Tetris/patches/0024-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0025-*.patch && cd -
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0026-*.patch && cd -
+cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0027-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -60,3 +61,4 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0026-*.patch
 | `0024-Atelier-Add-the-emoji-style-option.patch` | Emoji style option in Atelier > User interface, applied after a reboot. Needs 0022. |
 | `0025-SystemUI-Start-Pulse-from-the-current-lock-screen-state.patch` | Pulse never started on the lock screen with music playing: its start condition was built from events that come from several threads and can arrive out of order, so a stale screen off or media flag kept it stopped. It now reads the current screen, keyguard and media state, and dumps its state in dumpsys. |
 | `0026-SystemUI-End-the-lock-screen-clock-at-its-glyphs.patch` | The lock screen clock now ends where its glyphs end, so the media card and notifications sit a fixed 16dp below what is drawn, for every clock style. Font line spacing left up to 110dp of empty space under large digits, and rotated or shifted parts (Block clock) were not counted. Text is measured line by line with shadow and outline; images and views with a background count in full. Replaces the overflow padding of 0010. |
+| `0027-services-Read-volume-steps-from-settings.patch` | AudioService takes the media, call, ring, notification and alarm volume steps from the volume_steps_* system settings (5 to 60) at boot. |
