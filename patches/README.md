@@ -45,6 +45,7 @@ cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0038-*.patch
 cd frameworks/base && git apply ../../device/nothing/Tetris/patches/0039-*.patch && cd -
 cd packages/apps/Launcher3 && git apply ../../../device/nothing/Tetris/patches/0040-*.patch && cd -
 cd packages/apps/GameSpace && git apply ../../../device/nothing/Tetris/patches/0041-*.patch && cd -
+cd packages/apps/DescartesLaboratory && git apply ../../../device/nothing/Tetris/patches/0042-*.patch && cd -
 ```
 
 | Patch | What it fixes |
@@ -90,3 +91,4 @@ cd packages/apps/GameSpace && git apply ../../../device/nothing/Tetris/patches/0
 | `0039-SystemUI-Keep-the-stock-carrier-row-in-the-landscape-ColorOS-header.patch` | In landscape the ColorOS QS header is one row: the carrier name keeps its stock place instead of sticking to the date. |
 | `0040-Launcher3-Send-freeform-to-the-Descartes-freeform-app.patch` | Freeform from recents sent its request to com.libremobileos.freeform, which no longer exists, and only went home. It now goes to com.descartes.freeform. |
 | `0041-GameSpace-Send-freeform-to-the-Descartes-freeform-app.patch` | Same freeform fix for the game panel. |
+| `0042-DescartesLaboratory-Say-what-the-fluid-clock-needs.patch` | The Fluid Clock summary says it needs the lock screen clock widget on the first home page, where the clock lands. |
