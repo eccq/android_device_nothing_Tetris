@@ -1,0 +1,19 @@
+diff --git a/build/tools/changelog.sh b/build/tools/changelog.sh
+index 1ce2e658..cfbb975e 100755
+--- a/build/tools/changelog.sh
++++ b/build/tools/changelog.sh
+@@ -29,6 +29,14 @@ if ! flock -n 9; then
+     exit 0
+ fi
+ 
++# A device that ships its own changelog lists only what changed in that build.
++DEVICE_CHANGELOG=$(ls device/*/"$DEVICE"/Changelog.txt 2>/dev/null | head -n 1)
++if [ -n "$DEVICE_CHANGELOG" ]; then
++    cp "$DEVICE_CHANGELOG" "$OUT_DIR/target/product/$DEVICE/system/etc/Changelog.txt" &&
++        cp "$DEVICE_CHANGELOG" "$OUT_DIR/target/product/$DEVICE/${DEVICE}_changelog.txt"
++    exit
++fi
++
+ # Remove old changelog if it exists
+ [ -f "$Changelog" ] && rm -f "$Changelog"
+ 

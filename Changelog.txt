@@ -1,0 +1,52 @@
+====================
+     2026-11-23
+====================
+
+   * Flashlight
+- Torch strength no longer drops to almost nothing past the middle of the
+  slider: the LED driver wrapped around above its limit.
+- Seven working steps, from 50 to 190 mA. The old maximum was about 156 mA.
+- Apps that only switch the torch on get the full level too.
+
+   * Quick settings
+- ColorOS panel: opening it quickly no longer leaves it empty.
+- ColorOS panel in landscape: the carrier name keeps its place next to the
+  status icons.
+- New Sleep mode tile.
+
+   * Lock screen
+- The depth wallpaper subject stays off the media card.
+- The Pulse visualizer shows again with the depth wallpaper on.
+- The fluid clock flies to the home screen only after a fingerprint unlock.
+- The water unlock effects are skipped while the fluid clock is on.
+- Descartes Laboratory says what the fluid clock needs to fly.
+
+   * Dynamic island
+- New Island style setting: Stock, PenguinOS look or Lunaris (Dynamic Bar).
+  Turning the island on turns the Dynamic Bar off.
+- The setting shows up in the Settings search.
+
+   * DeX
+- The PenguinOS DeX app for Windows always gets a desktop. It used to show only
+  the wallpaper and the navigation keys unless Use DeX was on.
+
+   * Freeform
+- Opening a window from recents and from the game panel works again.
+
+   * Battery and display
+- Sleep mode (Settings > Battery): turns Wi-Fi, Bluetooth, mobile data and
+  sensors off by hand or on a schedule, and restores them after a reboot.
+- Idle manager (Settings > Battery): limits or closes the apps you choose while
+  the screen is off. The list starts empty and system apps are left alone.
+- An idle 120 Hz screen can drop to 60 Hz after 1 second instead of 3.
+
+   * Google apps
+- Removed: Feedback, Telemetry, Carrier Metrics, Partner Setup, Kids
+  Supervision stub, Glasses stub, Print Recommendation Service and the two
+  hotword enrollment apps. Extreme Battery Saver stays.
+
+   * Changelog
+- This page lists only the changes of this build.
+
+   * Apps
+- Battery Stats Viewer and Family Space are no longer included.
